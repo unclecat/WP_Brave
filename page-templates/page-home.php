@@ -18,17 +18,17 @@ $love_start_datetime = get_theme_mod('brave_love_start_datetime', '');
 <!-- 计时器区域 - 恋爱正计时 -->
 <section class="timer-section">
     <p class="timer-title"><?php echo esc_html($timer_text); ?></p>
-    <div class="timer-display" id="love-timer">
+    <div class="timer-display love-timer" id="love-timer">
         <span class="timer-number" id="timer-days">0</span> 天
         <span class="timer-number" id="timer-hours">0</span> 小时
         <span class="timer-number" id="timer-minutes">0</span> 分
     </div>
     <?php if ($love_start_datetime) : ?>
-    <p class="timer-date" style="font-size: 0.8rem; color: #999; margin-top: 0.5rem;">
+    <p class="timer-date">
         起始时间：<?php echo esc_html($love_start_datetime); ?>
     </p>
     <?php else : ?>
-    <p class="timer-date" style="font-size: 0.8rem; color: #ff5162; margin-top: 0.5rem;">
+    <p class="timer-date" style="color: #ff5162;">
         ⚠️ 请在外观 → 自定义 → Brave 主题设置中设置恋爱起始时间
     </p>
     <?php endif; ?>
@@ -36,17 +36,17 @@ $love_start_datetime = get_theme_mod('brave_love_start_datetime', '');
 
 <!-- 纪念日倒计时区域 -->
 <?php if ($next_anniversary_datetime) : ?>
-<section class="timer-section countdown-section" style="background: linear-gradient(135deg, #e3f2fd 0%, #f5f5f5 100%);">
+<section class="timer-section countdown-section">
     <p class="timer-title"><?php echo esc_html($countdown_text); ?></p>
-    <div class="countdown-target" style="font-size: 1.1rem; color: #666; margin-bottom: 1rem;">
+    <div class="countdown-target">
         🎯 <?php echo esc_html($next_anniversary_name); ?>
     </div>
-    <div class="timer-display countdown-display" id="anniversary-countdown">
+    <div class="timer-display countdown-timer" id="anniversary-countdown">
         <span class="timer-number" id="countdown-days">0</span> 天
-        <span class="timer-number" id="countdown-hours">0</span> 小时
-        <span class="timer-number" id="countdown-minutes">0</span> 分
+        <span class="timer-number" id="countdown-hours" style="display:none;">0</span>
+        <span class="timer-number" id="countdown-minutes" style="display:none;">0</span>
     </div>
-    <p class="timer-date" style="font-size: 0.8rem; color: #666; margin-top: 0.5rem;">
+    <p class="timer-date">
         目标时间：<?php echo esc_html($next_anniversary_datetime); ?>
     </p>
 </section>

@@ -310,47 +310,80 @@
 }
 
 /* ================================
-   双计时器样式
+   双计时器样式 - 统一风格
    ================================ */
 
-/* 倒计时区域特殊样式 */
-.countdown-section {
-    position: relative;
-    border-top: 3px solid #2196f3;
+/* 计时器区域通用样式 */
+.timer-section {
+    text-align: center;
 }
 
-.countdown-section::before {
-    content: '⏰';
-    position: absolute;
-    top: -15px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #2196f3;
-    color: white;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
+.timer-title {
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+}
+
+.timer-display {
     display: flex;
-    align-items: center;
+    flex-wrap: wrap;
     justify-content: center;
-    font-size: 16px;
+    align-items: baseline;
+    gap: 0.25rem 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.timer-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    min-width: 2ch;
+}
+
+.timer-date {
+    font-size: 0.8rem;
+    color: #999;
+    margin-top: 0.5rem;
+}
+
+/* 恋爱计时器 */
+.love-timer .timer-number {
+    color: var(--primary-color);
+}
+
+/* 纪念日倒计时 - 统一样式，只显示天数 */
+.countdown-section {
+    background: linear-gradient(135deg, #fff5f5 0%, #fff 100%);
+}
+
+.countdown-section .timer-title {
+    color: var(--text-muted);
 }
 
 .countdown-target {
-    background: rgba(33, 150, 243, 0.1);
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--text-color);
+    margin-bottom: 0.75rem;
+    font-weight: 500;
 }
 
-.countdown-display .timer-number {
-    color: #2196f3;
+.countdown-timer {
+    font-size: 1.2rem;
+}
+
+.countdown-timer .timer-number {
+    font-size: 2.5rem;
+    color: var(--primary-color);
 }
 
 /* 庆祝信息样式 */
 .celebration-message {
     animation: pulse 2s infinite;
+    color: #ff5162;
+    font-size: 1.2rem;
+    margin-top: 0.5rem;
+    font-weight: bold;
 }
 
 @keyframes pulse {
@@ -360,12 +393,6 @@
     50% {
         transform: scale(1.05);
     }
-}
-
-/* 计时器日期提示 */
-.timer-date {
-    font-size: 0.8rem;
-    margin-top: 0.5rem;
 }
 
 /* 响应式调整 - 计时器 */
@@ -378,8 +405,11 @@
         font-size: 1.3rem;
     }
     
+    .countdown-timer .timer-number {
+        font-size: 2rem;
+    }
+    
     .countdown-target {
         font-size: 0.95rem;
-        padding: 0.4rem 0.8rem;
     }
 }

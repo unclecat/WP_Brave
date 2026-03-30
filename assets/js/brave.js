@@ -5,7 +5,7 @@
 (function($) {
     'use strict';
 
-    // 恋爱计时器（精确到分钟）
+    // 恋爱计时器（显示天/时/分）
     function initLoveTimer() {
         var $timer = $('#love-timer');
         if (!$timer.length) return;
@@ -44,7 +44,7 @@
         setInterval(updateTimer, 60000); // 每分钟更新一次
     }
 
-    // 纪念日倒计时（显示天/时/分，不显示秒）
+    // 纪念日倒计时（只显示天数，数字更大）
     function initAnniversaryCountdown() {
         var $countdown = $('#anniversary-countdown');
         if (!$countdown.length) return;
@@ -68,28 +68,23 @@
             if (diff <= 0) {
                 // 纪念日已到达
                 $('#countdown-days').text(0);
-                $('#countdown-hours').text(0);
-                $('#countdown-minutes').text(0);
                 
                 // 显示庆祝信息
                 if (!$countdown.next('.celebration-message').length) {
-                    $('<div class="celebration-message" style="color: #ff5162; font-size: 1.2rem; margin-top: 0.5rem; font-weight: bold;">🎉 今天就是我们的特别日子！</div>').insertAfter($countdown);
+                    $('<div class="celebration-message">🎉 今天就是我们的特别日子！</div>').insertAfter($countdown);
                 }
                 return;
             }
 
             var days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
             $('#countdown-days').text(days);
-            $('#countdown-hours').text(hours);
-            $('#countdown-minutes').text(minutes);
         }
 
         updateCountdown();
-        setInterval(updateCountdown, 60000); // 每分钟更新一次
+        // 每小时更新一次即可，因为只显示天数
+        setInterval(updateCountdown, 3600000);
     }
+
 
     // 导航栏滚动效果
     function initNavbar() {
