@@ -7,9 +7,6 @@
 
 get_header();
 
-// 使用 filter_year 代替 year，避免 WordPress 日期解析冲突
-$current_year = isset($_GET['filter_year']) ? intval($_GET['filter_year']) : 0;
-
 // 构建查询
 $args = array(
     'post_type' => 'moment',
@@ -19,28 +16,7 @@ $args = array(
     'order' => 'DESC',
 );
 
-if ($current_year > 0) {
-    $args['meta_query'] = array(
-        array(
-            'key' => '_meet_date',
-            'value' => array($current_year . '-01-01', $current_year . '-12-31'),
-            'compare' => 'BETWEEN',
-            'type' => 'DATE',
-        ),
-    );
-}
-
 $moments = get_posts($args);
-$years = brave_get_moment_years();
-
-// 构建筛选链接函数
-function brave_get_moment_filter_url($year = 0) {
-    $url = get_permalink();
-    if ($year > 0) {
-        $url = add_query_arg('filter_year', $year, $url);
-    }
-    return $url;
-}
 ?>
 
 <section class="content-section">
@@ -48,20 +24,6 @@ function brave_get_moment_filter_url($year = 0) {
         <h1 class="section-title">💖 点点滴滴</h1>
         <p class="section-desc">记录我们的每一次见面，每一个瞬间</p>
     </div>
-
-    <!-- 年份筛选 -->
-    <?php if (!empty($years)) : ?>
-    <div class="memory-filters">
-        <a href="<?php echo esc_url(brave_get_moment_filter_url(0)); ?>" class="memory-filter <?php echo $current_year === 0 ? 'active' : ''; ?>">
-            <?php _e('全部', 'brave-love'); ?>
-        </a>
-        <?php foreach ($years as $year) : ?>
-            <a href="<?php echo esc_url(brave_get_moment_filter_url($year)); ?>" class="memory-filter <?php echo $current_year === intval($year) ? 'active' : ''; ?>">
-                <?php echo esc_html($year); ?>
-            </a>
-        <?php endforeach; ?>
-    </div>
-    <?php endif; ?>
 
     <!-- 时间轴 -->
     <?php if (!empty($moments)) : ?>
