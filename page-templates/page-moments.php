@@ -101,9 +101,15 @@ rsort($years);
                                     <?php endif; ?>
                                     
                                     <div class="timeline-card-body">
-                                        <p class="timeline-card-text">
-                                            <?php echo wp_trim_words($moment->post_content, 40); ?>
-                                        </p>
+                                        <div class="timeline-card-excerpt">
+                                            <?php 
+                                            if (!empty($moment->post_excerpt)) {
+                                                echo wpautop(esc_html($moment->post_excerpt));
+                                            } else {
+                                                echo wpautop(wp_trim_words($moment->post_content, 60));
+                                            }
+                                            ?>
+                                        </div>
                                         
                                         <?php if ($location) : ?>
                                             <div class="timeline-card-location">

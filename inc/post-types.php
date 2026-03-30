@@ -36,7 +36,7 @@ function brave_register_moment_post_type() {
         'capability_type'       => 'post',
         'has_archive'           => true,
         'hierarchical'          => false,
-        'supports'              => array('title', 'editor', 'thumbnail', 'author'),
+        'supports'              => array('title', 'editor', 'thumbnail', 'author', 'excerpt'),
         'show_in_rest'          => true,
     );
 
