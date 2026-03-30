@@ -306,21 +306,7 @@ function brave_page_template_redirect() {
 }
 add_action('template_redirect', 'brave_page_template_redirect');
 
-/**
- * 修复点点滴滴年份筛选问题
- * 禁用 WordPress 对 year 参数的日期归档解析
- */
-function brave_disable_year_redirect() {
-    // 如果是点点滴滴页面且带有 year 参数
-    if (!is_admin() && is_page() && isset($_GET['year'])) {
-        $page = get_post();
-        if ($page && $page->post_name === 'moments') {
-            // 移除 canonical 重定向，防止 WordPress 尝试修正 URL
-            remove_action('template_redirect', 'redirect_canonical');
-        }
-    }
-}
-add_action('template_redirect', 'brave_disable_year_redirect', 1);
+
 
 /**
  * 添加 body class

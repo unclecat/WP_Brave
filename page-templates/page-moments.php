@@ -7,8 +7,8 @@
 
 get_header();
 
-// 获取筛选年份
-$current_year = isset($_GET['year']) ? intval($_GET['year']) : 0;
+// 使用 filter_year 代替 year，避免 WordPress 日期解析冲突
+$current_year = isset($_GET['filter_year']) ? intval($_GET['filter_year']) : 0;
 
 // 构建查询
 $args = array(
@@ -32,6 +32,15 @@ if ($current_year > 0) {
 
 $moments = get_posts($args);
 $years = brave_get_moment_years();
+
+// 构建筛选链接函数
+function brave_get_moment_filter_url($year = 0) {
+    $url = get_permalink();
+    if ($year > 0) {
+        $url = add_query_arg('filter_year', $year, $url);
+    }
+    return $url;
+}
 ?>
 
 <section class="content-section">
@@ -43,11 +52,11 @@ $years = brave_get_moment_years();
     <!-- 年份筛选 -->
     <?php if (!empty($years)) : ?>
     <div class="memory-filters">
-        <a href="<?php echo esc_url(get_permalink()); ?>" class="memory-filter <?php echo $current_year === 0 ? 'active' : ''; ?>">
+        <a href="<?php echo esc_url(brave_get_moment_filter_url(0)); ?>" class="memory-filter <?php echo $current_year === 0 ? 'active' : ''; ?>">
             <?php _e('全部', 'brave-love'); ?>
         </a>
         <?php foreach ($years as $year) : ?>
-            <a href="<?php echo esc_url(add_query_arg('year', $year, get_permalink())); ?>" class="memory-filter <?php echo $current_year === intval($year) ? 'active' : ''; ?>">
+            <a href="<?php echo esc_url(brave_get_moment_filter_url($year)); ?>" class="memory-filter <?php echo $current_year === intval($year) ? 'active' : ''; ?>">
                 <?php echo esc_html($year); ?>
             </a>
         <?php endforeach; ?>
