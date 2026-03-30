@@ -10,8 +10,17 @@
         var $timer = $('#love-timer');
         if (!$timer.length) return;
 
-        var startDate = braveData.love_start_date || '2020-01-01';
-        var start = new Date(startDate + 'T00:00:00');
+        // 解析日期（兼容多种格式：YYYY-MM-DD 或 YYYY/MM/DD）
+        var startDateStr = braveData.love_start_date || '2020-01-01';
+        startDateStr = startDateStr.replace(/\//g, '-'); // 将 / 替换为 -
+        
+        var start = new Date(startDateStr + 'T00:00:00');
+        
+        // 检查日期是否有效
+        if (isNaN(start.getTime())) {
+            $timer.html('请设置正确的恋爱起始日期');
+            return;
+        }
 
         function updateTimer() {
             var now = new Date();

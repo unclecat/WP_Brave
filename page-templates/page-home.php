@@ -17,6 +17,18 @@ get_header();
         <span class="timer-number" id="timer-minutes">0</span> 分
         <span class="timer-number" id="timer-seconds">0</span> 秒
     </div>
+    <?php 
+    $start_date = get_theme_mod('brave_love_start_date');
+    if ($start_date) : 
+    ?>
+    <p class="timer-date" style="font-size: 0.8rem; color: #999; margin-top: 0.5rem;">
+        起始日：<?php echo esc_html($start_date); ?>
+    </p>
+    <?php else : ?>
+    <p class="timer-date" style="font-size: 0.8rem; color: #ff5162; margin-top: 0.5rem;">
+        ⚠️ 请在外观 → 自定义 → Brave 主题设置中设置恋爱起始日期
+    </p>
+    <?php endif; ?>
 </section>
 
 <!-- 纪念日 -->

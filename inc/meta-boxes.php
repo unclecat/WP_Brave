@@ -338,16 +338,23 @@ function brave_save_meta_boxes($post_id) {
 add_action('save_post', 'brave_save_meta_boxes');
 
 /**
- * 加载媒体上传脚本
+ * 加载媒体上传脚本和样式
  */
 function brave_admin_scripts($hook) {
     global $post;
     
+    $theme_uri = get_template_directory_uri();
+    $version = defined('BRAVE_VERSION') ? BRAVE_VERSION : '0.1';
+    
+    // 在所有后台页面加载样式
+    wp_enqueue_style('brave-admin', $theme_uri . '/assets/css/admin.css', array(), $version);
+    
+    // 在编辑页面加载脚本
     if ($hook === 'post.php' || $hook === 'post-new.php') {
         if (isset($post) && in_array($post->post_type, array('note', 'memory'))) {
             wp_enqueue_media();
             wp_enqueue_script('jquery-ui-sortable');
-            wp_enqueue_script('brave-admin', BRAVE_URI . '/assets/js/admin.js', array('jquery', 'jquery-ui-sortable'), BRAVE_VERSION, true);
+            wp_enqueue_script('brave-admin', $theme_uri . '/assets/js/admin.js', array('jquery', 'jquery-ui-sortable'), $version, true);
         }
     }
 }
