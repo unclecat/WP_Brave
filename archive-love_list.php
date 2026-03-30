@@ -27,7 +27,6 @@ $categories = get_terms(array(
     <div class="love-list-header">
         <div class="container text-center">
             <h1 class="love-list-title">💕 恋爱清单 💕</h1>
-            <p class="love-list-subtitle">记录我们的一百件小事</p>
         </div>
     </div>
 
@@ -88,24 +87,23 @@ $categories = get_terms(array(
                     ?>
                         <div class="love-list-card <?php echo $is_done ? 'done' : ''; ?>" data-id="<?php echo esc_attr(get_the_ID()); ?>">
                             <!-- 序号标签 -->
-                            <span class="card-number"><?php echo sprintf('%02d', $index); ?></span>
-                            
-                            <!-- 完成标记 -->
-                            <?php if ($is_done) : ?>
-                                <div class="done-badge">
-                                    <span>✓</span>
-                                </div>
-                            <?php endif; ?>
-
-                            <!-- 卡片内容 -->
-                            <div class="card-content">
-                                <h3 class="card-title"><?php the_title(); ?></h3>
+                            <!-- 卡片头部 -->
+                            <div class="card-header">
+                                <span class="card-number"><?php echo sprintf('%02d', $index); ?></span>
                                 
-                                <?php if ($is_done && $done_date) : ?>
-                                    <div class="card-date">
-                                        <span>📅</span> <?php echo esc_html($done_date); ?> 完成
-                                    </div>
+                                <?php if ($is_done) : ?>
+                                    <div class="done-badge">✓</div>
                                 <?php endif; ?>
+                                
+                                <div class="card-content">
+                                    <h3 class="card-title"><?php the_title(); ?></h3>
+                                    
+                                    <?php if ($is_done && $done_date) : ?>
+                                        <div class="card-date">
+                                            <span>📅</span> <?php echo esc_html($done_date); ?> 完成
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
                             </div>
 
                             <!-- 详情展开 -->

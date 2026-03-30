@@ -130,8 +130,8 @@
 
 .love-list-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
 }
 
 /* 清单卡片 */
@@ -139,7 +139,7 @@
     position: relative;
     background: #fff;
     border-radius: var(--radius-lg);
-    padding: 1.5rem;
+    padding: 1rem;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     border: 1px solid var(--border-color);
     transition: all 0.3s ease;
@@ -157,21 +157,27 @@
     border-color: rgba(255, 81, 98, 0.15);
 }
 
+/* 卡片头部 - 序号和完成标记并排 */
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
 /* 序号标签 */
 .card-number {
-    position: absolute;
-    top: -1px;
-    right: -1px;
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     background: linear-gradient(135deg, #f5f5f5, #e8e8e8);
     color: #999;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     font-weight: 600;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-bottom-left-radius: var(--radius-lg);
+    border-radius: var(--radius);
+    flex-shrink: 0;
 }
 
 .love-list-card.done .card-number {
@@ -181,32 +187,30 @@
 
 /* 完成标记 */
 .done-badge {
-    position: absolute;
-    top: 1rem;
-    left: 1rem;
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     background: linear-gradient(135deg, #4caf50, #66bb6a);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
-    font-size: 0.875rem;
-    box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
+    font-size: 0.75rem;
+    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+    flex-shrink: 0;
 }
 
 /* 卡片内容 */
 .card-content {
-    padding-top: 0.5rem;
+    flex: 1;
 }
 
 .card-title {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
     color: var(--text-color);
-    line-height: 1.5;
-    margin-bottom: 0.5rem;
+    line-height: 1.4;
+    margin-bottom: 0.25rem;
     word-break: break-word;
 }
 
@@ -321,33 +325,57 @@
     }
     
     .love-list-header {
-        padding: 1.5rem 1rem;
-        margin-bottom: 1.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
     }
     
     .love-list-title {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
     }
     
     .progress-stats {
-        gap: 1.5rem;
+        gap: 1rem;
     }
     
     .stat-number {
-        font-size: 1.75rem;
+        font-size: 1.5rem;
     }
     
     .love-list-grid {
         grid-template-columns: 1fr;
-        gap: 1rem;
+        gap: 0.75rem;
     }
     
     .love-list-card {
-        padding: 1.25rem;
+        padding: 0.75rem;
+    }
+    
+    .card-header {
+        gap: 0.4rem;
+    }
+    
+    .card-number {
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+    }
+    
+    .done-badge {
+        width: 18px;
+        height: 18px;
+        font-size: 0.7rem;
+    }
+    
+    .card-title {
+        font-size: 0.95rem;
+    }
+    
+    .card-date {
+        font-size: 0.75rem;
     }
     
     .filter-btn {
-        padding: 0.4rem 1rem;
-        font-size: 0.85rem;
+        padding: 0.35rem 0.875rem;
+        font-size: 0.8rem;
     }
 }
