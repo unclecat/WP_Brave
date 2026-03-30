@@ -307,6 +307,28 @@ function brave_page_template_redirect() {
 add_action('template_redirect', 'brave_page_template_redirect');
 
 /**
+ * 修复点点滴滴年份筛选 404 问题
+ * 防止 WordPress 将 year 参数解析为日期归档
+ */
+function brave_fix_moment_year_redirect() {
+    // 如果是 404 且 URL 包含 year 参数，尝试重定向到正确的点点滴滴页面
+    if (is_404() && isset($_GET['year'])) {
+        $page = get_page_by_path('moments');
+        if ($page) {
+            wp_redirect(add_query_arg('year', intval($_GET['year']), get_permalink($page)));
+            exit;
+        }
+    }
+    
+    // 如果是点点滴滴页面且带有 year 参数，确保不会触发 404
+    if (!is_admin() && is_page('moments') && isset($_GET['year'])) {
+        // 移除 canonical 重定向，防止 WordPress 尝试修正 URL
+        remove_action('template_redirect', 'redirect_canonical');
+    }
+}
+add_action('template_redirect', 'brave_fix_moment_year_redirect', 1);
+
+/**
  * 添加 body class
  */
 function brave_body_classes($classes) {

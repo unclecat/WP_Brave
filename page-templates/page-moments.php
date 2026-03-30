@@ -68,21 +68,20 @@ $years = brave_get_moment_years();
                     <div class="timeline-dot"></div>
                     <span class="timeline-date"><?php echo esc_html($meet_date); ?></span>
                     <div class="timeline-content">
-                        <h4 class="timeline-title">
-                            <?php echo esc_html($moment->post_title); ?>
+                        <div class="timeline-header">
+                            <h4 class="timeline-title">
+                                <?php echo esc_html($moment->post_title); ?>
+                            </h4>
                             <?php if ($mood) : ?>
-                                <span title="<?php echo esc_attr(brave_get_mood_text($mood)); ?>"><?php echo brave_get_mood_emoji($mood); ?></span>
+                                <span class="timeline-mood" title="<?php echo esc_attr(brave_get_mood_text($mood)); ?>">
+                                    <?php echo brave_get_mood_emoji($mood); ?>
+                                </span>
                             <?php endif; ?>
-                        </h4>
-                        <div class="timeline-text">
-                            <?php echo wpautop(wp_trim_words($moment->post_content, 50)); ?>
                         </div>
                         
-                        <?php if ($location) : ?>
-                            <div class="timeline-location">
-                                <span>📍</span> <?php echo esc_html($location); ?>
-                            </div>
-                        <?php endif; ?>
+                        <div class="timeline-text">
+                            <?php echo wpautop(wp_trim_words($moment->post_content, 60)); ?>
+                        </div>
                         
                         <?php if ($has_thumbnail || $related_memory) : ?>
                             <div class="timeline-images">
@@ -92,17 +91,23 @@ $years = brave_get_moment_years();
                                 
                                 <?php if ($related_memory) : 
                                     $memory_photos = brave_get_memory_photos($related_memory, 'thumbnail');
-                                    $show_photos = array_slice($memory_photos, 0, $has_thumbnail ? 2 : 3);
+                                    $show_photos = array_slice($memory_photos, 0, $has_thumbnail ? 3 : 4);
                                     foreach ($show_photos as $photo) : ?>
                                         <img src="<?php echo esc_url($photo['url']); ?>" alt="" class="timeline-image">
                                     <?php endforeach; 
                                     $remaining = count($memory_photos) - count($show_photos);
                                     if ($remaining > 0) : ?>
-                                        <a href="<?php echo esc_url(get_permalink($related_memory)); ?>" class="timeline-image" style="display: flex; align-items: center; justify-content: center; background: #f0f0f0; color: #666; font-size: 0.75rem;">
+                                        <a href="<?php echo esc_url(get_permalink($related_memory)); ?>" class="timeline-image-more">
                                             +<?php echo $remaining; ?>
                                         </a>
                                     <?php endif; ?>
                                 <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <?php if ($location) : ?>
+                            <div class="timeline-meta">
+                                <span class="timeline-location"><?php echo esc_html($location); ?></span>
                             </div>
                         <?php endif; ?>
                     </div>
@@ -110,9 +115,9 @@ $years = brave_get_moment_years();
             <?php endforeach; ?>
         </div>
     <?php else : ?>
-        <div class="text-center" style="padding: 3rem 1rem;">
-            <p style="color: #999; margin-bottom: 1rem;">📝</p>
-            <p style="color: #666;"><?php _e('还没有记录任何点滴，快去添加吧！', 'brave-love'); ?></p>
+        <div class="timeline-empty">
+            <div class="timeline-empty-icon">📝</div>
+            <p class="timeline-empty-text"><?php _e('还没有记录任何点滴，快去添加吧！', 'brave-love'); ?></p>
         </div>
     <?php endif; ?>
 </section>
