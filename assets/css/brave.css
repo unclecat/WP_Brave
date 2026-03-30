@@ -310,79 +310,69 @@
 }
 
 /* ================================
-   双计时器样式 - 统一风格
+   双计时器样式 - 完全统一
    ================================ */
 
-/* 计时器区域通用样式 */
+/* 计时器区域基础样式 */
 .timer-section {
     text-align: center;
+    padding: 1.5rem 1rem;
 }
 
+/* 计时器标题 - 统一 */
 .timer-title {
-    font-size: 1rem;
+    font-size: 0.95rem;
     color: var(--text-muted);
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
+    font-weight: 400;
 }
 
+/* 倒计时目标名称（第二个计时器用） */
+.countdown-target {
+    font-size: 0.95rem;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+/* 计时器数字显示 - 完全统一 */
 .timer-display {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     align-items: baseline;
-    gap: 0.25rem 0.5rem;
+    gap: 0.2rem 0.4rem;
     font-size: 0.9rem;
     color: var(--text-muted);
+    line-height: 1;
 }
 
+/* 数字样式 - 统一 */
 .timer-number {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: 700;
     color: var(--primary-color);
-    min-width: 2ch;
+    min-width: 1.5ch;
 }
 
+/* 时间单位文字 */
+.timer-display {
+    color: #666;
+}
+
+/* 时间戳 */
 .timer-date {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: #999;
-    margin-top: 0.5rem;
+    margin-top: 0.4rem;
 }
 
-/* 恋爱计时器 */
-.love-timer .timer-number {
-    color: var(--primary-color);
-}
-
-/* 纪念日倒计时 - 统一样式，只显示天数 */
-.countdown-section {
-    background: linear-gradient(135deg, #fff5f5 0%, #fff 100%);
-}
-
-.countdown-section .timer-title {
-    color: var(--text-muted);
-}
-
-.countdown-target {
-    font-size: 1.1rem;
-    color: var(--text-color);
-    margin-bottom: 0.75rem;
-    font-weight: 500;
-}
-
-.countdown-timer {
-    font-size: 1.2rem;
-}
-
-.countdown-timer .timer-number {
-    font-size: 2.5rem;
-    color: var(--primary-color);
-}
-
-/* 庆祝信息样式 */
+/* 庆祝信息 */
 .celebration-message {
     animation: pulse 2s infinite;
     color: #ff5162;
-    font-size: 1.2rem;
-    margin-top: 0.5rem;
+    font-size: 1rem;
+    margin-top: 0.4rem;
     font-weight: bold;
 }
 
@@ -395,21 +385,22 @@
     }
 }
 
-/* 响应式调整 - 计时器 */
+/* 移动端适配 */
 @media (max-width: 575px) {
-    .timer-display {
-        font-size: 0.85rem;
+    .timer-section {
+        padding: 1.2rem 1rem;
+    }
+    
+    .timer-title,
+    .countdown-target {
+        font-size: 0.9rem;
     }
     
     .timer-number {
-        font-size: 1.3rem;
+        font-size: 1.4rem;
     }
     
-    .countdown-timer .timer-number {
-        font-size: 2rem;
-    }
-    
-    .countdown-target {
-        font-size: 0.95rem;
+    .timer-display {
+        font-size: 0.85rem;
     }
 }
