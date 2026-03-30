@@ -5,7 +5,7 @@
 (function($) {
     'use strict';
 
-    // 恋爱计时器（显示天/时/分）
+    // 恋爱计时器（显示天/时/分/秒 - 实时跳动）
     function initLoveTimer() {
         var $timer = $('#love-timer');
         if (!$timer.length) return;
@@ -34,17 +34,19 @@
             var days = Math.floor(diff / (1000 * 60 * 60 * 24));
             var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
             $('#timer-days').text(days);
             $('#timer-hours').text(hours);
             $('#timer-minutes').text(minutes);
+            $('#timer-seconds').text(seconds);
         }
 
         updateTimer();
-        setInterval(updateTimer, 60000); // 每分钟更新一次
+        setInterval(updateTimer, 1000); // 每秒更新一次，实现实时跳动
     }
 
-    // 纪念日倒计时（显示天/时/分）
+    // 纪念日倒计时（显示天/时/分/秒 - 实时跳动）
     function initAnniversaryCountdown() {
         var $countdown = $('#anniversary-countdown');
         if (!$countdown.length) return;
@@ -70,6 +72,7 @@
                 $('#countdown-days').text(0);
                 $('#countdown-hours').text(0);
                 $('#countdown-minutes').text(0);
+                $('#countdown-seconds').text(0);
                 
                 // 显示庆祝信息
                 if (!$countdown.next('.celebration-message').length) {
@@ -81,14 +84,16 @@
             var days = Math.floor(diff / (1000 * 60 * 60 * 24));
             var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
             $('#countdown-days').text(days);
             $('#countdown-hours').text(hours);
             $('#countdown-minutes').text(minutes);
+            $('#countdown-seconds').text(seconds);
         }
 
         updateCountdown();
-        setInterval(updateCountdown, 60000); // 每分钟更新一次
+        setInterval(updateCountdown, 1000); // 每秒更新一次，实现实时跳动
     }
 
 

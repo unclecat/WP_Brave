@@ -23,8 +23,9 @@ $anniversary_section_title = get_theme_mod('brave_anniversary_section_title', '�
         <p class="timer-title"><?php echo esc_html($timer_text); ?></p>
         <div class="timer-display" id="love-timer">
             <span class="timer-number" id="timer-days">0</span> 天
-            <span class="timer-number" id="timer-hours">0</span> 小时
+            <span class="timer-number" id="timer-hours">0</span> 时
             <span class="timer-number" id="timer-minutes">0</span> 分
+            <span class="timer-number" id="timer-seconds">0</span> 秒
         </div>
         <?php if ($love_start_datetime) : ?>
         <p class="timer-date">起始时间：<?php echo esc_html($love_start_datetime); ?></p>
@@ -40,8 +41,9 @@ $anniversary_section_title = get_theme_mod('brave_anniversary_section_title', '�
         <p class="countdown-target"><?php echo esc_html($next_anniversary_name); ?></p>
         <div class="timer-display" id="anniversary-countdown">
             <span class="timer-number" id="countdown-days">0</span> 天
-            <span class="timer-number" id="countdown-hours">0</span> 小时
+            <span class="timer-number" id="countdown-hours">0</span> 时
             <span class="timer-number" id="countdown-minutes">0</span> 分
+            <span class="timer-number" id="countdown-seconds">0</span> 秒
         </div>
         <p class="timer-date">目标时间：<?php echo esc_html($next_anniversary_datetime); ?></p>
     </section>
