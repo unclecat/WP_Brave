@@ -1,0 +1,353 @@
+/**
+ * 恋爱清单页面样式
+ */
+
+.love-list-section {
+    padding: 2rem 0 4rem;
+    background: linear-gradient(180deg, #fff5f7 0%, #ffffff 100%);
+    min-height: calc(100vh - 200px);
+}
+
+/* 页面标题 */
+.love-list-header {
+    text-align: center;
+    padding: 2rem 1rem;
+    margin-bottom: 2rem;
+}
+
+.love-list-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+    letter-spacing: 2px;
+}
+
+.love-list-subtitle {
+    font-size: 1rem;
+    color: var(--text-muted);
+}
+
+/* 进度统计 */
+.love-list-progress {
+    max-width: 600px;
+    margin: 0 auto 2rem;
+    padding: 0 1rem;
+}
+
+.progress-stats {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+.stat-divider {
+    width: 1px;
+    height: 40px;
+    background: var(--border-color);
+}
+
+.progress-bar {
+    height: 8px;
+    background: rgba(255, 81, 98, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), #ff8fa3);
+    border-radius: 4px;
+    transition: width 0.6s ease;
+}
+
+/* 分类筛选 */
+.love-list-filters {
+    padding: 0 1rem;
+    margin-bottom: 2rem;
+}
+
+.love-list-filters .container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.filter-btn {
+    display: inline-block;
+    padding: 0.5rem 1.25rem;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 2rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.filter-btn.active {
+    background: linear-gradient(135deg, var(--primary-color), #ff6b7a);
+    border-color: var(--primary-color);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(255, 81, 98, 0.3);
+}
+
+/* 清单网格 */
+.love-list-content {
+    padding: 0 1rem;
+}
+
+.love-list-content .container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.love-list-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+/* 清单卡片 */
+.love-list-card {
+    position: relative;
+    background: #fff;
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.love-list-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    border-color: rgba(255, 81, 98, 0.2);
+}
+
+.love-list-card.done {
+    background: linear-gradient(135deg, #fff9fa 0%, #ffffff 100%);
+    border-color: rgba(255, 81, 98, 0.15);
+}
+
+/* 序号标签 */
+.card-number {
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #f5f5f5, #e8e8e8);
+    color: #999;
+    font-size: 0.875rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom-left-radius: var(--radius-lg);
+}
+
+.love-list-card.done .card-number {
+    background: linear-gradient(135deg, var(--primary-color), #ff6b7a);
+    color: #fff;
+}
+
+/* 完成标记 */
+.done-badge {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #4caf50, #66bb6a);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.875rem;
+    box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
+}
+
+/* 卡片内容 */
+.card-content {
+    padding-top: 0.5rem;
+}
+
+.card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+    word-break: break-word;
+}
+
+.love-list-card.done .card-title {
+    color: var(--primary-color);
+}
+
+.card-date {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* 详情展开 */
+.card-detail {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    margin-top: 0;
+}
+
+.love-list-card.expanded .card-detail {
+    margin-top: 1rem;
+}
+
+.detail-image {
+    margin-bottom: 1rem;
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.card-image {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.detail-text {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+}
+
+.detail-text p {
+    margin: 0 0 0.5rem;
+}
+
+.detail-text p:last-child {
+    margin-bottom: 0;
+}
+
+/* 展开按钮 */
+.toggle-detail {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: rgba(255, 81, 98, 0.05);
+    border: 1px dashed rgba(255, 81, 98, 0.2);
+    border-radius: var(--radius);
+    color: var(--primary-color);
+    font-size: 0.875rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.toggle-detail:hover {
+    background: rgba(255, 81, 98, 0.1);
+    border-color: var(--primary-color);
+}
+
+.toggle-detail svg {
+    transition: transform 0.3s ease;
+}
+
+.love-list-card.expanded .toggle-detail svg {
+    transform: rotate(180deg);
+}
+
+/* 空状态 */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-text {
+    font-size: 1.1rem;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+}
+
+.empty-subtext {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .love-list-section {
+        padding: 1rem 0 2rem;
+    }
+    
+    .love-list-header {
+        padding: 1.5rem 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .love-list-title {
+        font-size: 1.5rem;
+    }
+    
+    .progress-stats {
+        gap: 1.5rem;
+    }
+    
+    .stat-number {
+        font-size: 1.75rem;
+    }
+    
+    .love-list-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .love-list-card {
+        padding: 1.25rem;
+    }
+    
+    .filter-btn {
+        padding: 0.4rem 1rem;
+        font-size: 0.85rem;
+    }
+}

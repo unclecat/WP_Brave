@@ -84,6 +84,11 @@ function brave_scripts() {
     if (is_singular() && comments_open() && get_option('thread_comments')) {
         wp_enqueue_script('comment-reply');
     }
+    
+    // 恋爱清单页面样式
+    if (is_page_template('page-templates/page-list.php')) {
+        wp_enqueue_style('brave-love-list', BRAVE_URI . '/assets/css/love-list.css', array(), BRAVE_VERSION);
+    }
 }
 add_action('wp_enqueue_scripts', 'brave_scripts');
 
