@@ -96,13 +96,16 @@
         setInterval(updateCountdown, 1000); // 每秒更新一次，实现实时跳动
     }
 
-    // 天气小组件
+    // 天气小组件 - 多城市卡片式
     function initWeather() {
         var $weatherSection = $('.weather-section');
         if (!$weatherSection.length) return;
 
-        var lat = $weatherSection.data('lat') || '39.9042';
-        var lon = $weatherSection.data('lon') || '116.4074';
+        var $weatherCards = $('.weather-card');
+        if (!$weatherCards.length) return;
+
+        var $modal = $('#weather-modal');
+        var $modalClose = $('#weather-modal-close');
 
         // WMO 天气代码映射
         var weatherCodes = {
@@ -124,11 +127,13 @@
             95: { icon: '⛈️', desc: '雷雨' },
         };
 
+        // 缓存天气数据
+        var weatherCache = {};
+
         // 获取穿衣建议
         function getClothingAdvice(temp, weatherCode) {
             var advice = '';
             
-            // 根据温度推荐
             if (temp >= 30) {
                 advice = '天气炎热，建议穿短袖、短裤、裙子等清凉透气的衣物，注意防晒。';
             } else if (temp >= 25) {
@@ -147,7 +152,6 @@
                 advice = '天气严寒，建议穿厚羽绒服、加绒衣物，做好防寒措施。';
             }
 
-            // 根据天气状况追加建议
             if (weatherCode >= 51 && weatherCode <= 65) {
                 advice += ' 记得带伞哦！☂️';
             } else if (weatherCode >= 71 && weatherCode <= 75) {
@@ -159,8 +163,13 @@
             return advice;
         }
 
-        // 获取天气数据
-        function fetchWeather() {
+        // 获取单个城市天气
+        function fetchCityWeather($card) {
+            var lat = $card.data('lat');
+            var lon = $card.data('lon');
+            var index = $card.data('index');
+            var cityName = $card.data('name');
+
             var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=auto';
 
             $.ajax({
@@ -178,35 +187,82 @@
 
                         var weatherInfo = weatherCodes[code] || { icon: '🌡️', desc: '未知' };
 
-                        // 更新界面
-                        $('#weather-icon').text(weatherInfo.icon);
-                        $('#weather-temp').text(temp + '°');
-                        $('#weather-desc').text(weatherInfo.desc);
-                        $('#weather-feels').text(feels + '°');
-                        $('#weather-humidity').text(humidity + '%');
-                        $('#weather-wind').text(wind + 'km/h');
+                        // 缓存数据
+                        weatherCache[index] = {
+                            name: cityName,
+                            temp: temp,
+                            feels: feels,
+                            humidity: humidity,
+                            wind: wind,
+                            code: code,
+                            icon: weatherInfo.icon,
+                            desc: weatherInfo.desc,
+                            advice: getClothingAdvice(temp, code)
+                        };
 
-                        // 更新穿衣指南
-                        $('#clothing-text').text(getClothingAdvice(temp, code));
-
-                        // 更新时间
-                        var now = new Date();
-                        var timeStr = now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
-                        $('.weather-update').text(timeStr + ' 更新');
+                        // 更新卡片
+                        $card.find('.weather-icon').text(weatherInfo.icon);
+                        $card.find('.weather-temp').text(temp + '°');
+                        $card.find('.weather-desc').text(weatherInfo.desc);
                     }
                 },
                 error: function() {
-                    $('#weather-desc').text('获取天气失败');
-                    $('#clothing-text').text('请检查网络连接后刷新页面');
+                    $card.find('.weather-desc').text('获取失败');
                 }
             });
         }
 
-        // 首次获取
-        fetchWeather();
+        // 打开模态框
+        function openModal(index) {
+            var data = weatherCache[index];
+            if (!data) return;
+
+            $('#modal-city').text(data.name);
+            $('#modal-icon').text(data.icon);
+            $('#modal-temp').text(data.temp + '°');
+            $('#modal-desc').text(data.desc);
+            $('#modal-feels').text(data.feels + '°');
+            $('#modal-humidity').text(data.humidity + '%');
+            $('#modal-wind').text(data.wind + ' km/h');
+            $('#modal-clothing').text(data.advice);
+
+            var now = new Date();
+            var timeStr = now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
+            $('#modal-time').text(timeStr + ' 更新');
+
+            $modal.addClass('active');
+            $('body').css('overflow', 'hidden');
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            $modal.removeClass('active');
+            $('body').css('overflow', '');
+        }
+
+        // 加载所有城市天气
+        $weatherCards.each(function() {
+            fetchCityWeather($(this));
+        });
+
+        // 点击卡片打开详情
+        $weatherCards.on('click', function() {
+            var index = $(this).data('index');
+            openModal(index);
+        });
+
+        // 关闭模态框
+        $modalClose.on('click', closeModal);
+        $modal.on('click', function(e) {
+            if (e.target === this) closeModal();
+        });
 
         // 每30分钟更新一次
-        setInterval(fetchWeather, 30 * 60 * 1000);
+        setInterval(function() {
+            $weatherCards.each(function() {
+                fetchCityWeather($(this));
+            });
+        }, 30 * 60 * 1000);
     }
 
     // 导航栏滚动效果

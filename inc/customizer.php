@@ -377,61 +377,6 @@ function brave_customize_register($wp_customize) {
         ),
     ));
 
-    // ==================== 天气设置 ====================
-    $wp_customize->add_section('brave_weather', array(
-        'title' => __('天气设置', 'brave-love'),
-        'panel' => 'brave_settings',
-    ));
-
-    // 是否启用天气
-    $wp_customize->add_setting('brave_weather_enabled', array(
-        'default' => false,
-        'sanitize_callback' => 'wp_validate_boolean',
-        'transport' => 'refresh',
-    ));
-    $wp_customize->add_control('brave_weather_enabled', array(
-        'label' => __('启用天气小组件', 'brave-love'),
-        'section' => 'brave_weather',
-        'type' => 'checkbox',
-    ));
-
-    // 城市名称
-    $wp_customize->add_setting('brave_weather_city', array(
-        'default' => '北京',
-        'sanitize_callback' => 'sanitize_text_field',
-        'transport' => 'refresh',
-    ));
-    $wp_customize->add_control('brave_weather_city', array(
-        'label' => __('城市名称', 'brave-love'),
-        'description' => __('显示的城市名，例如：北京、上海', 'brave-love'),
-        'section' => 'brave_weather',
-        'type' => 'text',
-    ));
-
-    // 纬度
-    $wp_customize->add_setting('brave_weather_lat', array(
-        'default' => '39.9042',
-        'sanitize_callback' => 'sanitize_text_field',
-        'transport' => 'refresh',
-    ));
-    $wp_customize->add_control('brave_weather_lat', array(
-        'label' => __('纬度', 'brave-love'),
-        'description' => __('从 <a href="https://open-meteo.com/en/docs" target="_blank">Open-Meteo</a> 查询城市经纬度', 'brave-love'),
-        'section' => 'brave_weather',
-        'type' => 'text',
-    ));
-
-    // 经度
-    $wp_customize->add_setting('brave_weather_lon', array(
-        'default' => '116.4074',
-        'sanitize_callback' => 'sanitize_text_field',
-        'transport' => 'refresh',
-    ));
-    $wp_customize->add_control('brave_weather_lon', array(
-        'label' => __('经度', 'brave-love'),
-        'section' => 'brave_weather',
-        'type' => 'text',
-    ));
 }
 add_action('customize_register', 'brave_customize_register');
 

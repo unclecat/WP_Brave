@@ -123,6 +123,11 @@ require BRAVE_DIR . '/inc/meta-boxes.php';
 require BRAVE_DIR . '/inc/customizer.php';
 
 /**
+ * 天气管理
+ */
+require BRAVE_DIR . '/inc/weather-admin.php';
+
+/**
  * 短代码
  */
 require BRAVE_DIR . '/inc/shortcodes.php';

@@ -51,42 +51,62 @@ $anniversary_section_title = get_theme_mod('brave_anniversary_section_title', '�
 </div>
 
 <!-- 天气小组件 -->
-<?php if (get_theme_mod('brave_weather_enabled', false)) : 
-    $weather_city = get_theme_mod('brave_weather_city', '北京');
-    $weather_lat = get_theme_mod('brave_weather_lat', '39.9042');
-    $weather_lon = get_theme_mod('brave_weather_lon', '116.4074');
+<?php 
+$weather_enabled = brave_is_weather_enabled();
+$weather_cities = brave_get_weather_cities();
+if ($weather_enabled && !empty($weather_cities)) : 
 ?>
-<section class="weather-section" data-lat="<?php echo esc_attr($weather_lat); ?>" data-lon="<?php echo esc_attr($weather_lon); ?>">
-    <div class="weather-card">
-        <div class="weather-header">
-            <span class="weather-city"><?php echo esc_html($weather_city); ?></span>
-            <span class="weather-update">更新中...</span>
+<section class="weather-section">
+    <h3 class="weather-section-title">🌤️ 今日天气</h3>
+    <div class="weather-scroll" id="weather-scroll">
+        <?php foreach ($weather_cities as $index => $city) : ?>
+        <div class="weather-card" 
+             data-index="<?php echo $index; ?>"
+             data-name="<?php echo esc_attr($city['name']); ?>"
+             data-lat="<?php echo esc_attr($city['lat']); ?>"
+             data-lon="<?php echo esc_attr($city['lon']); ?>">
+            <div class="weather-city-name"><?php echo esc_html($city['name']); ?></div>
+            <div class="weather-icon">⏳</div>
+            <div class="weather-temp">--°</div>
+            <div class="weather-desc">加载中</div>
         </div>
-        <div class="weather-main">
-            <div class="weather-icon" id="weather-icon">☀️</div>
-            <div class="weather-temp" id="weather-temp">--°</div>
-            <div class="weather-desc" id="weather-desc">加载中...</div>
-        </div>
-        <div class="weather-details">
-            <div class="weather-item">
-                <span class="weather-label">体感</span>
-                <span class="weather-value" id="weather-feels">--°</span>
-            </div>
-            <div class="weather-item">
-                <span class="weather-label">湿度</span>
-                <span class="weather-value" id="weather-humidity">--%</span>
-            </div>
-            <div class="weather-item">
-                <span class="weather-label">风速</span>
-                <span class="weather-value" id="weather-wind">--km/h</span>
-            </div>
-        </div>
-        <div class="weather-clothing" id="weather-clothing">
-            <div class="clothing-title">👔 穿衣指南</div>
-            <div class="clothing-text" id="clothing-text">正在分析天气...</div>
-        </div>
+        <?php endforeach; ?>
     </div>
 </section>
+
+<!-- 天气详情模态框 -->
+<div class="weather-modal" id="weather-modal">
+    <div class="weather-modal-content">
+        <button class="weather-modal-close" id="weather-modal-close">&times;</button>
+        <div class="weather-modal-header">
+            <h3 class="weather-modal-city" id="modal-city">城市</h3>
+            <span class="weather-modal-time" id="modal-time">--:-- 更新</span>
+        </div>
+        <div class="weather-modal-main">
+            <div class="weather-modal-icon" id="modal-icon">☀️</div>
+            <div class="weather-modal-temp" id="modal-temp">--°</div>
+            <div class="weather-modal-desc" id="modal-desc">--</div>
+        </div>
+        <div class="weather-modal-details">
+            <div class="weather-modal-item">
+                <span class="weather-modal-label">体感温度</span>
+                <span class="weather-modal-value" id="modal-feels">--°</span>
+            </div>
+            <div class="weather-modal-item">
+                <span class="weather-modal-label">湿度</span>
+                <span class="weather-modal-value" id="modal-humidity">--%</span>
+            </div>
+            <div class="weather-modal-item">
+                <span class="weather-modal-label">风速</span>
+                <span class="weather-modal-value" id="modal-wind">-- km/h</span>
+            </div>
+        </div>
+        <div class="weather-modal-clothing">
+            <div class="clothing-title">👔 穿衣指南</div>
+            <div class="clothing-text" id="modal-clothing">正在分析...</div>
+        </div>
+    </div>
+</div>
 <?php endif; ?>
 
 <!-- 纪念日列表 -->
