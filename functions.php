@@ -6,7 +6,7 @@
  */
 
 // 定义常量
-define('BRAVE_VERSION', '0.1.1');
+define('BRAVE_VERSION', '0.1.2');
 define('BRAVE_DIR', get_template_directory());
 define('BRAVE_URI', get_template_directory_uri());
 
