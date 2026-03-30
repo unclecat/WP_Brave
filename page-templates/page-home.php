@@ -64,9 +64,10 @@ if ($weather_enabled && !empty($weather_cities)) :
              data-index="<?php echo $index; ?>"
              data-name="<?php echo esc_attr($city['name']); ?>"
              data-lat="<?php echo esc_attr($city['lat']); ?>"
-             data-lon="<?php echo esc_attr($city['lon']); ?>">
+             data-lon="<?php echo esc_attr($city['lon']); ?>"
+             data-weather="sunny">
             <div class="weather-city-name"><?php echo esc_html($city['name']); ?></div>
-            <div class="weather-icon">⏳</div>
+            <div class="weather-icon">☀️</div>
             <div class="weather-temp">--°</div>
             <div class="weather-desc">加载中</div>
         </div>

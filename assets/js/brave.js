@@ -187,6 +187,13 @@
 
                         var weatherInfo = weatherCodes[code] || { icon: '🌡️', desc: '未知' };
 
+                        // 判断天气类型
+                        var weatherType = 'sunny';
+                        if (code >= 51 && code <= 65) weatherType = 'rainy';
+                        else if (code >= 71 && code <= 75) weatherType = 'snowy';
+                        else if (code >= 1 && code <= 3) weatherType = 'cloudy';
+                        else if (code >= 45) weatherType = 'cloudy';
+
                         // 缓存数据
                         weatherCache[index] = {
                             name: cityName,
@@ -197,10 +204,12 @@
                             code: code,
                             icon: weatherInfo.icon,
                             desc: weatherInfo.desc,
-                            advice: getClothingAdvice(temp, code)
+                            advice: getClothingAdvice(temp, code),
+                            weatherType: weatherType
                         };
 
                         // 更新卡片
+                        $card.attr('data-weather', weatherType);
                         $card.find('.weather-icon').text(weatherInfo.icon);
                         $card.find('.weather-temp').text(temp + '°');
                         $card.find('.weather-desc').text(weatherInfo.desc);
