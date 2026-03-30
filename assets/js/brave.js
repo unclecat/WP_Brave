@@ -46,6 +46,56 @@
         setInterval(updateTimer, 1000);
     }
 
+    // 纪念日倒计时（精确到分钟）
+    function initAnniversaryCountdown() {
+        var $countdown = $('#anniversary-countdown');
+        if (!$countdown.length) return;
+
+        var datetimeStr = braveData.next_anniversary_datetime || '';
+        if (!datetimeStr) return;
+
+        // 解析日期时间（格式：YYYY-MM-DD HH:MM）
+        var target = new Date(datetimeStr.replace(' ', 'T') + ':00');
+        
+        // 检查日期是否有效
+        if (isNaN(target.getTime())) {
+            $countdown.html('请设置正确的纪念日时间');
+            return;
+        }
+
+        function updateCountdown() {
+            var now = new Date();
+            var diff = target - now;
+            
+            if (diff <= 0) {
+                // 纪念日已到达
+                $('#countdown-days').text(0);
+                $('#countdown-hours').text(0);
+                $('#countdown-minutes').text(0);
+                $('#countdown-seconds').text(0);
+                
+                // 显示庆祝信息
+                if (!$countdown.next('.celebration-message').length) {
+                    $('<div class="celebration-message" style="color: #ff5162; font-size: 1.2rem; margin-top: 0.5rem; font-weight: bold;">🎉 今天就是我们的特别日子！</div>').insertAfter($countdown);
+                }
+                return;
+            }
+
+            var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            $('#countdown-days').text(days);
+            $('#countdown-hours').text(hours);
+            $('#countdown-minutes').text(minutes);
+            $('#countdown-seconds').text(seconds);
+        }
+
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    }
+
     // 导航栏滚动效果
     function initNavbar() {
         var $navbar = $('.navbar-brave');
@@ -298,6 +348,7 @@
     // 初始化
     $(document).ready(function() {
         initLoveTimer();
+        initAnniversaryCountdown();
         initNavbar();
         initBackToTop();
         initPhotoSwipe();

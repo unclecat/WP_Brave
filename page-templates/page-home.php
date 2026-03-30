@@ -6,11 +6,17 @@
  */
 
 get_header();
+
+// 获取设置
+$timer_text = get_theme_mod('brave_timer_text', '我们风雨同舟已经一起走过');
+$countdown_text = get_theme_mod('brave_countdown_text', '距离我们的特别日子还有');
+$next_anniversary_name = get_theme_mod('brave_next_anniversary_name', '恋爱周年纪念日');
+$next_anniversary_datetime = get_theme_mod('brave_next_anniversary_datetime', '');
 ?>
 
-<!-- 计时器区域 -->
+<!-- 计时器区域 - 恋爱正计时 -->
 <section class="timer-section">
-    <p class="timer-title">我们风雨同舟已经一起走过</p>
+    <p class="timer-title"><?php echo esc_html($timer_text); ?></p>
     <div class="timer-display" id="love-timer">
         <span class="timer-number" id="timer-days">0</span> 天
         <span class="timer-number" id="timer-hours">0</span> 小时
@@ -31,7 +37,26 @@ get_header();
     <?php endif; ?>
 </section>
 
-<!-- 纪念日 -->
+<!-- 纪念日倒计时区域 -->
+<?php if ($next_anniversary_datetime) : ?>
+<section class="timer-section countdown-section" style="background: linear-gradient(135deg, #e3f2fd 0%, #f5f5f5 100%);">
+    <p class="timer-title"><?php echo esc_html($countdown_text); ?></p>
+    <div class="countdown-target" style="font-size: 1.1rem; color: #666; margin-bottom: 1rem;">
+        🎯 <?php echo esc_html($next_anniversary_name); ?>
+    </div>
+    <div class="timer-display countdown-display" id="anniversary-countdown">
+        <span class="timer-number" id="countdown-days">0</span> 天
+        <span class="timer-number" id="countdown-hours">0</span> 小时
+        <span class="timer-number" id="countdown-minutes">0</span> 分
+        <span class="timer-number" id="countdown-seconds">0</span> 秒
+    </div>
+    <p class="timer-date" style="font-size: 0.8rem; color: #666; margin-top: 0.5rem;">
+        目标时间：<?php echo esc_html($next_anniversary_datetime); ?>
+    </p>
+</section>
+<?php endif; ?>
+
+<!-- 纪念日列表（保留原有功能） -->
 <?php
 $anniversaries = brave_get_anniversaries();
 if (!empty($anniversaries)) :

@@ -52,6 +52,58 @@ function brave_customize_register($wp_customize) {
         'type' => 'date',
     ));
 
+    // 恋爱计时器文字
+    $wp_customize->add_setting('brave_timer_text', array(
+        'default' => '我们风雨同舟已经一起走过',
+        'sanitize_callback' => 'sanitize_text_field',
+        'transport' => 'refresh',
+    ));
+    $wp_customize->add_control('brave_timer_text', array(
+        'label' => __('恋爱计时器文字', 'brave-love'),
+        'description' => __('显示在计时器上方的文字', 'brave-love'),
+        'section' => 'brave_basic',
+        'type' => 'text',
+    ));
+
+    // 下一个纪念日日期时间（精确到分钟）
+    $wp_customize->add_setting('brave_next_anniversary_datetime', array(
+        'default' => '',
+        'sanitize_callback' => 'sanitize_text_field',
+        'transport' => 'refresh',
+    ));
+    $wp_customize->add_control('brave_next_anniversary_datetime', array(
+        'label' => __('下一个纪念日日期时间', 'brave-love'),
+        'description' => __('格式：YYYY-MM-DD HH:MM，例如：2024-12-25 20:00（精确到分钟）', 'brave-love'),
+        'section' => 'brave_basic',
+        'type' => 'text',
+    ));
+
+    // 下一个纪念日名称
+    $wp_customize->add_setting('brave_next_anniversary_name', array(
+        'default' => '恋爱周年纪念日',
+        'sanitize_callback' => 'sanitize_text_field',
+        'transport' => 'refresh',
+    ));
+    $wp_customize->add_control('brave_next_anniversary_name', array(
+        'label' => __('下一个纪念日名称', 'brave-love'),
+        'description' => __('例如：恋爱一周年、100天纪念日等', 'brave-love'),
+        'section' => 'brave_basic',
+        'type' => 'text',
+    ));
+
+    // 下一个纪念日倒计时文字
+    $wp_customize->add_setting('brave_countdown_text', array(
+        'default' => '距离我们的特别日子还有',
+        'sanitize_callback' => 'sanitize_text_field',
+        'transport' => 'refresh',
+    ));
+    $wp_customize->add_control('brave_countdown_text', array(
+        'label' => __('倒计时文字', 'brave-love'),
+        'description' => __('显示在倒计时上方的文字', 'brave-love'),
+        'section' => 'brave_basic',
+        'type' => 'text',
+    ));
+
     // 导航栏文字
     $wp_customize->add_setting('brave_nav_text', array(
         'default' => '世间最动情之事，莫过于两人相依',

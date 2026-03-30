@@ -73,6 +73,8 @@ function brave_scripts() {
     // 传递数据到 JS
     $theme_options = array(
         'love_start_date' => get_theme_mod('brave_love_start_date', '2020-01-01'),
+        'next_anniversary_datetime' => get_theme_mod('brave_next_anniversary_datetime', ''),
+        'next_anniversary_name' => get_theme_mod('brave_next_anniversary_name', ''),
         'ajax_url' => admin_url('admin-ajax.php'),
         'home_url' => home_url(),
     );
