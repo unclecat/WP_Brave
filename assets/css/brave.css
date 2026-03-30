@@ -405,8 +405,23 @@
 
 /* 移动端适配 */
 @media (max-width: 575px) {
+    /* 计时器间距 - 与桌面端保持一致，紧凑排列 */
+    .timer-wrapper {
+        padding: 0.3rem 0;
+    }
+    
     .timer-section {
-        padding: 1.2rem 1rem;
+        padding: 0.1rem 1rem;
+    }
+    
+    .timer-first {
+        padding-top: 0.2rem;
+        padding-bottom: 0.1rem;
+    }
+    
+    .timer-second {
+        padding-top: 0.1rem;
+        padding-bottom: 0.2rem;
     }
     
     .timer-title,
