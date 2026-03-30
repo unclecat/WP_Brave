@@ -111,7 +111,7 @@ function brave_moment_meta_box($post) {
         <select id="related_memory" name="related_memory" class="widefat">
             <option value=""><?php _e('选择关联相册（可选）', 'brave-love'); ?></option>
             <?php foreach ($memories as $memory) : ?>
-                <option value="<?php echo $memory->ID; ?>" <?php selected($related_memory, $memory->ID); ?>>
+                <option value="<?php echo intval($memory->ID); ?>" <?php selected($related_memory, $memory->ID); ?>>
                     <?php echo esc_html($memory->post_title); ?>
                 </option>
             <?php endforeach; ?>
@@ -189,7 +189,7 @@ function brave_memory_meta_box($post) {
         <select id="related_moment" name="related_moment" class="widefat">
             <option value=""><?php _e('选择关联点滴（可选）', 'brave-love'); ?></option>
             <?php foreach ($moments as $moment) : ?>
-                <option value="<?php echo $moment->ID; ?>" <?php selected($related_moment, $moment->ID); ?>>
+                <option value="<?php echo intval($moment->ID); ?>" <?php selected($related_moment, $moment->ID); ?>>
                     <?php echo esc_html($moment->post_title); ?>
                 </option>
             <?php endforeach; ?>
