@@ -1,0 +1,51 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Create ZIP
+      run: |
+        zip -r brave-love-${{ github.ref_name }}.zip . -x ".git/*" -x ".github/*" -x ".DS_Store"
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: brave-love-${{ github.ref_name }}.zip
+        body: |
+          ## Brave Love ${{ github.ref_name }}
+          
+          一个浪漫的 WordPress 情侣主题
+          
+          ### 功能特性
+          - 💕 恋爱计时器（实时显示相恋天数）
+          - 📅 纪念日管理（倒计时/正计时）
+          - 💖 点点滴滴（时间轴记录）
+          - 📜 恋爱清单（100件事进度追踪）
+          - 📷 甜蜜相册（瀑布流照片管理）
+          - 📝 随笔说说（朋友圈式短内容）
+          - 💌 祝福留言板
+          
+          ### 安装方法
+          1. 下载 `brave-love-${{ github.ref_name }}.zip`
+          2. WordPress 后台 → 外观 → 主题 → 上传主题
+          3. 启用主题
+          
+          ### 文档
+          - 详见 README.md
+          
+          ### 系统要求
+          - WordPress 6.0+
+          - PHP 7.4+
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
