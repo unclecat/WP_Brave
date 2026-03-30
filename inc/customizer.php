@@ -122,6 +122,19 @@ function brave_customize_register($wp_customize) {
         'panel' => 'brave_settings',
     ));
     
+    // 纪念日列表标题
+    $wp_customize->add_setting('brave_anniversary_section_title', array(
+        'default' => '💕 特别的日子',
+        'sanitize_callback' => 'sanitize_text_field',
+        'transport' => 'refresh',
+    ));
+    $wp_customize->add_control('brave_anniversary_section_title', array(
+        'label' => __('纪念日列表标题', 'brave-love'),
+        'description' => __('显示在纪念日列表上方的标题', 'brave-love'),
+        'section' => 'brave_anniversary',
+        'type' => 'text',
+    ));
+    
     // 纪念日管理说明
     $wp_customize->add_setting('brave_anniversary_note', array(
         'sanitize_callback' => 'sanitize_text_field',
