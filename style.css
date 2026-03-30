@@ -4,7 +4,7 @@ Theme URI: https://github.com/yourname/brave-wp
 Author: Kimi Code
 Author URI: https://kimi.moonshot.cn
 Description: 一个浪漫的 WordPress 情侣主题，记录你们的点点滴滴、恋爱清单、甜蜜相册和随笔说说。
-Version: 0.1.20
+Version: 0.1.21
 License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: brave-love
@@ -501,194 +501,162 @@ img {
 /* ================================
    时间轴（点点滴滴）- 新设计
    ================================ */
-.timeline-item-link {
+.timeline {
+    position: relative;
+    padding-left: 0;
+}
+
+/* 时间轴卡片 */
+.timeline-card {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.timeline-card:last-child {
+    margin-bottom: 0;
+}
+
+.timeline-card-link {
     display: block;
     text-decoration: none;
     color: inherit;
 }
 
-.timeline-item-link:hover {
+.timeline-card-link:hover {
     text-decoration: none;
     color: inherit;
 }
 
-.timeline {
-    position: relative;
-    padding-left: 2rem;
-}
-
-.timeline::before {
-    content: '';
-    position: absolute;
-    left: 6px;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: linear-gradient(to bottom, 
-        var(--primary-color) 0%, 
-        #ff8fa3 50%, 
-        rgba(255, 81, 98, 0.2) 100%);
-    border-radius: 2px;
-}
-
-.timeline-item {
-    position: relative;
-    padding-bottom: 2rem;
-}
-
-.timeline-item:last-child {
-    padding-bottom: 0;
-}
-
-.timeline-item:last-child::after {
-    content: '';
-    position: absolute;
-    left: -1.4rem;
-    bottom: 0;
-    width: 3px;
-    height: 100%;
-    background: var(--bg-color);
-}
-
-.timeline-dot {
-    position: absolute;
-    left: -1.4rem;
-    top: 0.5rem;
-    width: 16px;
-    height: 16px;
-    background: linear-gradient(135deg, var(--primary-color), #ff6b7a);
-    border: 3px solid var(--bg-color);
-    border-radius: 50%;
-    box-shadow: 0 0 0 2px var(--primary-color);
-    z-index: 1;
-}
-
-.timeline-item:hover .timeline-dot {
-    transform: scale(1.2);
-    transition: transform 0.2s ease;
-}
-
-.timeline-date {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.35rem 1rem;
-    background: linear-gradient(135deg, var(--primary-color), #ff6b7a);
-    color: #fff;
-    font-size: 0.8rem;
-    font-weight: 500;
-    border-radius: 20px;
-    margin-bottom: 0.75rem;
-    box-shadow: 0 2px 8px rgba(255, 81, 98, 0.3);
-}
-
-.timeline-date::before {
-    content: '📅';
-    font-size: 0.75rem;
-}
-
-.timeline-content {
+.timeline-card-inner {
     background: var(--card-bg);
     border-radius: var(--radius-lg);
-    padding: 1.25rem;
     box-shadow: var(--shadow);
-    border: 1px solid rgba(255, 81, 98, 0.08);
+    overflow: hidden;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid rgba(255, 81, 98, 0.08);
 }
 
-.timeline-content:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+.timeline-card-link:hover .timeline-card-inner {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
-.timeline-header {
+.timeline-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.timeline-card-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
+    padding: 0.5rem;
+    background: linear-gradient(135deg, var(--primary-color), #ff6b7a);
+    border-radius: var(--radius);
+    color: #fff;
+}
+
+.date-day {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.date-month {
+    font-size: 0.7rem;
+    opacity: 0.9;
+    margin-top: 0.1rem;
+}
+
+.timeline-card-meta {
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 0.75rem;
+    gap: 0.5rem;
 }
 
-.timeline-title {
+.timeline-card-title {
     font-size: 1.1rem;
     font-weight: 600;
     color: var(--text-color);
     margin: 0;
+    line-height: 1.3;
 }
 
-.timeline-mood {
-    font-size: 1.25rem;
+.timeline-card-mood {
+    font-size: 1.5rem;
     line-height: 1;
 }
 
-.timeline-text {
+.timeline-card-media {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+}
+
+.timeline-card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.timeline-card-link:hover .timeline-card-image {
+    transform: scale(1.03);
+}
+
+.timeline-card-body {
+    padding: 1rem 1.25rem;
+}
+
+.timeline-card-text {
     font-size: 0.9rem;
     color: var(--text-muted);
-    line-height: 1.8;
-    margin-bottom: 0.75rem;
+    line-height: 1.7;
+    margin: 0 0 0.75rem 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
-.timeline-text p {
-    margin: 0;
-}
-
-.timeline-text p + p {
-    margin-top: 0.5rem;
-}
-
-.timeline-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: 0.75rem;
-    padding-top: 0.75rem;
-    border-top: 1px dashed var(--border-color);
-}
-
-.timeline-location {
+.timeline-card-location {
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
     font-size: 0.8rem;
     color: var(--text-muted);
     background: rgba(255, 81, 98, 0.05);
-    padding: 0.25rem 0.75rem;
+    padding: 0.35rem 0.75rem;
     border-radius: 1rem;
 }
 
-.timeline-location::before {
-    content: '📍';
+.location-icon {
+    font-size: 0.9rem;
 }
 
-.timeline-images {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.5rem;
-    margin-top: 0.75rem;
+.timeline-card-footer {
+    padding: 0.75rem 1.25rem;
+    border-top: 1px dashed var(--border-color);
+    text-align: right;
 }
 
-.timeline-image {
-    aspect-ratio: 1;
-    object-fit: cover;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: transform 0.2s ease;
+.view-detail {
+    font-size: 0.85rem;
+    color: var(--primary-color);
+    font-weight: 500;
+    transition: color 0.2s ease;
 }
 
-.timeline-image:hover {
-    transform: scale(1.05);
-}
-
-.timeline-image-more {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #f5f5f5, #e8e8e8);
-    color: #666;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-decoration: none;
-    aspect-ratio: 1;
-    border-radius: 10px;
+.timeline-card-link:hover .view-detail {
+    color: #e63e4e;
 }
 
 /* 空状态 */
@@ -1384,34 +1352,50 @@ textarea.form-control {
 /* 时间轴移动端适配 */
 @media (max-width: 575px) {
     .timeline {
-        padding-left: 1.5rem;
+        padding-left: 0;
     }
     
-    .timeline::before {
-        left: 4px;
+    .timeline-card {
+        margin-bottom: 1rem;
     }
     
-    .timeline-dot {
-        left: -1.35rem;
-        width: 14px;
-        height: 14px;
+    .timeline-card-header {
+        padding: 0.875rem 1rem;
+        gap: 0.75rem;
     }
     
-    .timeline-date {
-        font-size: 0.75rem;
-        padding: 0.3rem 0.875rem;
+    .timeline-card-date {
+        min-width: 45px;
+        padding: 0.4rem;
     }
     
-    .timeline-content {
-        padding: 1rem;
+    .date-day {
+        font-size: 1.1rem;
     }
     
-    .timeline-title {
+    .timeline-card-title {
         font-size: 1rem;
     }
     
-    .timeline-text {
+    .timeline-card-mood {
+        font-size: 1.25rem;
+    }
+    
+    .timeline-card-media {
+        height: 150px;
+    }
+    
+    .timeline-card-body {
+        padding: 0.875rem 1rem;
+    }
+    
+    .timeline-card-text {
         font-size: 0.85rem;
+        -webkit-line-clamp: 2;
+    }
+    
+    .timeline-card-footer {
+        padding: 0.625rem 1rem;
     }
     
     /* 年份导航移动端 */
@@ -1436,6 +1420,262 @@ textarea.form-control {
     
     .timeline-images {
         grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* ================================
+   点滴详情页
+   ================================ */
+.moment-article {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.moment-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.moment-date-badge {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 80px;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, var(--primary-color), #ff6b7a);
+    border-radius: var(--radius-lg);
+    color: #fff;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 12px rgba(255, 81, 98, 0.3);
+}
+
+.moment-day {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.moment-month {
+    font-size: 0.875rem;
+    opacity: 0.9;
+    margin-top: 0.25rem;
+}
+
+.moment-year {
+    font-size: 0.75rem;
+    opacity: 0.8;
+    margin-top: 0.1rem;
+}
+
+.moment-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 0.75rem;
+    line-height: 1.3;
+}
+
+.moment-mood {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 81, 98, 0.08);
+    border-radius: 2rem;
+}
+
+.mood-emoji {
+    font-size: 1.25rem;
+}
+
+.mood-text {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.moment-featured-image {
+    margin-bottom: 2rem;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+.moment-featured-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.moment-content {
+    font-size: 1rem;
+    line-height: 1.9;
+    color: var(--text-color);
+    margin-bottom: 2rem;
+}
+
+.moment-content p {
+    margin-bottom: 1rem;
+}
+
+.moment-content p:last-child {
+    margin-bottom: 0;
+}
+
+.moment-content img {
+    max-width: 100%;
+    border-radius: var(--radius);
+    margin: 1rem 0;
+}
+
+.moment-meta {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1.25rem;
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.moment-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.meta-label {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    min-width: 80px;
+}
+
+.meta-value {
+    font-size: 0.95rem;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.meta-link {
+    font-size: 0.95rem;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.meta-link:hover {
+    text-decoration: underline;
+}
+
+.moment-navigation {
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.5rem;
+}
+
+.moment-navigation .nav-links {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.nav-prev,
+.nav-next {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: var(--transition);
+    border: 1px solid var(--border-color);
+}
+
+.nav-prev:hover,
+.nav-next:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(255, 81, 98, 0.1);
+}
+
+.nav-next {
+    text-align: right;
+    align-items: flex-end;
+}
+
+.nav-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.nav-title {
+    font-size: 0.9rem;
+    color: var(--text-color);
+    font-weight: 500;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.nav-back {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, var(--primary-color), #ff6b7a);
+    color: #fff;
+    border-radius: 2rem;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: var(--transition);
+    box-shadow: 0 2px 8px rgba(255, 81, 98, 0.3);
+}
+
+.nav-back:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 81, 98, 0.4);
+    color: #fff;
+}
+
+.nav-placeholder {
+    flex: 1;
+}
+
+/* 点滴详情页移动端 */
+@media (max-width: 575px) {
+    .moment-title {
+        font-size: 1.25rem;
+    }
+    
+    .moment-date-badge {
+        min-width: 70px;
+        padding: 0.6rem 0.875rem;
+    }
+    
+    .moment-day {
+        font-size: 1.75rem;
+    }
+    
+    .moment-navigation .nav-links {
+        flex-wrap: wrap;
+    }
+    
+    .nav-prev,
+    .nav-next {
+        order: 2;
+        flex: 1 1 45%;
+    }
+    
+    .nav-back {
+        order: 1;
+        flex: 1 1 100%;
+        text-align: center;
+    }
+    
+    .nav-placeholder {
+        display: none;
     }
 }
 

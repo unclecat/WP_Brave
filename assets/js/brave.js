@@ -531,8 +531,8 @@
         var $yearItems = $yearNav.find('.year-nav-item');
         var $yearGroups = $('.year-group');
 
-        // 点击年份导航
-        $yearItems.on('click', function(e) {
+        // 点击年份导航 - 仅处理导航点击，不阻止其他链接
+        $yearNav.on('click', '.year-nav-item', function(e) {
             e.preventDefault();
             var target = $(this).attr('href');
             

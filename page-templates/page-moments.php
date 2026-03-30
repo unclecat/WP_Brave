@@ -46,9 +46,9 @@ rsort($years);
     <?php if (!empty($years)) : ?>
     <!-- 年份导航 -->
     <nav class="year-nav" id="yearNav">
-        <a href="#all" class="year-nav-item active" data-year="all">全部</a>
+        <a href="#all" class="year-nav-item active" data-year="all" onclick="return false;">全部</a>
         <?php foreach ($years as $year) : ?>
-            <a href="#year-<?php echo esc_attr($year); ?>" class="year-nav-item" data-year="<?php echo esc_attr($year); ?>">
+            <a href="#year-<?php echo esc_attr($year); ?>" class="year-nav-item" data-year="<?php echo esc_attr($year); ?>" onclick="return false;">
                 <?php echo esc_html($year); ?>
             </a>
         <?php endforeach; ?>
@@ -67,57 +67,58 @@ rsort($years);
                         $mood = get_post_meta($moment->ID, '_mood', true);
                         $related_memory = get_post_meta($moment->ID, '_related_memory', true);
                         $has_thumbnail = has_post_thumbnail($moment->ID);
+                        $moment_link = get_permalink($moment->ID);
                     ?>
-                        <a href="<?php echo esc_url(get_permalink($moment->ID)); ?>" class="timeline-item-link">
-                            <div class="timeline-item">
-                                <div class="timeline-dot"></div>
-                                <span class="timeline-date"><?php echo esc_html($meet_date); ?></span>
-                                <div class="timeline-content">
-                                    <div class="timeline-header">
-                                        <h4 class="timeline-title">
-                                            <?php echo esc_html($moment->post_title); ?>
-                                        </h4>
-                                        <?php if ($mood) : ?>
-                                            <span class="timeline-mood" title="<?php echo esc_attr(brave_get_mood_text($mood)); ?>">
-                                                <?php echo brave_get_mood_emoji($mood); ?>
-                                            </span>
-                                        <?php endif; ?>
-                                    </div>
-                                    
-                                    <div class="timeline-text">
-                                        <?php echo wpautop(wp_trim_words($moment->post_content, 60)); ?>
+                        <article class="timeline-card" data-moment-id="<?php echo esc_attr($moment->ID); ?>">
+                            <a href="<?php echo esc_url($moment_link); ?>" class="timeline-card-link">
+                                <div class="timeline-card-inner">
+                                    <div class="timeline-card-header">
+                                        <div class="timeline-card-date">
+                                            <span class="date-day"><?php echo esc_html(substr($meet_date, 8, 2)); ?></span>
+                                            <span class="date-month"><?php echo esc_html(substr($meet_date, 5, 2)); ?>月</span>
+                                        </div>
+                                        <div class="timeline-card-meta">
+                                            <h4 class="timeline-card-title"><?php echo esc_html($moment->post_title); ?></h4>
+                                            <?php if ($mood) : ?>
+                                                <span class="timeline-card-mood" title="<?php echo esc_attr(brave_get_mood_text($mood)); ?>">
+                                                    <?php echo brave_get_mood_emoji($mood); ?>
+                                                </span>
+                                            <?php endif; ?>
+                                        </div>
                                     </div>
                                     
                                     <?php if ($has_thumbnail || $related_memory) : ?>
-                                        <div class="timeline-images">
+                                        <div class="timeline-card-media">
                                             <?php if ($has_thumbnail) : ?>
-                                                <?php echo get_the_post_thumbnail($moment->ID, 'thumbnail', array('class' => 'timeline-image')); ?>
-                                            <?php endif; ?>
-                                            
-                                            <?php if ($related_memory) : 
+                                                <?php echo get_the_post_thumbnail($moment->ID, 'medium', array('class' => 'timeline-card-image')); ?>
+                                            <?php else : 
                                                 $memory_photos = brave_get_memory_photos($related_memory, 'thumbnail');
-                                                $show_photos = array_slice($memory_photos, 0, $has_thumbnail ? 3 : 4);
-                                                foreach ($show_photos as $photo) : ?>
-                                                    <img src="<?php echo esc_url($photo['url']); ?>" alt="" class="timeline-image">
-                                                <?php endforeach; 
-                                                $remaining = count($memory_photos) - count($show_photos);
-                                                if ($remaining > 0) : ?>
-                                                    <span class="timeline-image-more">
-                                                        +<?php echo $remaining; ?>
-                                                    </span>
+                                                if (!empty($memory_photos)) : ?>
+                                                    <img src="<?php echo esc_url($memory_photos[0]['url']); ?>" alt="" class="timeline-card-image">
                                                 <?php endif; ?>
                                             <?php endif; ?>
                                         </div>
                                     <?php endif; ?>
                                     
-                                    <?php if ($location) : ?>
-                                        <div class="timeline-meta">
-                                            <span class="timeline-location"><?php echo esc_html($location); ?></span>
-                                        </div>
-                                    <?php endif; ?>
+                                    <div class="timeline-card-body">
+                                        <p class="timeline-card-text">
+                                            <?php echo wp_trim_words($moment->post_content, 40); ?>
+                                        </p>
+                                        
+                                        <?php if ($location) : ?>
+                                            <div class="timeline-card-location">
+                                                <span class="location-icon">📍</span>
+                                                <span><?php echo esc_html($location); ?></span>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                    
+                                    <div class="timeline-card-footer">
+                                        <span class="view-detail">查看详情 →</span>
+                                    </div>
                                 </div>
-                            </div>
-                        </a>
+                            </a>
+                        </article>
                     <?php endforeach; ?>
                 </div>
             </div>
