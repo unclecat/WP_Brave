@@ -313,10 +313,26 @@
    双计时器样式 - 完全统一
    ================================ */
 
+/* 计时器区域包裹 */
+.timer-wrapper {
+    padding: 0.5rem 0;
+}
+
 /* 计时器区域基础样式 */
 .timer-section {
     text-align: center;
-    padding: 0.8rem 1rem;
+    padding: 0.4rem 1rem;
+}
+
+/* 第一个计时器 - 减少上边距 */
+.timer-first {
+    padding-top: 0.3rem;
+}
+
+/* 第二个计时器 - 与第一个紧密相连 */
+.timer-second {
+    padding-top: 0.2rem;
+    padding-bottom: 0.3rem;
 }
 
 /* 计时器标题 - 统一 */

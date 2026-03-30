@@ -16,32 +16,37 @@ $love_start_datetime = get_theme_mod('brave_love_start_datetime', '');
 $anniversary_section_title = get_theme_mod('brave_anniversary_section_title', '💕 特别的日子');
 ?>
 
-<!-- 计时器区域 - 恋爱正计时 -->
-<section class="timer-section">
-    <p class="timer-title"><?php echo esc_html($timer_text); ?></p>
-    <div class="timer-display" id="love-timer">
-        <span class="timer-number" id="timer-days">0</span> 天
-        <span class="timer-number" id="timer-hours">0</span> 小时
-        <span class="timer-number" id="timer-minutes">0</span> 分
-    </div>
-    <?php if ($love_start_datetime) : ?>
-    <p class="timer-date">起始时间：<?php echo esc_html($love_start_datetime); ?></p>
-    <?php else : ?>
-    <p class="timer-date" style="color: #ff5162;">⚠️ 请在外观 → 自定义 → Brave 主题设置中设置恋爱起始时间</p>
-    <?php endif; ?>
-</section>
+<!-- 计时器区域 -->
+<div class="timer-wrapper">
+    <!-- 恋爱正计时 -->
+    <section class="timer-section timer-first">
+        <p class="timer-title"><?php echo esc_html($timer_text); ?></p>
+        <div class="timer-display" id="love-timer">
+            <span class="timer-number" id="timer-days">0</span> 天
+            <span class="timer-number" id="timer-hours">0</span> 小时
+            <span class="timer-number" id="timer-minutes">0</span> 分
+        </div>
+        <?php if ($love_start_datetime) : ?>
+        <p class="timer-date">起始时间：<?php echo esc_html($love_start_datetime); ?></p>
+        <?php else : ?>
+        <p class="timer-date" style="color: #ff5162;">⚠️ 请在外观 → 自定义 → Brave 主题设置中设置恋爱起始时间</p>
+        <?php endif; ?>
+    </section>
 
-<!-- 纪念日倒计时区域 -->
-<?php if ($next_anniversary_datetime) : ?>
-<section class="timer-section">
-    <p class="timer-title"><?php echo esc_html($countdown_text); ?></p>
-    <p class="countdown-target"><?php echo esc_html($next_anniversary_name); ?></p>
-    <div class="timer-display" id="anniversary-countdown">
-        <span class="timer-number" id="countdown-days">0</span> 天
-    </div>
-    <p class="timer-date">目标时间：<?php echo esc_html($next_anniversary_datetime); ?></p>
-</section>
-<?php endif; ?>
+    <!-- 纪念日倒计时 -->
+    <?php if ($next_anniversary_datetime) : ?>
+    <section class="timer-section timer-second">
+        <p class="timer-title"><?php echo esc_html($countdown_text); ?></p>
+        <p class="countdown-target"><?php echo esc_html($next_anniversary_name); ?></p>
+        <div class="timer-display" id="anniversary-countdown">
+            <span class="timer-number" id="countdown-days">0</span> 天
+            <span class="timer-number" id="countdown-hours">0</span> 小时
+            <span class="timer-number" id="countdown-minutes">0</span> 分
+        </div>
+        <p class="timer-date">目标时间：<?php echo esc_html($next_anniversary_datetime); ?></p>
+    </section>
+    <?php endif; ?>
+</div>
 
 <!-- 纪念日列表 -->
 <?php
