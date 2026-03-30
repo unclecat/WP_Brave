@@ -23,16 +23,16 @@ jobs:
         rm -rf /tmp/brave-love/.git
         rm -rf /tmp/brave-love/.github
         rm -f /tmp/brave-love/.gitignore
-        # 创建 ZIP，确保文件夹名为 brave-love
+        # 创建 ZIP，使用固定文件名 brave-love.zip
         cd /tmp
-        zip -r brave-love-${{ github.ref_name }}.zip brave-love/
+        zip -r brave-love.zip brave-love/
         # 移动回工作目录
-        mv brave-love-${{ github.ref_name }}.zip ${{ github.workspace }}/
+        mv brave-love.zip ${{ github.workspace }}/
     
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        files: brave-love-${{ github.ref_name }}.zip
+        files: brave-love.zip
         body: |
           ## Brave Love ${{ github.ref_name }}
           
@@ -41,38 +41,43 @@ jobs:
           ### 安装/更新方法
           
           **方法一：直接覆盖（推荐）**
-          1. 下载 `brave-love-${{ github.ref_name }}.zip`
+          1. 下载 `brave-love.zip`
           2. 解压后会得到 `brave-love/` 文件夹
           3. 通过 FTP 上传到 `wp-content/themes/brave-love/`，覆盖原有文件
           4. 清除浏览器缓存
           
           **方法二：WordPress 后台**
-          1. 外观 → 主题 → 上传主题
-          2. 选择下载的 ZIP 文件
-          3. **注意**：如果提示「目标文件夹已存在」，请先删除旧版本
-          
-          **方法三：Git 更新**
-          ```bash
-          cd wp-content/themes/brave-love
-          git pull origin main
-          ```
+          1. 外观 → 主题
+          2. 如果已有旧版本，先删除旧主题
+          3. 上传 `brave-love.zip`
+          4. 启用主题
           
           ### ⚠️ 重要提示
           
-          主题文件夹名称**必须是** `brave-love`，否则 WordPress 会识别为不同主题。
+          主题文件夹名称**必须是** `brave-love`。
           
-          如果出现了两个主题，请删除旧版本，保留文件夹名称为 `brave-love` 的那个。
+          如果之前安装过旧版本，建议通过 FTP 直接覆盖文件，这样可以保留所有设置和数据。
           
           详见 [UPDATE-GUIDE.md](https://github.com/unclecat/WP_Brave/blob/main/UPDATE-GUIDE.md)
           
+          ### 更新日志
+          
+          #### v0.1.1
+          - 🐛 修复计时器日期解析问题
+          - 🐛 修复相册照片管理界面
+          - 💄 优化首页日期显示
+          
+          #### v0.1
+          - ✨ 初始版本发布
+          
           ### 功能特性
-          - 💕 恋爱计时器（实时显示相恋天数）
-          - 📅 纪念日管理（倒计时/正计时）
-          - 💖 点点滴滴（时间轴记录）
-          - 📜 恋爱清单（100件事进度追踪）
-          - 📷 甜蜜相册（瀑布流照片管理）
-          - 📝 随笔说说（朋友圈式短内容）
-          - 💌 祝福留言板
+          - 💕 恋爱计时器
+          - 📅 纪念日管理
+          - 💖 点点滴滴
+          - 📜 恋爱清单
+          - 📷 甜蜜相册
+          - 📝 随笔说说
+          - 💌 祝福留言
           
           ### 系统要求
           - WordPress 6.0+
