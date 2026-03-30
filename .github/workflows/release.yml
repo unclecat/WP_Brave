@@ -14,9 +14,20 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    - name: Create ZIP
+    - name: Create ZIP with correct folder name
       run: |
-        zip -r brave-love-${{ github.ref_name }}.zip . -x ".git/*" -x ".github/*" -x ".DS_Store"
+        # 创建临时目录并复制文件
+        mkdir -p /tmp/brave-love
+        cp -r . /tmp/brave-love/
+        # 删除不需要的文件
+        rm -rf /tmp/brave-love/.git
+        rm -rf /tmp/brave-love/.github
+        rm -f /tmp/brave-love/.gitignore
+        # 创建 ZIP，确保文件夹名为 brave-love
+        cd /tmp
+        zip -r brave-love-${{ github.ref_name }}.zip brave-love/
+        # 移动回工作目录
+        mv brave-love-${{ github.ref_name }}.zip ${{ github.workspace }}/
     
     - name: Create Release
       uses: softprops/action-gh-release@v1
@@ -27,6 +38,33 @@ jobs:
           
           一个浪漫的 WordPress 情侣主题
           
+          ### 安装/更新方法
+          
+          **方法一：直接覆盖（推荐）**
+          1. 下载 `brave-love-${{ github.ref_name }}.zip`
+          2. 解压后会得到 `brave-love/` 文件夹
+          3. 通过 FTP 上传到 `wp-content/themes/brave-love/`，覆盖原有文件
+          4. 清除浏览器缓存
+          
+          **方法二：WordPress 后台**
+          1. 外观 → 主题 → 上传主题
+          2. 选择下载的 ZIP 文件
+          3. **注意**：如果提示「目标文件夹已存在」，请先删除旧版本
+          
+          **方法三：Git 更新**
+          ```bash
+          cd wp-content/themes/brave-love
+          git pull origin main
+          ```
+          
+          ### ⚠️ 重要提示
+          
+          主题文件夹名称**必须是** `brave-love`，否则 WordPress 会识别为不同主题。
+          
+          如果出现了两个主题，请删除旧版本，保留文件夹名称为 `brave-love` 的那个。
+          
+          详见 [UPDATE-GUIDE.md](https://github.com/unclecat/WP_Brave/blob/main/UPDATE-GUIDE.md)
+          
           ### 功能特性
           - 💕 恋爱计时器（实时显示相恋天数）
           - 📅 纪念日管理（倒计时/正计时）
@@ -35,14 +73,6 @@ jobs:
           - 📷 甜蜜相册（瀑布流照片管理）
           - 📝 随笔说说（朋友圈式短内容）
           - 💌 祝福留言板
-          
-          ### 安装方法
-          1. 下载 `brave-love-${{ github.ref_name }}.zip`
-          2. WordPress 后台 → 外观 → 主题 → 上传主题
-          3. 启用主题
-          
-          ### 文档
-          - 详见 README.md
           
           ### 系统要求
           - WordPress 6.0+
