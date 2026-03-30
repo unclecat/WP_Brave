@@ -42,6 +42,16 @@ while (have_posts()) :
             <?php endif; ?>
         </header>
 
+        <!-- 摘要 -->
+        <?php 
+        $moment_summary = get_post_meta(get_the_ID(), '_moment_summary', true);
+        if (!empty($moment_summary)) : 
+        ?>
+            <div class="moment-summary">
+                <?php echo wpautop($moment_summary); ?>
+            </div>
+        <?php endif; ?>
+
         <!-- 特色图片 -->
         <?php if (has_post_thumbnail()) : ?>
             <div class="moment-featured-image">

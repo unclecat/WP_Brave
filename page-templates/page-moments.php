@@ -66,6 +66,7 @@ rsort($years);
                         $location = get_post_meta($moment->ID, '_meet_location', true);
                         $mood = get_post_meta($moment->ID, '_mood', true);
                         $related_memory = get_post_meta($moment->ID, '_related_memory', true);
+                        $moment_summary = get_post_meta($moment->ID, '_moment_summary', true);
                         $has_thumbnail = has_post_thumbnail($moment->ID);
                         $moment_link = get_permalink($moment->ID);
                     ?>
@@ -103,10 +104,12 @@ rsort($years);
                                     <div class="timeline-card-body">
                                         <div class="timeline-card-excerpt">
                                             <?php 
-                                            if (!empty($moment->post_excerpt)) {
-                                                echo wpautop(esc_html($moment->post_excerpt));
+                                            // 优先显示自定义摘要
+                                            if (!empty($moment_summary)) {
+                                                echo wpautop($moment_summary);
                                             } else {
-                                                echo wpautop(wp_trim_words($moment->post_content, 60));
+                                                // 无摘要时截取内容前120字
+                                                echo wpautop(wp_trim_words($moment->post_content, 120));
                                             }
                                             ?>
                                         </div>

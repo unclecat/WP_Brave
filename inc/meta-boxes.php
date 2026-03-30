@@ -71,6 +71,7 @@ function brave_moment_meta_box($post) {
     $meet_location = get_post_meta($post->ID, '_meet_location', true);
     $mood = get_post_meta($post->ID, '_mood', true);
     $related_memory = get_post_meta($post->ID, '_related_memory', true);
+    $moment_summary = get_post_meta($post->ID, '_moment_summary', true);
     ?>
     <p>
         <label for="meet_date"><strong><?php _e('见面日期', 'brave-love'); ?></strong></label><br>
@@ -79,6 +80,11 @@ function brave_moment_meta_box($post) {
     <p>
         <label for="meet_location"><strong><?php _e('见面地点', 'brave-love'); ?></strong></label><br>
         <input type="text" id="meet_location" name="meet_location" value="<?php echo esc_attr($meet_location); ?>" class="widefat" placeholder="<?php _e('例如：电影院、餐厅、公园...', 'brave-love'); ?>">
+    </p>
+    <p>
+        <label for="moment_summary"><strong><?php _e('摘要', 'brave-love'); ?></strong></label><br>
+        <textarea id="moment_summary" name="moment_summary" class="widefat" rows="4" placeholder="<?php _e('填写在列表页显示的摘要内容，支持 HTML', 'brave-love'); ?>"><?php echo esc_textarea($moment_summary); ?></textarea>
+        <span class="description"><?php _e('如不填写，将自动截取文章内容', 'brave-love'); ?></span>
     </p>
     <p>
         <label for="mood"><strong><?php _e('心情', 'brave-love'); ?></strong></label><br>
@@ -255,6 +261,9 @@ function brave_save_meta_boxes($post_id) {
         }
         if (isset($_POST['related_memory'])) {
             update_post_meta($post_id, '_related_memory', intval($_POST['related_memory']));
+        }
+        if (isset($_POST['moment_summary'])) {
+            update_post_meta($post_id, '_moment_summary', wp_kses_post($_POST['moment_summary']));
         }
     }
 
