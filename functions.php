@@ -6,7 +6,7 @@
  */
 
 // 定义常量
-define('BRAVE_VERSION', '0.2.2');
+define('BRAVE_VERSION', '0.2.3');
 define('BRAVE_DIR', get_template_directory());
 define('BRAVE_URI', get_template_directory_uri());
 
@@ -85,8 +85,8 @@ function brave_scripts() {
         wp_enqueue_script('comment-reply');
     }
     
-    // 恋爱清单页面样式（支持页面模板和 CPT 存档）
-    if (is_page_template('page-templates/page-list.php') || is_post_type_archive('love_list')) {
+    // 恋爱清单存档页面样式
+    if (is_post_type_archive('love_list')) {
         wp_enqueue_style('brave-love-list', BRAVE_URI . '/assets/css/love-list.css', array(), BRAVE_VERSION);
     }
 }
