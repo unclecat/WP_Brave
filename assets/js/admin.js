@@ -1,122 +1,74 @@
 /**
- * Brave Admin JavaScript
+ * Brave Love Admin JavaScript
+ * 
+ * 简化版 - 相册现在使用原生编辑器上传
  */
 
 (function($) {
     'use strict';
 
-    var mediaUploader;
-    var targetInput;
-    var targetPreview;
+    // 相册编辑页增强
+    function initMemoryEditor() {
+        if (!$('body').hasClass('post-type-memory')) {
+            return;
+        }
 
-    // 初始化媒体上传
-    function initMediaUploader() {
-        $('.brave-add-images').on('click', function(e) {
-            e.preventDefault();
+        // 添加编辑器提示
+        var $editor = $('#wp-content-editor-container');
+        if ($editor.length && !$editor.prev('.memory-editor-tip').length) {
+            $('<div class="memory-editor-tip" style="background: #e8f5e9; border-left: 4px solid #4caf50; padding: 10px 15px; margin-bottom: 10px; color: #2e7d32;">' +
+                '<strong>📷 上传照片提示：</strong>点击上方「添加区块」→ 选择「图片」或「画廊」→ 上传照片' +
+            '</div>').insertBefore($editor);
+        }
+
+        // 监听图片添加，更新照片计数
+        if (typeof wp !== 'undefined' && wp.data && wp.data.subscribe) {
+            var currentCount = 0;
             
-            var $button = $(this);
-            targetInput = $('#' + $button.data('target') + '_input');
-            targetPreview = $button.siblings('.brave-gallery-preview');
-
-            if (mediaUploader) {
-                mediaUploader.open();
-                return;
-            }
-
-            mediaUploader = wp.media({
-                title: '选择图片',
-                button: {
-                    text: '添加到相册'
-                },
-                multiple: true,
-                library: {
-                    type: 'image'
-                }
-            });
-
-            mediaUploader.on('select', function() {
-                var attachments = mediaUploader.state().get('selection').map(function(attachment) {
-                    attachment = attachment.toJSON();
-                    return {
-                        id: attachment.id,
-                        url: attachment.sizes.thumbnail ? attachment.sizes.thumbnail.url : attachment.url
-                    };
+            wp.data.subscribe(function() {
+                var blocks = wp.data.select('core/block-editor').getBlocks();
+                var imageCount = 0;
+                
+                blocks.forEach(function(block) {
+                    if (block.name === 'core/image') {
+                        imageCount++;
+                    }
+                    if (block.name === 'core/gallery' && block.attributes.ids) {
+                        imageCount += block.attributes.ids.length;
+                    }
                 });
-
-                // 获取现有图片
-                var existingIds = targetInput.val() ? targetInput.val().split(',').filter(Boolean) : [];
-                var existingAttachments = targetPreview.find('.brave-gallery-item').map(function() {
-                    return {
-                        id: $(this).data('id'),
-                        url: $(this).find('img').attr('src')
-                    };
-                }).get();
-
-                // 合并新旧图片
-                var allAttachments = existingAttachments.concat(attachments);
-                var allIds = existingIds.concat(attachments.map(function(a) { return a.id; }));
-
-                // 更新预览
-                updateGalleryPreview(allAttachments);
-
-                // 更新隐藏字段
-                targetInput.val(allIds.join(','));
-            });
-
-            mediaUploader.open();
-        });
-
-        // 删除图片
-        $(document).on('click', '.brave-remove-image', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            var $item = $(this).closest('.brave-gallery-item');
-            var $preview = $item.closest('.brave-gallery-preview');
-            var $input = $preview.siblings('input[type="hidden"]');
-
-            $item.remove();
-
-            // 更新隐藏字段
-            var ids = $preview.find('.brave-gallery-item').map(function() {
-                return $(this).data('id');
-            }).get();
-            $input.val(ids.join(','));
-        });
-
-        // 拖拽排序
-        if ($.fn.sortable) {
-            $('.brave-gallery-preview.sortable').sortable({
-                items: '.brave-gallery-item',
-                cursor: 'move',
-                tolerance: 'pointer',
-                update: function(event, ui) {
-                    var $preview = $(this);
-                    var $input = $preview.siblings('input[type="hidden"]');
-                    var ids = $preview.find('.brave-gallery-item').map(function() {
-                        return $(this).data('id');
-                    }).get();
-                    $input.val(ids.join(','));
+                
+                if (imageCount !== currentCount) {
+                    currentCount = imageCount;
+                    updatePhotoCount(imageCount);
                 }
             });
         }
     }
 
-    // 更新画廊预览
-    function updateGalleryPreview(attachments) {
-        var html = '';
-        attachments.forEach(function(attachment) {
-            html += '<div class="brave-gallery-item" data-id="' + attachment.id + '">';
-            html += '<img src="' + attachment.url + '" alt="">';
-            html += '<span class="brave-remove-image">×</span>';
-            html += '</div>';
-        });
-        targetPreview.html(html);
+    // 更新照片计数显示
+    function updatePhotoCount(count) {
+        var $guide = $('#memory_upload_guide .inside');
+        if ($guide.length) {
+            var $countDiv = $guide.find('.photo-count-display');
+            if (!$countDiv.length) {
+                $countDiv = $('<div class="photo-count-display" style="margin-top: 10px; padding: 8px; background: #e3f2fd; border-radius: 4px; text-align: center;"></div>');
+                $guide.append($countDiv);
+            }
+            
+            if (count > 0) {
+                $countDiv.html('✅ 已添加 <strong>' + count + '</strong> 张照片');
+                $countDiv.css('background', '#e8f5e9');
+            } else {
+                $countDiv.html('⚠️ 尚未添加照片');
+                $countDiv.css('background', '#fff3e0');
+            }
+        }
     }
 
     // 初始化
     $(document).ready(function() {
-        initMediaUploader();
+        initMemoryEditor();
     });
 
 })(jQuery);

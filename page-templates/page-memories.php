@@ -52,7 +52,7 @@ $tags = get_terms(array(
 <section class="content-section">
     <div class="section-header">
         <h1 class="section-title">📷 甜蜜相册</h1>
-        <p class="section-desc">每一张照片都是一段美好的回忆</p>
+        <p class="section-desc">在文章编辑器中上传照片，自动汇聚成册</p>
     </div>
 
     <!-- 年份筛选 -->
@@ -87,20 +87,18 @@ $tags = get_terms(array(
     <?php if (!empty($memories)) : ?>
         <div class="memory-grid" id="memory-grid">
             <?php foreach ($memories as $memory) : 
-                $photo_count = brave_get_memory_photo_count($memory->ID);
-                $memory_date = get_post_meta($memory->ID, '_memory_date', true);
                 $photos = brave_get_memory_photos($memory->ID, 'memory-thumb');
+                $photo_count = count($photos);
+                $memory_date = get_post_meta($memory->ID, '_memory_date', true);
                 $cover = !empty($photos) ? $photos[0]['url'] : '';
-                if (!$cover && has_post_thumbnail($memory->ID)) {
-                    $cover = get_the_post_thumbnail_url($memory->ID, 'memory-thumb');
-                }
             ?>
                 <div class="memory-card" data-photos='<?php echo esc_attr(json_encode($photos)); ?>' data-title="<?php echo esc_attr($memory->post_title); ?>">
                     <?php if ($cover) : ?>
                         <img src="<?php echo esc_url($cover); ?>" alt="<?php echo esc_attr($memory->post_title); ?>" class="memory-cover" loading="lazy">
                     <?php else : ?>
-                        <div class="memory-cover" style="background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%); display: flex; align-items: center; justify-content: center; color: #999;">
-                            <span style="font-size: 2rem;">📷</span>
+                        <div class="memory-cover" style="background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%); display: flex; align-items: center; justify-content: center; color: #999; flex-direction: column; gap: 10px;">
+                            <span style="font-size: 3rem;">📷</span>
+                            <span style="font-size: 0.85rem;">点击添加照片</span>
                         </div>
                     <?php endif; ?>
                     <div class="memory-info">
@@ -117,8 +115,11 @@ $tags = get_terms(array(
         </div>
     <?php else : ?>
         <div class="text-center" style="padding: 3rem 1rem;">
-            <p style="color: #999; margin-bottom: 1rem;">📷</p>
-            <p style="color: #666;"><?php _e('还没有上传任何照片，快去创建相册吧！', 'brave-love'); ?></p>
+            <p style="color: #999; margin-bottom: 1rem; font-size: 3rem;">📷</p>
+            <p style="color: #666; margin-bottom: 1rem;"><?php _e('还没有创建相册', 'brave-love'); ?></p>
+            <p style="color: #999; font-size: 0.9rem;">
+                <?php _e('点击「新建相册」，在编辑器中上传照片即可', 'brave-love'); ?>
+            </p>
         </div>
     <?php endif; ?>
 </section>

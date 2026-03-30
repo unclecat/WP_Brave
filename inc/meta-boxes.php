@@ -42,20 +42,20 @@ function brave_add_meta_boxes() {
     // 甜蜜相册字段
     add_meta_box(
         'memory_details',
-        __('相册详情', 'brave-love'),
+        __('相册信息', 'brave-love'),
         'brave_memory_meta_box',
         'memory',
         'normal',
         'high'
     );
 
-    // 相册照片管理
+    // 相册上传说明
     add_meta_box(
-        'memory_photos',
-        __('照片管理', 'brave-love'),
-        'brave_memory_photos_meta_box',
+        'memory_upload_guide',
+        __('📷 如何上传照片', 'brave-love'),
+        'brave_memory_upload_guide_meta_box',
         'memory',
-        'normal',
+        'side',
         'high'
     );
 }
@@ -122,7 +122,6 @@ function brave_list_meta_box($post) {
     
     $is_done = get_post_meta($post->ID, '_is_done', true);
     $done_date = get_post_meta($post->ID, '_done_date', true);
-    $list_category = wp_get_post_terms($post->ID, 'list_category', array('fields' => 'ids'));
     ?>
     <p>
         <label for="is_done">
@@ -144,69 +143,17 @@ function brave_note_meta_box($post) {
     wp_nonce_field('brave_note_meta', 'brave_note_nonce');
     
     $note_mood = get_post_meta($post->ID, '_note_mood', true);
-    $note_images = get_post_meta($post->ID, '_note_images', true);
-    if (!is_array($note_images)) {
-        $note_images = array();
-    }
     ?>
     <p>
         <label for="note_mood"><strong><?php _e('心情表情', 'brave-love'); ?></strong></label><br>
         <input type="text" id="note_mood" name="note_mood" value="<?php echo esc_attr($note_mood); ?>" class="widefat" placeholder="<?php _e('例如：😊 🤩 🥰', 'brave-love'); ?>">
     </p>
-    <p>
-        <label><strong><?php _e('配图（可选，最多9张）', 'brave-love'); ?></strong></label><br>
-    </p>
-    <div class="brave-gallery-container">
-        <div class="brave-gallery-preview" id="note-images-preview">
-            <?php foreach ($note_images as $image_id) : 
-                $image_url = wp_get_attachment_image_url($image_id, 'thumbnail');
-                if ($image_url) : ?>
-                <div class="brave-gallery-item" data-id="<?php echo $image_id; ?>">
-                    <img src="<?php echo esc_url($image_url); ?>" alt="">
-                    <span class="brave-remove-image">×</span>
-                </div>
-            <?php endif; endforeach; ?>
-        </div>
-        <button type="button" class="button brave-add-images" data-target="note_images"><?php _e('添加图片', 'brave-love'); ?></button>
-        <input type="hidden" name="note_images" id="note_images_input" value="<?php echo esc_attr(implode(',', $note_images)); ?>">
-    </div>
-    <style>
-        .brave-gallery-preview {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .brave-gallery-item {
-            position: relative;
-            aspect-ratio: 1;
-        }
-        .brave-gallery-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 4px;
-        }
-        .brave-remove-image {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            width: 20px;
-            height: 20px;
-            background: #ff5162;
-            color: white;
-            border-radius: 50%;
-            text-align: center;
-            line-height: 20px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-    </style>
+    <p class="description"><?php _e('在标题下方显示表情符号', 'brave-love'); ?></p>
     <?php
 }
 
 /**
- * 相册详情 Meta Box
+ * 甜蜜相册 Meta Box
  */
 function brave_memory_meta_box($post) {
     wp_nonce_field('brave_memory_meta', 'brave_memory_nonce');
@@ -246,30 +193,47 @@ function brave_memory_meta_box($post) {
 }
 
 /**
- * 相册照片管理 Meta Box
+ * 相册上传说明 Meta Box
  */
-function brave_memory_photos_meta_box($post) {
-    wp_nonce_field('brave_memory_photos_meta', 'brave_memory_photos_nonce');
-    
-    $photos = get_post_meta($post->ID, '_memory_photos', true);
-    if (!is_array($photos)) {
-        $photos = array();
-    }
+function brave_memory_upload_guide_meta_box($post) {
     ?>
-    <div class="brave-gallery-container">
-        <p class="description"><?php _e('拖拽可排序，点击 × 删除照片', 'brave-love'); ?></p>
-        <div class="brave-gallery-preview sortable" id="memory-photos-preview">
-            <?php foreach ($photos as $photo_id) : 
-                $photo_url = wp_get_attachment_image_url($photo_id, 'thumbnail');
-                if ($photo_url) : ?>
-                <div class="brave-gallery-item" data-id="<?php echo $photo_id; ?>">
-                    <img src="<?php echo esc_url($photo_url); ?>" alt="">
-                    <span class="brave-remove-image">×</span>
-                </div>
-            <?php endif; endforeach; ?>
+    <div style="padding: 10px;">
+        <h4 style="margin-top: 0;">🎯 简单三步创建相册</h4>
+        
+        <p><strong>1. 设置封面</strong><br>
+        点击右侧「特色图片」→ 上传照片作为相册封面</p>
+        
+        <p><strong>2. 上传照片</strong><br>
+        在下方编辑器中：<br>
+        • 点击「+」添加「图片」块<br>
+        • 或添加「画廊」块批量上传<br>
+        • 直接拖拽照片到编辑器</p>
+        
+        <p><strong>3. 写点描述</strong><br>
+        在编辑器中写下这段回忆的故事</p>
+        
+        <hr style="margin: 15px 0;">
+        
+        <p style="color: #666; font-size: 12px;">
+        💡 提示：所有插入到文章中的图片都会自动显示在相册页面
+        </p>
+        
+        <?php
+        // 显示已上传的图片数量
+        $content = $post->post_content;
+        preg_match_all('/<img[^>]+src=["\']([^"\']+)["\'][^>]*>/i', $content, $matches);
+        $image_count = count($matches[1]);
+        
+        if ($image_count > 0) :
+        ?>
+        <div style="background: #e8f5e9; padding: 10px; border-radius: 4px; margin-top: 10px;">
+            ✅ 已检测到 <?php echo $image_count; ?> 张照片
         </div>
-        <button type="button" class="button brave-add-images" data-target="memory_photos"><?php _e('添加照片', 'brave-love'); ?></button>
-        <input type="hidden" name="memory_photos" id="memory_photos_input" value="<?php echo esc_attr(implode(',', $photos)); ?>">
+        <?php else : ?>
+        <div style="background: #fff3e0; padding: 10px; border-radius: 4px; margin-top: 10px;">
+            ⚠️ 尚未添加照片
+        </div>
+        <?php endif; ?>
     </div>
     <?php
 }
@@ -309,10 +273,6 @@ function brave_save_meta_boxes($post_id) {
         if (isset($_POST['note_mood'])) {
             update_post_meta($post_id, '_note_mood', sanitize_text_field($_POST['note_mood']));
         }
-        if (isset($_POST['note_images'])) {
-            $images = array_filter(array_map('intval', explode(',', $_POST['note_images'])));
-            update_post_meta($post_id, '_note_images', $images);
-        }
     }
 
     // 相册
@@ -327,35 +287,91 @@ function brave_save_meta_boxes($post_id) {
             update_post_meta($post_id, '_related_moment', intval($_POST['related_moment']));
         }
     }
-
-    if (isset($_POST['brave_memory_photos_nonce']) && wp_verify_nonce($_POST['brave_memory_photos_nonce'], 'brave_memory_photos_meta')) {
-        if (isset($_POST['memory_photos'])) {
-            $photos = array_filter(array_map('intval', explode(',', $_POST['memory_photos'])));
-            update_post_meta($post_id, '_memory_photos', $photos);
-        }
-    }
 }
 add_action('save_post', 'brave_save_meta_boxes');
 
 /**
- * 加载媒体上传脚本和样式
+ * 从文章内容中提取图片
  */
-function brave_admin_scripts($hook) {
-    global $post;
+function brave_extract_images_from_content($post_id) {
+    $post = get_post($post_id);
+    if (!$post) return array();
     
-    $theme_uri = get_template_directory_uri();
-    $version = defined('BRAVE_VERSION') ? BRAVE_VERSION : '0.1';
+    $content = $post->post_content;
+    $images = array();
     
-    // 在所有后台页面加载样式
-    wp_enqueue_style('brave-admin', $theme_uri . '/assets/css/admin.css', array(), $version);
-    
-    // 在编辑页面加载脚本
-    if ($hook === 'post.php' || $hook === 'post-new.php') {
-        if (isset($post) && in_array($post->post_type, array('note', 'memory'))) {
-            wp_enqueue_media();
-            wp_enqueue_script('jquery-ui-sortable');
-            wp_enqueue_script('brave-admin', $theme_uri . '/assets/js/admin.js', array('jquery', 'jquery-ui-sortable'), $version, true);
+    // 方法1：提取 Gutenberg 图片块的 data-id
+    if (function_exists('parse_blocks')) {
+        $blocks = parse_blocks($content);
+        foreach ($blocks as $block) {
+            // 图片块
+            if ($block['blockName'] === 'core/image' && !empty($block['attrs']['id'])) {
+                $images[] = $block['attrs']['id'];
+            }
+            // 画廊块
+            if ($block['blockName'] === 'core/gallery' && !empty($block['attrs']['ids'])) {
+                $images = array_merge($images, $block['attrs']['ids']);
+            }
         }
     }
+    
+    // 方法2：提取经典编辑器的图片
+    preg_match_all('/wp-image-(\d+)/', $content, $matches);
+    if (!empty($matches[1])) {
+        $images = array_merge($images, array_map('intval', $matches[1]));
+    }
+    
+    // 去重
+    $images = array_unique($images);
+    
+    return $images;
 }
-add_action('admin_enqueue_scripts', 'brave_admin_scripts');
+
+/**
+ * 获取相册图片（特色图片 + 内容中的图片）
+ */
+function brave_get_memory_photos($post_id, $size = 'large') {
+    $photos = array();
+    
+    // 1. 特色图片作为第一张
+    if (has_post_thumbnail($post_id)) {
+        $thumb_id = get_post_thumbnail_id($post_id);
+        $url = wp_get_attachment_image_url($thumb_id, $size);
+        if ($url) {
+            $photos[] = array(
+                'id' => $thumb_id,
+                'url' => $url,
+                'thumb' => wp_get_attachment_image_url($thumb_id, 'thumbnail'),
+                'title' => get_the_title($thumb_id),
+                'is_cover' => true,
+            );
+        }
+    }
+    
+    // 2. 从内容中提取的图片
+    $content_images = brave_extract_images_from_content($post_id);
+    foreach ($content_images as $image_id) {
+        // 跳过已经添加的特色图片
+        if (isset($thumb_id) && $image_id == $thumb_id) continue;
+        
+        $url = wp_get_attachment_image_url($image_id, $size);
+        if ($url) {
+            $photos[] = array(
+                'id' => $image_id,
+                'url' => $url,
+                'thumb' => wp_get_attachment_image_url($image_id, 'thumbnail'),
+                'title' => get_the_title($image_id),
+                'is_cover' => false,
+            );
+        }
+    }
+    
+    return $photos;
+}
+
+/**
+ * 获取相册照片数量
+ */
+function brave_get_memory_photo_count($post_id) {
+    return count(brave_get_memory_photos($post_id, 'thumbnail'));
+}

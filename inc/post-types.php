@@ -270,8 +270,14 @@ add_filter('manage_memory_posts_columns', 'brave_memory_columns');
 function brave_memory_custom_column($column, $post_id) {
     switch ($column) {
         case 'photo_count':
-            $photos = get_post_meta($post_id, '_memory_photos', true);
-            $count = is_array($photos) ? count($photos) : 0;
+            // 使用新的函数获取照片数量（特色图片 + 内容中的图片）
+            if (function_exists('brave_get_memory_photo_count')) {
+                $count = brave_get_memory_photo_count($post_id);
+            } else {
+                // 兼容旧版本
+                $photos = get_post_meta($post_id, '_memory_photos', true);
+                $count = is_array($photos) ? count($photos) : 0;
+            }
             echo $count . ' 张';
             break;
         case 'memory_date':

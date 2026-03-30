@@ -86,6 +86,26 @@ function brave_scripts() {
 add_action('wp_enqueue_scripts', 'brave_scripts');
 
 /**
+ * 加载后台样式和脚本
+ */
+function brave_admin_scripts($hook) {
+    $theme_uri = BRAVE_URI;
+    $version = BRAVE_VERSION;
+    
+    // 在所有后台页面加载样式
+    wp_enqueue_style('brave-admin', $theme_uri . '/assets/css/admin.css', array(), $version);
+    
+    // 在相册编辑页面加载脚本
+    if ($hook === 'post.php' || $hook === 'post-new.php') {
+        global $post;
+        if (isset($post) && $post->post_type === 'memory') {
+            wp_enqueue_script('brave-admin', $theme_uri . '/assets/js/admin.js', array('jquery'), $version, true);
+        }
+    }
+}
+add_action('admin_enqueue_scripts', 'brave_admin_scripts');
+
+/**
  * 注册自定义文章类型
  */
 require BRAVE_DIR . '/inc/post-types.php';

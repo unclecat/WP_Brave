@@ -63,38 +63,6 @@ function brave_get_list_progress() {
 }
 
 /**
- * 获取相册照片数量
- */
-function brave_get_memory_photo_count($post_id) {
-    $photos = get_post_meta($post_id, '_memory_photos', true);
-    return is_array($photos) ? count($photos) : 0;
-}
-
-/**
- * 获取相册所有照片 URL
- */
-function brave_get_memory_photos($post_id, $size = 'large') {
-    $photos = get_post_meta($post_id, '_memory_photos', true);
-    if (!is_array($photos)) {
-        return array();
-    }
-    
-    $urls = array();
-    foreach ($photos as $photo_id) {
-        $url = wp_get_attachment_image_url($photo_id, $size);
-        if ($url) {
-            $urls[] = array(
-                'id' => $photo_id,
-                'url' => $url,
-                'thumb' => wp_get_attachment_image_url($photo_id, 'thumbnail'),
-                'title' => get_the_title($photo_id),
-            );
-        }
-    }
-    return $urls;
-}
-
-/**
  * 获取说说配图
  */
 function brave_get_note_images($post_id, $size = 'medium') {
