@@ -1,0 +1,310 @@
+/**
+ * Brave Love Theme Extra Styles
+ */
+
+/* 分页样式 */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+.pagination a,
+.pagination span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 0.75rem;
+    background: var(--card-bg);
+    border-radius: 8px;
+    color: var(--text-color);
+    font-size: 0.875rem;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+}
+
+.pagination a:hover {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+.pagination .current {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+/* 评论分页 */
+.comment-navigation {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.comment-navigation a {
+    color: var(--primary-color);
+    font-size: 0.875rem;
+}
+
+/* 列表项展开动画 */
+.list-detail {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease, padding 0.3s ease;
+}
+
+.list-detail.show {
+    max-height: 1000px;
+    opacity: 1;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+}
+
+/* 说说图片网格优化 */
+.note-images {
+    gap: 4px;
+}
+
+.note-images.count-1 .note-image {
+    border-radius: 8px;
+}
+
+.note-images.count-2 .note-image,
+.note-images.count-4 .note-image {
+    aspect-ratio: 1;
+}
+
+/* 时间轴图片点击效果 */
+.timeline-image {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.timeline-image:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 相册卡片悬停效果 */
+.memory-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.memory-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+}
+
+/* 筛选按钮激活状态增强 */
+.memory-filter.active {
+    font-weight: 600;
+}
+
+/* 淡入动画 */
+.fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 导航栏毛玻璃效果增强 */
+.navbar-brave.scrolled {
+    background: rgba(255, 255, 255, 0.95) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brave.scrolled .nav-say {
+    color: var(--text-muted) !important;
+}
+
+/* 导航栏汉堡菜单颜色调整 */
+.navbar-brave.scrolled .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba%2833,37,41,0.9%29' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E") !important;
+}
+
+/* 响应式调整 */
+@media (max-width: 575px) {
+    .pagination a,
+    .pagination span {
+        min-width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+    
+    .note-images.count-5 .note-image:nth-child(1),
+    .note-images.count-5 .note-image:nth-child(2) {
+        grid-column: span 1;
+    }
+    
+    .note-images.count-5 .note-image:nth-child(3),
+    .note-images.count-5 .note-image:nth-child(4),
+    .note-images.count-5 .note-image:nth-child(5) {
+        grid-column: span 1;
+    }
+    
+    .note-images.count-7 .note-image:nth-child(1) {
+        grid-column: span 2;
+        grid-row: span 2;
+    }
+    
+    .note-images.count-8 .note-image:nth-child(1),
+    .note-images.count-8 .note-image:nth-child(2),
+    .note-images.count-8 .note-image:nth-child(3) {
+        grid-column: span 1;
+    }
+}
+
+/* 相册封面比例 */
+.memory-cover {
+    transition: transform 0.3s ease;
+}
+
+.memory-card:hover .memory-cover {
+    transform: scale(1.05);
+}
+
+/* 列表项已完成状态增强 */
+.list-item.done {
+    border-left: 3px solid #4caf50;
+}
+
+.list-item:not(.done) {
+    border-left: 3px solid transparent;
+}
+
+/* 纪念日倒计时卡片 */
+.anniversary-card.countdown .anniversary-days {
+    color: #2196f3;
+}
+
+.anniversary-card.countup .anniversary-days {
+    color: var(--primary-color);
+}
+
+/* 表单焦点样式 */
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(255, 81, 98, 0.15);
+}
+
+/* 提交按钮点击反馈 */
+.btn-submit:active {
+    transform: scale(0.98);
+}
+
+/* 返回顶部按钮悬停 */
+.back-to-top:hover {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+/* 说说卡片的时间 */
+.note-header {
+    margin-bottom: 0.5rem;
+}
+
+/* 评论表单单列布局 */
+.comment-form .form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+}
+
+/* 屏幕阅读器隐藏 */
+.screen-reader-text {
+    clip: rect(1px, 1px, 1px, 1px);
+    position: absolute !important;
+    height: 1px;
+    width: 1px;
+    overflow: hidden;
+    word-wrap: normal !important;
+}
+
+/* 加载状态 */
+.loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid var(--border-color);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* 空状态图标 */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-state-text {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* 响应式字体大小调整 */
+@media (max-width: 575px) {
+    html {
+        font-size: 15px;
+    }
+}
+
+/* 平板横屏适配 */
+@media (min-width: 768px) and (max-width: 991px) {
+    .memory-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .entry-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* 暗色模式支持（可选） */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: #121212;
+        --card-bg: #1e1e1e;
+        --text-color: #e0e0e0;
+        --text-muted: #a0a0a0;
+        --border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .footer {
+        background: #1a1a1a;
+    }
+    
+    .navbar-brave.scrolled {
+        background: rgba(30, 30, 30, 0.95) !important;
+    }
+}
