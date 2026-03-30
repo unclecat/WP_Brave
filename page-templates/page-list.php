@@ -49,22 +49,22 @@ $categories = get_terms(array(
     <div class="love-list-progress">
         <div class="progress-stats">
             <div class="stat-item">
-                <span class="stat-number"><?php echo $progress['done']; ?></span>
+                <span class="stat-number"><?php echo intval($progress['done']); ?></span>
                 <span class="stat-label">已完成</span>
             </div>
             <div class="stat-divider"></div>
             <div class="stat-item">
-                <span class="stat-number"><?php echo $progress['total'] - $progress['done']; ?></span>
+                <span class="stat-number"><?php echo intval($progress['total']) - intval($progress['done']); ?></span>
                 <span class="stat-label">待完成</span>
             </div>
             <div class="stat-divider"></div>
             <div class="stat-item">
-                <span class="stat-number"><?php echo $progress['percentage']; ?>%</span>
+                <span class="stat-number"><?php echo intval($progress['percentage']); ?>%</span>
                 <span class="stat-label">完成度</span>
             </div>
         </div>
         <div class="progress-bar">
-            <div class="progress-fill" style="width: <?php echo $progress['percentage']; ?>"></div>
+            <div class="progress-fill" style="width: <?php echo intval($progress['percentage']); ?>%"></div>
         </div>
     </div>
 
