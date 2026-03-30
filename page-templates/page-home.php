@@ -50,6 +50,45 @@ $anniversary_section_title = get_theme_mod('brave_anniversary_section_title', '�
     <?php endif; ?>
 </div>
 
+<!-- 天气小组件 -->
+<?php if (get_theme_mod('brave_weather_enabled', false)) : 
+    $weather_city = get_theme_mod('brave_weather_city', '北京');
+    $weather_lat = get_theme_mod('brave_weather_lat', '39.9042');
+    $weather_lon = get_theme_mod('brave_weather_lon', '116.4074');
+?>
+<section class="weather-section" data-lat="<?php echo esc_attr($weather_lat); ?>" data-lon="<?php echo esc_attr($weather_lon); ?>">
+    <div class="weather-card">
+        <div class="weather-header">
+            <span class="weather-city"><?php echo esc_html($weather_city); ?></span>
+            <span class="weather-update">更新中...</span>
+        </div>
+        <div class="weather-main">
+            <div class="weather-icon" id="weather-icon">☀️</div>
+            <div class="weather-temp" id="weather-temp">--°</div>
+            <div class="weather-desc" id="weather-desc">加载中...</div>
+        </div>
+        <div class="weather-details">
+            <div class="weather-item">
+                <span class="weather-label">体感</span>
+                <span class="weather-value" id="weather-feels">--°</span>
+            </div>
+            <div class="weather-item">
+                <span class="weather-label">湿度</span>
+                <span class="weather-value" id="weather-humidity">--%</span>
+            </div>
+            <div class="weather-item">
+                <span class="weather-label">风速</span>
+                <span class="weather-value" id="weather-wind">--km/h</span>
+            </div>
+        </div>
+        <div class="weather-clothing" id="weather-clothing">
+            <div class="clothing-title">👔 穿衣指南</div>
+            <div class="clothing-text" id="clothing-text">正在分析天气...</div>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
+
 <!-- 纪念日列表 -->
 <?php
 $anniversaries = brave_get_anniversaries();

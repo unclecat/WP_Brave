@@ -96,6 +96,118 @@
         setInterval(updateCountdown, 1000); // 每秒更新一次，实现实时跳动
     }
 
+    // 天气小组件
+    function initWeather() {
+        var $weatherSection = $('.weather-section');
+        if (!$weatherSection.length) return;
+
+        var lat = $weatherSection.data('lat') || '39.9042';
+        var lon = $weatherSection.data('lon') || '116.4074';
+
+        // WMO 天气代码映射
+        var weatherCodes = {
+            0: { icon: '☀️', desc: '晴朗' },
+            1: { icon: '🌤️', desc: '多云' },
+            2: { icon: '⛅', desc: '多云' },
+            3: { icon: '☁️', desc: '阴天' },
+            45: { icon: '🌫️', desc: '雾' },
+            48: { icon: '🌫️', desc: '雾凇' },
+            51: { icon: '🌦️', desc: '毛毛雨' },
+            53: { icon: '🌦️', desc: '小雨' },
+            55: { icon: '🌧️', desc: '中雨' },
+            61: { icon: '🌧️', desc: '小雨' },
+            63: { icon: '🌧️', desc: '中雨' },
+            65: { icon: '⛈️', desc: '大雨' },
+            71: { icon: '🌨️', desc: '小雪' },
+            73: { icon: '🌨️', desc: '中雪' },
+            75: { icon: '❄️', desc: '大雪' },
+            95: { icon: '⛈️', desc: '雷雨' },
+        };
+
+        // 获取穿衣建议
+        function getClothingAdvice(temp, weatherCode) {
+            var advice = '';
+            
+            // 根据温度推荐
+            if (temp >= 30) {
+                advice = '天气炎热，建议穿短袖、短裤、裙子等清凉透气的衣物，注意防晒。';
+            } else if (temp >= 25) {
+                advice = '天气较热，建议穿短袖、薄T恤，可搭配薄外套。';
+            } else if (temp >= 20) {
+                advice = '天气舒适，建议穿T恤、薄衬衫搭配长裤或裙子。';
+            } else if (temp >= 15) {
+                advice = '天气微凉，建议穿长袖、薄外套或针织衫。';
+            } else if (temp >= 10) {
+                advice = '天气较凉，建议穿夹克、风衣或薄毛衣。';
+            } else if (temp >= 5) {
+                advice = '天气冷，建议穿厚外套、毛衣、长裤，注意保暖。';
+            } else if (temp >= 0) {
+                advice = '天气寒冷，建议穿羽绒服、厚毛衣、保暖裤，戴围巾手套。';
+            } else {
+                advice = '天气严寒，建议穿厚羽绒服、加绒衣物，做好防寒措施。';
+            }
+
+            // 根据天气状况追加建议
+            if (weatherCode >= 51 && weatherCode <= 65) {
+                advice += ' 记得带伞哦！☂️';
+            } else if (weatherCode >= 71 && weatherCode <= 75) {
+                advice += ' 路滑小心！❄️';
+            } else if (weatherCode === 95) {
+                advice += ' 雷雨天气减少外出！⚡';
+            }
+
+            return advice;
+        }
+
+        // 获取天气数据
+        function fetchWeather() {
+            var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=auto';
+
+            $.ajax({
+                url: url,
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    if (data && data.current) {
+                        var current = data.current;
+                        var temp = Math.round(current.temperature_2m);
+                        var feels = Math.round(current.apparent_temperature);
+                        var humidity = current.relative_humidity_2m;
+                        var wind = current.wind_speed_10m;
+                        var code = current.weather_code;
+
+                        var weatherInfo = weatherCodes[code] || { icon: '🌡️', desc: '未知' };
+
+                        // 更新界面
+                        $('#weather-icon').text(weatherInfo.icon);
+                        $('#weather-temp').text(temp + '°');
+                        $('#weather-desc').text(weatherInfo.desc);
+                        $('#weather-feels').text(feels + '°');
+                        $('#weather-humidity').text(humidity + '%');
+                        $('#weather-wind').text(wind + 'km/h');
+
+                        // 更新穿衣指南
+                        $('#clothing-text').text(getClothingAdvice(temp, code));
+
+                        // 更新时间
+                        var now = new Date();
+                        var timeStr = now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
+                        $('.weather-update').text(timeStr + ' 更新');
+                    }
+                },
+                error: function() {
+                    $('#weather-desc').text('获取天气失败');
+                    $('#clothing-text').text('请检查网络连接后刷新页面');
+                }
+            });
+        }
+
+        // 首次获取
+        fetchWeather();
+
+        // 每30分钟更新一次
+        setInterval(fetchWeather, 30 * 60 * 1000);
+    }
 
     // 导航栏滚动效果
     function initNavbar() {
@@ -350,6 +462,7 @@
     $(document).ready(function() {
         initLoveTimer();
         initAnniversaryCountdown();
+        initWeather();
         initNavbar();
         initBackToTop();
         initPhotoSwipe();
