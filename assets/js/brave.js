@@ -78,51 +78,92 @@
         });
     }
 
-    // PhotoSwipe 5 初始化
+    // PhotoSwipe 5 初始化 - 修复移动端支持
     function initPhotoSwipe() {
-        if (typeof PhotoSwipe === 'undefined') return;
+        // 检查 PhotoSwipe 是否加载
+        if (typeof PhotoSwipe === 'undefined' || typeof PhotoSwipeLightbox === 'undefined') {
+            console.log('PhotoSwipe not loaded');
+            return;
+        }
 
-        // 相册卡片点击 - 使用 PhotoSwipe Lightbox
-        $('.memory-card').on('click', function() {
-            var photosData = $(this).data('photos');
-            var title = $(this).data('title');
+        // 相册卡片点击
+        $('.memory-card').on('click touchstart', function(e) {
+            // 防止重复触发
+            if (e.type === 'touchstart') {
+                e.preventDefault();
+            }
             
-            if (!photosData || !photosData.length) return;
+            var $this = $(this);
+            var photosData = $this.data('photos');
+            var title = $this.data('title');
+            
+            if (!photosData || !photosData.length) {
+                console.log('No photos in album');
+                return;
+            }
 
+            // 准备图片数据
             var items = photosData.map(function(photo) {
                 return {
                     src: photo.url,
-                    width: 0,
-                    height: 0,
+                    width: photo.width || 0,
+                    height: photo.height || 0,
                     alt: title + (photo.title ? ' - ' + photo.title : '')
                 };
             });
 
-            // 预加载获取图片尺寸
-            var loadedCount = 0;
-            items.forEach(function(item, index) {
-                var img = new Image();
-                img.onload = function() {
-                    items[index].width = this.naturalWidth;
-                    items[index].height = this.naturalHeight;
-                    loadedCount++;
-                };
-                img.src = item.src;
+            // 如果没有尺寸信息，先预加载获取
+            var needLoading = items.some(function(item) {
+                return item.width === 0 || item.height === 0;
             });
 
-            // 创建 PhotoSwipe
-            var pswp = new PhotoSwipe({
-                dataSource: items,
-                bgOpacity: 0.9,
-                showHideAnimationType: 'fade',
-                pswpModule: PhotoSwipe
-            });
+            if (needLoading) {
+                var loadedCount = 0;
+                var totalCount = items.length;
+                
+                items.forEach(function(item, index) {
+                    if (item.width === 0 || item.height === 0) {
+                        var img = new Image();
+                        img.onload = function() {
+                            items[index].width = this.naturalWidth;
+                            items[index].height = this.naturalHeight;
+                            loadedCount++;
+                            
+                            if (loadedCount === totalCount) {
+                                openPhotoSwipe(items, 0);
+                            }
+                        };
+                        img.onerror = function() {
+                            // 如果加载失败，使用默认尺寸
+                            items[index].width = 800;
+                            items[index].height = 600;
+                            loadedCount++;
+                            
+                            if (loadedCount === totalCount) {
+                                openPhotoSwipe(items, 0);
+                            }
+                        };
+                        img.src = item.src;
+                    } else {
+                        loadedCount++;
+                    }
+                });
 
-            pswp.init();
+                // 如果所有图片已有尺寸，直接打开
+                if (loadedCount === totalCount) {
+                    openPhotoSwipe(items, 0);
+                }
+            } else {
+                openPhotoSwipe(items, 0);
+            }
         });
 
         // 说说图片点击
-        $('.note-image').on('click', function(e) {
+        $('.note-image').on('click touchstart', function(e) {
+            if (e.type === 'touchstart') {
+                e.preventDefault();
+            }
+            
             e.stopPropagation();
             var $this = $(this);
             var $images = $this.closest('.note-images').find('.note-image');
@@ -138,31 +179,38 @@
                 });
             });
 
-            // 预加载获取图片尺寸
+            // 预加载获取尺寸
+            var loadedCount = 0;
             items.forEach(function(item, idx) {
                 var img = new Image();
                 img.onload = function() {
                     items[idx].width = this.naturalWidth;
                     items[idx].height = this.naturalHeight;
+                    loadedCount++;
+                    
+                    if (loadedCount === items.length) {
+                        openPhotoSwipe(items, index);
+                    }
+                };
+                img.onerror = function() {
+                    items[idx].width = 800;
+                    items[idx].height = 600;
+                    loadedCount++;
+                    
+                    if (loadedCount === items.length) {
+                        openPhotoSwipe(items, index);
+                    }
                 };
                 img.src = item.src;
             });
-
-            var pswp = new PhotoSwipe({
-                dataSource: items,
-                index: index,
-                bgOpacity: 0.9,
-                showHideAnimationType: 'fade',
-                pswpModule: PhotoSwipe
-            });
-
-            pswp.init();
         });
-    }
 
-    // 时间轴图片灯箱
-    function initTimelineLightbox() {
-        $('.timeline-image').on('click', function(e) {
+        // 时间轴图片灯箱
+        $('.timeline-image').on('click touchstart', function(e) {
+            if (e.type === 'touchstart') {
+                e.preventDefault();
+            }
+            
             if ($(this).is('a')) return;
             
             var src = $(this).attr('src');
@@ -170,28 +218,49 @@
 
             var fullSrc = src.replace('-300x300', '').replace('-150x150', '').replace('-400x400', '');
 
-            var items = [{
-                src: fullSrc,
-                width: 0,
-                height: 0
-            }];
-
             var img = new Image();
             img.onload = function() {
-                items[0].width = this.naturalWidth;
-                items[0].height = this.naturalHeight;
+                openPhotoSwipe([{
+                    src: fullSrc,
+                    width: this.naturalWidth,
+                    height: this.naturalHeight
+                }], 0);
             };
             img.src = fullSrc;
-
-            var pswp = new PhotoSwipe({
-                dataSource: items,
-                bgOpacity: 0.9,
-                showHideAnimationType: 'fade',
-                pswpModule: PhotoSwipe
-            });
-
-            pswp.init();
         });
+    }
+
+    // 打开 PhotoSwipe
+    function openPhotoSwipe(items, index) {
+        // 确保所有图片都有尺寸
+        items.forEach(function(item) {
+            if (!item.width || item.width === 0) item.width = 800;
+            if (!item.height || item.height === 0) item.height = 600;
+        });
+
+        // 使用 PhotoSwipeLightbox（支持移动端）
+        var lightbox = new PhotoSwipeLightbox({
+            dataSource: items,
+            pswpModule: PhotoSwipe,
+            bgOpacity: 0.9,
+            showHideAnimationType: 'fade',
+            initialZoomLevel: 'fit',
+            secondaryZoomLevel: 1.5,
+            maxZoomLevel: 1,
+            pinchToClose: true,
+            closeOnVerticalDrag: true,
+            tapAction: 'toggle-controls',
+            doubleTapAction: 'zoom',
+            index: index
+        });
+
+        // 添加错误处理
+        lightbox.on('itemLoadError', function(e) {
+            console.warn('Image load error:', e.item.src);
+        });
+
+        lightbox.init();
+        lightbox.loadAndOpen(index);
     }
 
     // 滚动渐显动画
@@ -232,7 +301,6 @@
         initNavbar();
         initBackToTop();
         initPhotoSwipe();
-        initTimelineLightbox();
         initScrollReveal();
         initListToggle();
     });

@@ -338,12 +338,16 @@ function brave_get_memory_photos($post_id, $size = 'large') {
         $thumb_id = get_post_thumbnail_id($post_id);
         $url = wp_get_attachment_image_url($thumb_id, $size);
         if ($url) {
+            // 获取图片尺寸
+            $meta = wp_get_attachment_metadata($thumb_id);
             $photos[] = array(
                 'id' => $thumb_id,
                 'url' => $url,
                 'thumb' => wp_get_attachment_image_url($thumb_id, 'thumbnail'),
                 'title' => get_the_title($thumb_id),
                 'is_cover' => true,
+                'width' => !empty($meta['width']) ? $meta['width'] : 0,
+                'height' => !empty($meta['height']) ? $meta['height'] : 0,
             );
         }
     }
@@ -356,12 +360,16 @@ function brave_get_memory_photos($post_id, $size = 'large') {
         
         $url = wp_get_attachment_image_url($image_id, $size);
         if ($url) {
+            // 获取图片尺寸
+            $meta = wp_get_attachment_metadata($image_id);
             $photos[] = array(
                 'id' => $image_id,
                 'url' => $url,
                 'thumb' => wp_get_attachment_image_url($image_id, 'thumbnail'),
                 'title' => get_the_title($image_id),
                 'is_cover' => false,
+                'width' => !empty($meta['width']) ? $meta['width'] : 0,
+                'height' => !empty($meta['height']) ? $meta['height'] : 0,
             );
         }
     }
