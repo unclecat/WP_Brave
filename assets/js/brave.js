@@ -44,7 +44,7 @@
         setInterval(updateTimer, 60000); // 每分钟更新一次
     }
 
-    // 纪念日倒计时（只显示天数，数字更大）
+    // 纪念日倒计时（显示天/时/分）
     function initAnniversaryCountdown() {
         var $countdown = $('#anniversary-countdown');
         if (!$countdown.length) return;
@@ -68,6 +68,8 @@
             if (diff <= 0) {
                 // 纪念日已到达
                 $('#countdown-days').text(0);
+                $('#countdown-hours').text(0);
+                $('#countdown-minutes').text(0);
                 
                 // 显示庆祝信息
                 if (!$countdown.next('.celebration-message').length) {
@@ -77,12 +79,16 @@
             }
 
             var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
             $('#countdown-days').text(days);
+            $('#countdown-hours').text(hours);
+            $('#countdown-minutes').text(minutes);
         }
 
         updateCountdown();
-        // 每小时更新一次即可，因为只显示天数
-        setInterval(updateCountdown, 3600000);
+        setInterval(updateCountdown, 60000); // 每分钟更新一次
     }
 
 
