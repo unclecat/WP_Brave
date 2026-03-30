@@ -39,17 +39,17 @@ function brave_customize_register($wp_customize) {
         'panel' => 'brave_settings',
     ));
 
-    // 恋爱起始日期
-    $wp_customize->add_setting('brave_love_start_date', array(
-        'default' => date('Y-m-d'),
+    // 恋爱起始日期时间（精确到分钟）
+    $wp_customize->add_setting('brave_love_start_datetime', array(
+        'default' => date('Y-m-d') . ' 00:00',
         'sanitize_callback' => 'sanitize_text_field',
         'transport' => 'refresh',
     ));
-    $wp_customize->add_control('brave_love_start_date', array(
-        'label' => __('恋爱起始日期', 'brave-love'),
-        'description' => __('格式：YYYY-MM-DD', 'brave-love'),
+    $wp_customize->add_control('brave_love_start_datetime', array(
+        'label' => __('恋爱起始日期时间', 'brave-love'),
+        'description' => __('格式：YYYY-MM-DD HH:MM，例如：2020-05-20 20:00（精确到分钟）', 'brave-love'),
         'section' => 'brave_basic',
-        'type' => 'date',
+        'type' => 'text',
     ));
 
     // 恋爱计时器文字

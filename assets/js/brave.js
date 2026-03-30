@@ -5,20 +5,20 @@
 (function($) {
     'use strict';
 
-    // 恋爱计时器
+    // 恋爱计时器（精确到分钟）
     function initLoveTimer() {
         var $timer = $('#love-timer');
         if (!$timer.length) return;
 
-        // 解析日期（兼容多种格式：YYYY-MM-DD 或 YYYY/MM/DD）
-        var startDateStr = braveData.love_start_date || '2020-01-01';
-        startDateStr = startDateStr.replace(/\//g, '-'); // 将 / 替换为 -
+        // 解析日期时间（格式：YYYY-MM-DD HH:MM）
+        var datetimeStr = braveData.love_start_datetime || '2020-01-01 00:00';
+        datetimeStr = datetimeStr.replace(/\//g, '-'); // 将 / 替换为 -
         
-        var start = new Date(startDateStr + 'T00:00:00');
+        var start = new Date(datetimeStr.replace(' ', 'T') + ':00');
         
         // 检查日期是否有效
         if (isNaN(start.getTime())) {
-            $timer.html('请设置正确的恋爱起始日期');
+            $timer.html('请设置正确的恋爱起始时间');
             return;
         }
 
@@ -34,19 +34,17 @@
             var days = Math.floor(diff / (1000 * 60 * 60 * 24));
             var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            var seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
             $('#timer-days').text(days);
             $('#timer-hours').text(hours);
             $('#timer-minutes').text(minutes);
-            $('#timer-seconds').text(seconds);
         }
 
         updateTimer();
-        setInterval(updateTimer, 1000);
+        setInterval(updateTimer, 60000); // 每分钟更新一次
     }
 
-    // 纪念日倒计时（精确到分钟）
+    // 纪念日倒计时（显示天/时/分，不显示秒）
     function initAnniversaryCountdown() {
         var $countdown = $('#anniversary-countdown');
         if (!$countdown.length) return;
@@ -72,7 +70,6 @@
                 $('#countdown-days').text(0);
                 $('#countdown-hours').text(0);
                 $('#countdown-minutes').text(0);
-                $('#countdown-seconds').text(0);
                 
                 // 显示庆祝信息
                 if (!$countdown.next('.celebration-message').length) {
@@ -84,16 +81,14 @@
             var days = Math.floor(diff / (1000 * 60 * 60 * 24));
             var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            var seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
             $('#countdown-days').text(days);
             $('#countdown-hours').text(hours);
             $('#countdown-minutes').text(minutes);
-            $('#countdown-seconds').text(seconds);
         }
 
         updateCountdown();
-        setInterval(updateCountdown, 1000);
+        setInterval(updateCountdown, 60000); // 每分钟更新一次
     }
 
     // 导航栏滚动效果

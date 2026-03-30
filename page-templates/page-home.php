@@ -12,6 +12,7 @@ $timer_text = get_theme_mod('brave_timer_text', '我们风雨同舟已经一起�
 $countdown_text = get_theme_mod('brave_countdown_text', '距离我们的特别日子还有');
 $next_anniversary_name = get_theme_mod('brave_next_anniversary_name', '恋爱周年纪念日');
 $next_anniversary_datetime = get_theme_mod('brave_next_anniversary_datetime', '');
+$love_start_datetime = get_theme_mod('brave_love_start_datetime', '');
 ?>
 
 <!-- 计时器区域 - 恋爱正计时 -->
@@ -21,18 +22,14 @@ $next_anniversary_datetime = get_theme_mod('brave_next_anniversary_datetime', ''
         <span class="timer-number" id="timer-days">0</span> 天
         <span class="timer-number" id="timer-hours">0</span> 小时
         <span class="timer-number" id="timer-minutes">0</span> 分
-        <span class="timer-number" id="timer-seconds">0</span> 秒
     </div>
-    <?php 
-    $start_date = get_theme_mod('brave_love_start_date');
-    if ($start_date) : 
-    ?>
+    <?php if ($love_start_datetime) : ?>
     <p class="timer-date" style="font-size: 0.8rem; color: #999; margin-top: 0.5rem;">
-        起始日：<?php echo esc_html($start_date); ?>
+        起始时间：<?php echo esc_html($love_start_datetime); ?>
     </p>
     <?php else : ?>
     <p class="timer-date" style="font-size: 0.8rem; color: #ff5162; margin-top: 0.5rem;">
-        ⚠️ 请在外观 → 自定义 → Brave 主题设置中设置恋爱起始日期
+        ⚠️ 请在外观 → 自定义 → Brave 主题设置中设置恋爱起始时间
     </p>
     <?php endif; ?>
 </section>
@@ -48,7 +45,6 @@ $next_anniversary_datetime = get_theme_mod('brave_next_anniversary_datetime', ''
         <span class="timer-number" id="countdown-days">0</span> 天
         <span class="timer-number" id="countdown-hours">0</span> 小时
         <span class="timer-number" id="countdown-minutes">0</span> 分
-        <span class="timer-number" id="countdown-seconds">0</span> 秒
     </div>
     <p class="timer-date" style="font-size: 0.8rem; color: #666; margin-top: 0.5rem;">
         目标时间：<?php echo esc_html($next_anniversary_datetime); ?>
