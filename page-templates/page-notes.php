@@ -142,10 +142,23 @@ $current_user = wp_get_current_user();
     </div>
 
     <!-- 登录用户发布表单 -->
-    <?php if ($is_logged_in) : ?>
+    <?php if ($is_logged_in) : 
+        // 获取当前用户头像
+        $current_user_id = $current_user->ID;
+        $boy_user_id = intval(get_theme_mod('brave_boy_user_id'));
+        $girl_user_id = intval(get_theme_mod('brave_girl_user_id'));
+        
+        if ($boy_user_id > 0 && $current_user_id == $boy_user_id) {
+            $current_avatar = brave_get_couple_avatar('boy', 100);
+        } elseif ($girl_user_id > 0 && $current_user_id == $girl_user_id) {
+            $current_avatar = brave_get_couple_avatar('girl', 100);
+        } else {
+            $current_avatar = get_avatar_url($current_user_id);
+        }
+    ?>
     <div class="note-publish-form">
         <div class="publish-header">
-            <img src="<?php echo esc_url(get_avatar_url($current_user->ID)); ?>" alt="" class="publish-avatar">
+            <img src="<?php echo esc_url($current_avatar); ?>" alt="" class="publish-avatar">
             <span class="publish-name"><?php echo esc_html($current_user->display_name); ?></span>
         </div>
         <form id="quick-note-form" method="post" action="">
@@ -196,7 +209,22 @@ $current_user = wp_get_current_user();
                 
                 $author_id = get_the_author_meta('ID');
                 $author_name = get_the_author();
-                $author_avatar = get_avatar_url($author_id);
+                
+                // 获取头像：优先使用主题设置的头像，否则使用 WordPress 头像
+                $boy_user_id = intval(get_theme_mod('brave_boy_user_id'));
+                $girl_user_id = intval(get_theme_mod('brave_girl_user_id'));
+                
+                if ($boy_user_id > 0 && $author_id == $boy_user_id) {
+                    // 作者是男生
+                    $author_avatar = brave_get_couple_avatar('boy', 100);
+                } elseif ($girl_user_id > 0 && $author_id == $girl_user_id) {
+                    // 作者是女生
+                    $author_avatar = brave_get_couple_avatar('girl', 100);
+                } else {
+                    // 其他用户，使用 WordPress 默认头像
+                    $author_avatar = get_avatar_url($author_id);
+                }
+                
                 $post_date = get_the_date('Y-m-d H:i');
             ?>
                 <article class="note-waterfall-card">
