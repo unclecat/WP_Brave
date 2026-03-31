@@ -24,10 +24,9 @@ $categories = get_terms(array(
 
 <section class="love-list-section">
     <!-- 页面标题 -->
-    <div class="love-list-header">
-        <div class="container text-center">
-            <h1 class="love-list-title">💕 恋爱清单 💕</h1>
-        </div>
+    <div class="section-header">
+        <h1 class="section-title">💕 恋爱清单</h1>
+        <p class="section-desc">记录我们想一起做的每一件事</p>
     </div>
 
     <!-- 进度统计 -->

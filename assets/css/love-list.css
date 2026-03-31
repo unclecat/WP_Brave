@@ -9,18 +9,10 @@
 }
 
 /* 页面标题 */
-.love-list-header {
-    text-align: center;
-    padding: 2rem 1rem;
+/* 页面标题 - 统一使用 section-header 样式 */
+.love-list-section .section-header {
     margin-bottom: 2rem;
 }
-
-.love-list-title {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    margin-bottom: 0.5rem;
-    letter-spacing: 2px;
 }
 
 .love-list-subtitle {
@@ -324,13 +316,8 @@
         padding: 1rem 0 2rem;
     }
     
-    .love-list-header {
-        padding: 1rem;
+    .love-list-section .section-header {
         margin-bottom: 1rem;
-    }
-    
-    .love-list-title {
-        font-size: 1.25rem;
     }
     
     .progress-stats {
