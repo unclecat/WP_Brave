@@ -115,24 +115,31 @@ add_action('wp_footer', function() use ($photos, $show_info) {
 
         <!-- 分页/加载更多 -->
         <?php if ($photo_data['max_num_pages'] > 1) : 
-            global $wp_rewrite;
-            $format = $wp_rewrite->using_permalinks() ? 'page/%#%/' : '?paged=%#%';
-            $base = trailingslashit(get_permalink()) . '%_%';
+            // 构建带查询参数的基础URL
+            $query_args = array();
             if ($current_year > 0) {
-                $base = add_query_arg('year', $current_year, $base);
+                $query_args['year'] = $current_year;
             }
+            
+            // 使用 get_pagenum_link 获取正确的分页基础URL
+            $base = trailingslashit(get_pagenum_link(999999999));
+            if (!empty($query_args)) {
+                $base = add_query_arg($query_args, $base);
+            }
+            $base = str_replace('999999999', '%#%', $base);
         ?>
             <nav class="gallery-pagination">
                 <?php
                 echo paginate_links(array(
                     'base' => $base,
-                    'format' => $format,
+                    'format' => '',
                     'current' => max(1, $paged),
                     'total' => $photo_data['max_num_pages'],
                     'prev_text' => '← ' . __('上一页', 'brave-love'),
                     'next_text' => __('下一页', 'brave-love') . ' →',
                     'mid_size' => 2,
                     'end_size' => 1,
+                    'add_args' => false,
                 ));
                 ?>
             </nav>
