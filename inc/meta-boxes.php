@@ -78,7 +78,7 @@ function brave_moment_meta_box($post) {
         </select>
     </p>
     <p class="description" style="color: #666; font-size: 12px; margin-top: 15px; padding: 10px; background: #f0f0f0; border-radius: 4px;">
-        💡 <strong>提示：</strong>在编辑器中上传的照片会自动显示在<a href="<?php echo esc_url(home_url('/photo/')); ?>" target="_blank">甜蜜相册</a>页面
+        💡 <strong>提示：</strong>在编辑器中上传的照片会自动显示在<a href="<?php echo esc_url(home_url('/memories/')); ?>" target="_blank">甜蜜相册</a>页面
     </p>
     <?php
 }

@@ -120,8 +120,8 @@ header('Content-Type: text/html; charset=utf-8');
     echo '<h2>4. 页面检查</h2>';
     $required_pages = [
         'moments' => '点点滴滴',
-        'list' => '恋爱清单',
-        'photo' => '甜蜜相册',
+        'lists' => '恋爱清单',
+        'memories' => '甜蜜相册',
         'notes' => '随笔说说',
         'blessing' => '祝福留言',
     ];

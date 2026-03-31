@@ -71,7 +71,7 @@ function brave_register_list_post_type() {
         'menu_position'         => 6,
         'menu_icon'             => 'dashicons-star-filled',
         'query_var'             => true,
-        'rewrite'               => array('slug' => 'list'),
+        'rewrite'               => array('slug' => 'lists'),
         'capability_type'       => 'post',
         'has_archive'           => true,
         'hierarchical'          => false,
@@ -93,7 +93,7 @@ function brave_register_list_post_type() {
         'public'                => true,
         'show_ui'               => true,
         'show_admin_column'     => true,
-        'rewrite'               => array('slug' => 'list-category'),
+        'rewrite'               => array('slug' => 'lists-category'),
     );
 
     register_taxonomy('list_category', 'love_list', $tax_args);
