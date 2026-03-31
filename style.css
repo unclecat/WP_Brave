@@ -229,13 +229,13 @@ img {
     animation-delay: var(--delay, 0s);
 }
 
-/* 星星位置 - 均匀分布在圆周上 */
-.star:nth-child(1) { top: 0; left: 50%; transform: translate(-50%, -50%); }
-.star:nth-child(2) { top: 15%; right: 10%; transform: translate(50%, -50%); }
-.star:nth-child(3) { top: 50%; right: 0; transform: translate(50%, -50%); }
-.star:nth-child(4) { bottom: 15%; right: 10%; transform: translate(50%, 50%); }
-.star:nth-child(5) { bottom: 0; left: 50%; transform: translate(-50%, 50%); }
-.star:nth-child(6) { top: 50%; left: 0; transform: translate(-50%, -50%); }
+/* 星星位置 - 使用 margin 调整，避免 transform 冲突 */
+.star:nth-child(1) { top: 0; left: 50%; margin-left: calc(var(--size) / -2); margin-top: calc(var(--size) / -2); }
+.star:nth-child(2) { top: 15%; right: 10%; margin-right: calc(var(--size) / -2); margin-top: calc(var(--size) / -2); }
+.star:nth-child(3) { top: 50%; right: 0; margin-right: calc(var(--size) / -2); margin-top: calc(var(--size) / -2); }
+.star:nth-child(4) { bottom: 15%; right: 10%; margin-right: calc(var(--size) / -2); margin-bottom: calc(var(--size) / -2); }
+.star:nth-child(5) { bottom: 0; left: 50%; margin-left: calc(var(--size) / -2); margin-bottom: calc(var(--size) / -2); }
+.star:nth-child(6) { top: 50%; left: 0; margin-left: calc(var(--size) / -2); margin-top: calc(var(--size) / -2); }
 
 /* 旋转动画 */
 @keyframes orbit-rotate {
@@ -247,15 +247,17 @@ img {
     }
 }
 
-/* 星星闪烁动画 */
+/* 星星闪烁动画 - 只改变透明度和大小，不改变位置 */
 @keyframes star-twinkle {
     0%, 100% {
-        opacity: 0.6;
-        transform: scale(1) translate(-50%, -50%);
+        opacity: 0.4;
+        transform: scale(1);
+        box-shadow: 0 0 4px 1px rgba(255, 255, 255, 0.6),
+                    0 0 8px 2px rgba(255, 200, 150, 0.3);
     }
     50% {
         opacity: 1;
-        transform: scale(1.3) translate(-50%, -50%);
+        transform: scale(1.5);
         box-shadow: 0 0 6px 2px rgba(255, 255, 255, 1),
                     0 0 12px 4px rgba(255, 200, 150, 0.6);
     }
