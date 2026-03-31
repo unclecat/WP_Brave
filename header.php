@@ -19,10 +19,10 @@
 
 <?php 
 $hero_bg = get_theme_mod('brave_hero_bg');
-$boy_avatar = get_theme_mod('brave_boy_avatar');
-$boy_name = get_theme_mod('brave_boy_name', '他');
-$girl_avatar = get_theme_mod('brave_girl_avatar');
-$girl_name = get_theme_mod('brave_girl_name', '她');
+$boy_avatar = brave_get_couple_avatar('boy', 200);
+$boy_name = brave_get_couple_name('boy');
+$girl_avatar = brave_get_couple_avatar('girl', 200);
+$girl_name = brave_get_couple_name('girl');
 $nav_text = get_theme_mod('brave_nav_text', '世间最动情之事，莫过于两人相依');
 ?>
 

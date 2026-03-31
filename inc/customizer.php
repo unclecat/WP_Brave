@@ -115,6 +115,62 @@ function brave_customize_register($wp_customize) {
         'section' => 'brave_basic',
         'type' => 'text',
     ));
+
+    // ==================== 头像设置 ====================
+    $wp_customize->add_section('brave_avatar', array(
+        'title' => __('头像设置', 'brave-love'),
+        'panel' => 'brave_settings',
+    ));
+
+    // 用户1头像
+    $wp_customize->add_setting('brave_avatar_user1', array(
+        'default' => '',
+        'sanitize_callback' => 'esc_url_raw',
+        'transport' => 'refresh',
+    ));
+    $wp_customize->add_control(new WP_Customize_Image_Control($wp_customize, 'brave_avatar_user1', array(
+        'label' => __('用户1头像', 'brave-love'),
+        'description' => __('建议尺寸 200x200 像素以上', 'brave-love'),
+        'section' => 'brave_avatar',
+        'settings' => 'brave_avatar_user1',
+    )));
+
+    // 用户1昵称
+    $wp_customize->add_setting('brave_avatar_user1_name', array(
+        'default' => '男朋友',
+        'sanitize_callback' => 'sanitize_text_field',
+        'transport' => 'refresh',
+    ));
+    $wp_customize->add_control('brave_avatar_user1_name', array(
+        'label' => __('用户1昵称', 'brave-love'),
+        'section' => 'brave_avatar',
+        'type' => 'text',
+    ));
+
+    // 用户2头像
+    $wp_customize->add_setting('brave_avatar_user2', array(
+        'default' => '',
+        'sanitize_callback' => 'esc_url_raw',
+        'transport' => 'refresh',
+    ));
+    $wp_customize->add_control(new WP_Customize_Image_Control($wp_customize, 'brave_avatar_user2', array(
+        'label' => __('用户2头像', 'brave-love'),
+        'description' => __('建议尺寸 200x200 像素以上', 'brave-love'),
+        'section' => 'brave_avatar',
+        'settings' => 'brave_avatar_user2',
+    )));
+
+    // 用户2昵称
+    $wp_customize->add_setting('brave_avatar_user2_name', array(
+        'default' => '女朋友',
+        'sanitize_callback' => 'sanitize_text_field',
+        'transport' => 'refresh',
+    ));
+    $wp_customize->add_control('brave_avatar_user2_name', array(
+        'label' => __('用户2昵称', 'brave-love'),
+        'section' => 'brave_avatar',
+        'type' => 'text',
+    ));
     
     // ==================== 纪念日设置 ====================
     $wp_customize->add_section('brave_anniversary', array(
@@ -205,6 +261,41 @@ function brave_customize_register($wp_customize) {
         'label' => __('女生昵称', 'brave-love'),
         'section' => 'brave_hero',
         'type' => 'text',
+    ));
+
+    // 关联 WordPress 用户（可选）
+    $users = get_users(array('fields' => array('ID', 'display_name')));
+    $user_choices = array(0 => __('不关联', 'brave-love'));
+    foreach ($users as $user) {
+        $user_choices[$user->ID] = $user->display_name . ' (ID: ' . $user->ID . ')';
+    }
+
+    // 男生关联用户
+    $wp_customize->add_setting('brave_boy_user_id', array(
+        'default' => 0,
+        'sanitize_callback' => 'intval',
+        'transport' => 'refresh',
+    ));
+    $wp_customize->add_control('brave_boy_user_id', array(
+        'label' => __('男生关联 WordPress 用户', 'brave-love'),
+        'description' => __('如果上传了头像则优先使用上传的，否则使用用户头像', 'brave-love'),
+        'section' => 'brave_hero',
+        'type' => 'select',
+        'choices' => $user_choices,
+    ));
+
+    // 女生关联用户
+    $wp_customize->add_setting('brave_girl_user_id', array(
+        'default' => 0,
+        'sanitize_callback' => 'intval',
+        'transport' => 'refresh',
+    ));
+    $wp_customize->add_control('brave_girl_user_id', array(
+        'label' => __('女生关联 WordPress 用户', 'brave-love'),
+        'description' => __('如果上传了头像则优先使用上传的，否则使用用户头像', 'brave-love'),
+        'section' => 'brave_hero',
+        'type' => 'select',
+        'choices' => $user_choices,
     ));
 
     // ==================== 入口图标 ====================

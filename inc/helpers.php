@@ -6,6 +6,79 @@
  */
 
 /**
+ * 获取情侣头像
+ * 优先使用主题设置的头像，如果没有则使用 WordPress 用户头像
+ *
+ * @param string $gender 'boy' 或 'girl'
+ * @param int $size 头像尺寸
+ * @return string 头像URL
+ */
+function brave_get_couple_avatar($gender = 'boy', $size = 100) {
+    // 1. 优先使用主题设置的头像
+    $theme_avatar = get_theme_mod('brave_' . $gender . '_avatar');
+    if (!empty($theme_avatar)) {
+        return esc_url($theme_avatar);
+    }
+    
+    // 2. 尝试获取 WordPress 用户头像
+    $user_id = get_theme_mod('brave_' . $gender . '_user_id', 0);
+    if ($user_id > 0) {
+        $wp_avatar = get_avatar_url($user_id, array('size' => $size));
+        if ($wp_avatar && !strpos($wp_avatar, 'gravatar.com/avatar/')) {
+            return esc_url($wp_avatar);
+        }
+    }
+    
+    // 3. 使用默认头像生成服务
+    $name = brave_get_couple_name($gender);
+    return 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&size=' . $size . '&background=' . ($gender === 'boy' ? '667eea' : 'f5576c') . '&color=fff';
+}
+
+/**
+ * 获取情侣昵称
+ *
+ * @param string $gender 'boy' 或 'girl'
+ * @return string 昵称
+ */
+function brave_get_couple_name($gender = 'boy') {
+    $name = get_theme_mod('brave_' . $gender . '_name');
+    if (!empty($name)) {
+        return esc_html($name);
+    }
+    
+    // 尝试获取 WordPress 用户昵称
+    $user_id = get_theme_mod('brave_' . $gender . '_user_id', 0);
+    if ($user_id > 0) {
+        $user = get_userdata($user_id);
+        if ($user) {
+            return esc_html($user->display_name);
+        }
+    }
+    
+    return $gender === 'boy' ? '他' : '她';
+}
+
+/**
+ * 获取头像 HTML
+ * 兼容 WordPress 默认头像函数
+ *
+ * @param int|string $user_id 用户ID或性别(boy/girl)
+ * @param int $size 头像尺寸
+ * @return string 头像HTML
+ */
+function brave_get_avatar_html($user_id_or_gender = 'boy', $size = 100) {
+    // 如果传入的是性别
+    if (in_array($user_id_or_gender, array('boy', 'girl'))) {
+        $avatar_url = brave_get_couple_avatar($user_id_or_gender, $size);
+        $name = brave_get_couple_name($user_id_or_gender);
+        return '<img src="' . $avatar_url . '" alt="' . $name . '" class="avatar avatar-' . $size . ' photo" width="' . $size . '" height="' . $size . '">';
+    }
+    
+    // 如果是用户ID，使用默认 get_avatar
+    return get_avatar($user_id_or_gender, $size);
+}
+
+/**
  * 获取心情表情
  */
 function brave_get_mood_emoji($mood) {
