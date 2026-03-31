@@ -104,6 +104,8 @@ function brave_get_memory_years() {
 
 /**
  * 获取点滴年份列表（包括没有见面日期的文章）
+ *
+ * @return array 年份数组，按降序排列
  */
 function brave_get_moment_years() {
     global $wpdb;
@@ -129,9 +131,19 @@ function brave_get_moment_years() {
         ORDER BY year DESC
     ");
     
+    // 确保是数组
+    $meta_years = is_array($meta_years) ? $meta_years : array();
+    $post_years = is_array($post_years) ? $post_years : array();
+    
+    // 过滤掉 null 和空值，确保都是整数
+    $meta_years = array_filter($meta_years, 'is_numeric');
+    $post_years = array_filter($post_years, 'is_numeric');
+    
     // 合并并去重
-    $all_years = array_unique(array_merge($meta_years, $post_years));
-    rsort($all_years);
+    $all_years = array_unique(array_map('intval', array_merge($meta_years, $post_years)));
+    
+    // 降序排序
+    rsort($all_years, SORT_NUMERIC);
     
     return $all_years;
 }

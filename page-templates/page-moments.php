@@ -78,7 +78,7 @@ rsort($years);
 
     <!-- 分页信息 -->
     <div class="pagination-info" style="text-align: center; margin-bottom: 1rem; color: var(--text-muted); font-size: 0.9rem;">
-        共 <?php echo $query->found_posts; ?> 篇 / 第 <?php echo $paged; ?> 页
+        共 <?php echo esc_html($query->found_posts); ?> 篇 / 第 <?php echo esc_html($paged); ?> 页
     </div>
 
     <!-- 时间轴 -->
@@ -137,7 +137,7 @@ rsort($years);
                                             <?php 
                                             // 优先显示自定义摘要
                                             if (!empty($moment_summary)) {
-                                                echo wpautop($moment_summary);
+                                                echo wpautop(wp_kses_post($moment_summary));
                                             } else {
                                                 // 无摘要时截取内容前120字
                                                 echo wpautop(wp_trim_words($moment->post_content, 120));
