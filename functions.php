@@ -125,6 +125,11 @@ require BRAVE_DIR . '/inc/meta-boxes.php';
 require BRAVE_DIR . '/inc/customizer.php';
 
 /**
+ * 相册数据管理
+ */
+require BRAVE_DIR . '/inc/gallery-admin.php';
+
+/**
  * 天气管理
  */
 require BRAVE_DIR . '/inc/weather-admin.php';
