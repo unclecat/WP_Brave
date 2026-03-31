@@ -5,6 +5,8 @@
  * @package Brave_Love
  */
 
+global $wp_rewrite;
+
 get_header();
 
 // 获取设置
@@ -45,13 +47,16 @@ add_action('wp_footer', function() use ($photos, $show_info) {
     </div>
 
     <?php if (!empty($years)) : ?>
-    <!-- 年份筛选 -->
+    <!-- 年份筛选 - 使用锚点方式避免URL冲突 -->
     <nav class="gallery-year-nav">
-        <a href="<?php echo esc_url(remove_query_arg('year')); ?>" class="gallery-year-item <?php echo $current_year === 0 ? 'active' : ''; ?>">
+        <a href="<?php echo esc_url(remove_query_arg(array('year', 'paged'))); ?>" class="gallery-year-item <?php echo $current_year === 0 ? 'active' : ''; ?>">
             <?php _e('全部', 'brave-love'); ?>
         </a>
-        <?php foreach ($years as $year) : ?>
-            <a href="<?php echo esc_url(add_query_arg('year', $year)); ?>" class="gallery-year-item <?php echo $current_year === $year ? 'active' : ''; ?>">
+        <?php foreach ($years as $year) : 
+            // 构建年份筛选URL，确保与分页兼容
+            $year_url = add_query_arg(array('year' => $year, 'paged' => false));
+        ?>
+            <a href="<?php echo esc_url($year_url); ?>" class="gallery-year-item <?php echo $current_year === $year ? 'active' : ''; ?>">
                 <?php echo esc_html($year); ?>
             </a>
         <?php endforeach; ?>
@@ -115,18 +120,20 @@ add_action('wp_footer', function() use ($photos, $show_info) {
 
         <!-- 分页/加载更多 -->
         <?php if ($photo_data['max_num_pages'] > 1) : 
-            // 构建带查询参数的基础URL
-            $query_args = array();
-            if ($current_year > 0) {
-                $query_args['year'] = $current_year;
+            // 获取当前页面URL（不带查询参数）
+            $current_url = get_permalink();
+            
+            // 构建分页基础URL
+            if ($wp_rewrite->using_permalinks()) {
+                // 固定链接格式: /memories/page/2/?year=2025
+                $base = trailingslashit($current_url) . 'page/%#%/';
+            } else {
+                // 默认格式: /?page_id=123&paged=2&year=2025
+                $base = add_query_arg('paged', '%#%', $current_url);
             }
             
-            // 使用 get_pagenum_link 获取正确的分页基础URL
-            $base = trailingslashit(get_pagenum_link(999999999));
-            if (!empty($query_args)) {
-                $base = add_query_arg($query_args, $base);
-            }
-            $base = str_replace('999999999', '%#%', $base);
+            // 年份参数通过 add_args 传递
+            $paginate_args = array('year' => $current_year > 0 ? $current_year : false);
         ?>
             <nav class="gallery-pagination">
                 <?php
@@ -139,7 +146,7 @@ add_action('wp_footer', function() use ($photos, $show_info) {
                     'next_text' => __('下一页', 'brave-love') . ' →',
                     'mid_size' => 2,
                     'end_size' => 1,
-                    'add_args' => false,
+                    'add_args' => array_filter($paginate_args),
                 ));
                 ?>
             </nav>

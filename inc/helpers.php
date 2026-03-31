@@ -407,6 +407,11 @@ function brave_extract_photos_from_moment($moment_id) {
  * @return array|false 照片数据
  */
 function brave_get_photo_data($attachment_id) {
+    // 验证附件是否存在且有效
+    if (!wp_attachment_is_image($attachment_id)) {
+        return false;
+    }
+    
     $url = wp_get_attachment_image_url($attachment_id, 'large');
     if (!$url) {
         return false;
@@ -415,6 +420,11 @@ function brave_get_photo_data($attachment_id) {
     $thumb = wp_get_attachment_image_url($attachment_id, 'medium');
     $meta = wp_get_attachment_metadata($attachment_id);
     $attachment_post = get_post($attachment_id);
+    
+    // 验证缩略图也有效
+    if (!$thumb) {
+        $thumb = $url;
+    }
     
     // 计算宽高比
     $width = !empty($meta['width']) ? $meta['width'] : 0;
