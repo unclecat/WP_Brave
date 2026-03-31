@@ -116,36 +116,64 @@ header('Content-Type: text/html; charset=utf-8');
         echo '<div class="info">建议设置: 设置 → 阅读 → 首页显示 → 一个静态页面</div>';
     }
     
-    // 检查页面
+    // 检查页面和CPT归档
     echo '<h2>4. 页面检查</h2>';
-    $required_pages = [
-        'moments' => '点点滴滴',
-        'lists' => '恋爱清单',
-        'memories' => '甜蜜相册',
-        'notes' => '随笔说说',
-        'blessing' => '祝福留言',
+    
+    // 页面类型的检查
+    $page_checks = [
+        'moments' => ['name' => '点点滴滴', 'type' => 'page'],
+        'memories' => ['name' => '甜蜜相册', 'type' => 'page'],
+        'notes' => ['name' => '随笔说说', 'type' => 'page'],
+        'blessing' => ['name' => '祝福留言', 'type' => 'page'],
+    ];
+    
+    // CPT归档类型的检查
+    $archive_checks = [
+        'lists' => ['name' => '恋爱清单', 'post_type' => 'love_list'],
     ];
     
     echo '<table>';
-    echo '<tr><th>页面</th><th>状态</th><th>模板</th></tr>';
-    foreach ($required_pages as $slug => $name) {
+    echo '<tr><th>页面</th><th>状态</th><th>类型</th></tr>';
+    
+    // 检查页面
+    foreach ($page_checks as $slug => $info) {
         $page = get_page_by_path($slug);
         if ($page) {
             $template = get_page_template_slug($page->ID);
             echo '<tr>';
-            echo '<td>' . $name . '</td>';
+            echo '<td>' . $info['name'] . '</td>';
             echo '<td><span class="success">✅ 已创建</span></td>';
             echo '<td><code>' . ($template ?: '默认') . '</code></td>';
             echo '</tr>';
         } else {
             echo '<tr>';
-            echo '<td>' . $name . '</td>';
+            echo '<td>' . $info['name'] . '</td>';
             echo '<td><span class="error">❌ 未创建</span></td>';
             echo '<td>-</td>';
             echo '</tr>';
-            $warnings[] = "缺少页面: $name";
+            $warnings[] = "缺少页面: " . $info['name'];
         }
     }
+    
+    // 检查CPT归档
+    foreach ($archive_checks as $slug => $info) {
+        $archive_link = get_post_type_archive_link($info['post_type']);
+        if ($archive_link) {
+            echo '<tr>';
+            echo '<td>' . $info['name'] . '</td>';
+            echo '<td><span class="success">✅ 归档页可用</span></td>';
+            echo '<td><code>CPT Archive</code></td>';
+            echo '</tr>';
+        } else {
+            echo '<tr>';
+            echo '<td>' . $info['name'] . '</td>';
+            echo '<td><span class="error">❌ 归档页不可用</span></td>';
+            echo '<td>-</td>';
+            echo '</tr>';
+            $warnings[] = "归档页不可用: " . $info['name'];
+        }
+    }
+    
     echo '</table>';
     
     // 检查主题设置

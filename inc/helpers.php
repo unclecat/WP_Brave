@@ -169,10 +169,17 @@ function brave_is_mobile() {
  * 获取主题页面链接
  */
 function brave_get_page_link($type) {
+    // 恋爱清单使用 CPT archive
+    if ($type === 'lists') {
+        return get_post_type_archive_link('love_list');
+    }
+    
+    // 其他页面使用设置的页面或默认链接
     $page_id = get_theme_mod("brave_page_{$type}");
     if ($page_id) {
         return get_permalink($page_id);
     }
+    
     return home_url("/{$type}/");
 }
 

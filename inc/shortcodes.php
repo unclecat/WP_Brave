@@ -79,13 +79,13 @@ function brave_entries_shortcode($atts) {
             'icon' => get_theme_mod('brave_icon_list', '📜'),
             'title' => __('恋爱清单', 'brave-love'),
             'desc' => __('一起做的事', 'brave-love'),
-            'link' => get_theme_mod('brave_page_lists') ? get_permalink(get_theme_mod('brave_page_lists')) : '#',
+            'link' => get_post_type_archive_link('love_list') ? get_post_type_archive_link('love_list') : '#',
         ),
         array(
             'icon' => get_theme_mod('brave_icon_memory', '📷'),
             'title' => __('甜蜜相册', 'brave-love'),
             'desc' => __('美好回忆', 'brave-love'),
-            'link' => get_theme_mod('brave_page_memories') ? get_permalink(get_theme_mod('brave_page_memories')) : '#',
+            'link' => brave_get_page_link('memories'),
         ),
         array(
             'icon' => get_theme_mod('brave_icon_notes', '📝'),
