@@ -85,7 +85,7 @@ function brave_entries_shortcode($atts) {
             'icon' => get_theme_mod('brave_icon_memory', '📷'),
             'title' => __('甜蜜相册', 'brave-love'),
             'desc' => __('美好回忆', 'brave-love'),
-            'link' => get_theme_mod('brave_page_memory') ? get_permalink(get_theme_mod('brave_page_memory')) : '#',
+            'link' => get_theme_mod('brave_page_memories') ? get_permalink(get_theme_mod('brave_page_memories')) : '#',
         ),
         array(
             'icon' => get_theme_mod('brave_icon_notes', '📝'),

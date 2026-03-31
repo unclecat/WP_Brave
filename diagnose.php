@@ -121,7 +121,7 @@ header('Content-Type: text/html; charset=utf-8');
     $required_pages = [
         'moments' => '点点滴滴',
         'list' => '恋爱清单',
-        'memory' => '甜蜜相册',
+        'memories' => '甜蜜相册',
         'notes' => '随笔说说',
         'blessing' => '祝福留言',
     ];

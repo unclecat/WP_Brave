@@ -304,12 +304,12 @@ function brave_customize_register($wp_customize) {
     ));
 
     // 甜蜜相册页面
-    $wp_customize->add_setting('brave_page_memory', array(
+    $wp_customize->add_setting('brave_page_memories', array(
         'default' => '',
         'sanitize_callback' => 'absint',
         'transport' => 'refresh',
     ));
-    $wp_customize->add_control('brave_page_memory', array(
+    $wp_customize->add_control('brave_page_memories', array(
         'label' => __('甜蜜相册页面', 'brave-love'),
         'section' => 'brave_pages',
         'type' => 'dropdown-pages',

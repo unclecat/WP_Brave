@@ -146,7 +146,7 @@ if (!empty($anniversaries)) :
             <div class="entry-title"><?php _e('恋爱清单', 'brave-love'); ?></div>
             <div class="entry-desc"><?php _e('一起做的事', 'brave-love'); ?></div>
         </a>
-        <a href="<?php echo esc_url(brave_get_page_link('memory')); ?>" class="entry-card">
+        <a href="<?php echo esc_url(brave_get_page_link('memories')); ?>" class="entry-card">
             <div class="entry-icon"><?php echo brave_get_option('icon_memory', '📷'); ?></div>
             <div class="entry-title"><?php _e('甜蜜相册', 'brave-love'); ?></div>
             <div class="entry-desc"><?php _e('美好回忆', 'brave-love'); ?></div>
