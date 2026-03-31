@@ -6,7 +6,7 @@
  */
 
 // 定义常量
-define('BRAVE_VERSION', '0.3.6');
+define('BRAVE_VERSION', '0.4.0');
 define('BRAVE_DIR', get_template_directory());
 define('BRAVE_URI', get_template_directory_uri());
 
@@ -89,6 +89,11 @@ function brave_scripts() {
         wp_enqueue_style('brave-love-list', BRAVE_URI . '/assets/css/love-list.css', array(), BRAVE_VERSION);
     }
     
+    // 随笔说说页面样式
+    if (is_page_template('page-templates/page-notes.php')) {
+        wp_enqueue_style('brave-notes', BRAVE_URI . '/assets/css/notes.css', array(), BRAVE_VERSION);
+    }
+    
     // 甜蜜相册页面样式和脚本
     if (is_page_template('page-templates/page-memories.php')) {
         wp_enqueue_style('brave-memory', BRAVE_URI . '/assets/css/memory.css', array(), BRAVE_VERSION);
@@ -125,14 +130,14 @@ require BRAVE_DIR . '/inc/meta-boxes.php';
 require BRAVE_DIR . '/inc/customizer.php';
 
 /**
- * 相册数据管理
- */
-require BRAVE_DIR . '/inc/gallery-admin.php';
-
-/**
  * 天气管理
  */
 require BRAVE_DIR . '/inc/weather-admin.php';
+
+/**
+ * 相册数据管理
+ */
+require BRAVE_DIR . '/inc/gallery-admin.php';
 
 /**
  * 短代码
@@ -313,8 +318,6 @@ function brave_page_template_redirect() {
 }
 add_action('template_redirect', 'brave_page_template_redirect');
 
-
-
 /**
  * 添加 body class
  */
@@ -325,3 +328,58 @@ function brave_body_classes($classes) {
     return $classes;
 }
 add_filter('body_class', 'brave_body_classes');
+
+/**
+ * 处理前台发布说说
+ */
+function brave_handle_frontend_note_publish() {
+    // 检查是否有提交
+    if (!isset($_POST['publish_note']) || !isset($_POST['publish_note_nonce'])) {
+        return;
+    }
+    
+    // 验证 nonce
+    if (!wp_verify_nonce($_POST['publish_note_nonce'], 'publish_note_action')) {
+        wp_die('安全验证失败');
+    }
+    
+    // 检查用户是否登录
+    if (!is_user_logged_in()) {
+        wp_die('请先登录');
+    }
+    
+    // 获取内容
+    $content = isset($_POST['note_content']) ? sanitize_textarea_field($_POST['note_content']) : '';
+    
+    if (empty($content)) {
+        wp_die('请输入说说内容');
+    }
+    
+    // 获取心情和思念度
+    $mood = isset($_POST['note_mood']) ? sanitize_text_field($_POST['note_mood']) : '😊';
+    $miss_level = isset($_POST['note_miss_level']) ? intval($_POST['note_miss_level']) : 3;
+    
+    // 创建文章
+    $post_data = array(
+        'post_title'   => wp_trim_words($content, 20),
+        'post_content' => $content,
+        'post_status'  => 'publish',
+        'post_type'    => 'note',
+        'post_author'  => get_current_user_id(),
+    );
+    
+    $post_id = wp_insert_post($post_data);
+    
+    if (is_wp_error($post_id)) {
+        wp_die('发布失败，请重试');
+    }
+    
+    // 保存元数据
+    update_post_meta($post_id, '_note_mood', $mood);
+    update_post_meta($post_id, '_note_miss_level', $miss_level);
+    
+    // 重定向回当前页面
+    wp_redirect($_SERVER['HTTP_REFERER']);
+    exit;
+}
+add_action('template_redirect', 'brave_handle_frontend_note_publish');

@@ -3,92 +3,328 @@
  * Template Name: 随笔说说
  *
  * @package Brave_Love
+ * @version 0.4.0
  */
 
 get_header();
 
+// 获取筛选参数
+$filter_year = isset($_GET['filter_year']) ? intval($_GET['filter_year']) : 0;
+$filter_month = isset($_GET['filter_month']) ? intval($_GET['filter_month']) : 0;
+$filter_day = isset($_GET['filter_day']) ? intval($_GET['filter_day']) : 0;
+
 $paged = get_query_var('paged') ? get_query_var('paged') : 1;
 
+// 构建查询参数
 $args = array(
     'post_type' => 'note',
-    'posts_per_page' => 10,
+    'posts_per_page' => 12,
     'paged' => $paged,
     'orderby' => 'date',
     'order' => 'DESC',
 );
 
+// 添加日期筛选
+if ($filter_year) {
+    $args['date_query'] = array(
+        array(
+            'year' => $filter_year,
+        ),
+    );
+    
+    if ($filter_month) {
+        $args['date_query'][0]['month'] = $filter_month;
+        
+        if ($filter_day) {
+            $args['date_query'][0]['day'] = $filter_day;
+        }
+    }
+}
+
 $query = new WP_Query($args);
+
+// 获取所有年份
+$years = brave_get_note_years();
+
+// 获取选中年的月份
+$months = array();
+if ($filter_year) {
+    $months = brave_get_note_months($filter_year);
+}
+
+// 获取选中月的天数
+$days = array();
+if ($filter_year && $filter_month) {
+    $days = brave_get_note_days($filter_year, $filter_month);
+}
+
+// 当前用户是否已登录
+$is_logged_in = is_user_logged_in();
+$current_user = wp_get_current_user();
 ?>
 
 <section class="content-section">
     <div class="section-header">
         <h1 class="section-title">📝 随笔说说</h1>
-        <p class="section-desc">记录生活的点滴心情</p>
+        <p class="section-desc">记录生活的点滴心情与思念</p>
     </div>
 
-    <!-- 说说列表 -->
+    <!-- 级联筛选器 -->
+    <div class="notes-filter-bar">
+        <div class="filter-group">
+            <a href="<?php echo esc_url(remove_query_arg(array('filter_year', 'filter_month', 'filter_day'))); ?>" 
+               class="filter-btn <?php echo !$filter_year ? 'active' : ''; ?>">
+                全部
+            </a>
+        </div>
+        
+        <!-- 年份筛选 -->
+        <div class="filter-group">
+            <button class="filter-dropdown-toggle <?php echo $filter_year ? 'has-value' : ''; ?>" data-toggle="year">
+                <?php echo $filter_year ? $filter_year . '年' : '年份 ▼'; ?>
+            </button>
+            <div class="filter-dropdown" id="year-dropdown">
+                <?php foreach ($years as $year) : ?>
+                    <a href="<?php echo esc_url(add_query_arg(array('filter_year' => $year, 'filter_month' => false, 'filter_day' => false))); ?>" 
+                       class="filter-option <?php echo $filter_year == $year ? 'active' : ''; ?>">
+                        <?php echo $year; ?>年
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        
+        <!-- 月份筛选 -->
+        <?php if ($filter_year && !empty($months)) : ?>
+        <div class="filter-group">
+            <button class="filter-dropdown-toggle <?php echo $filter_month ? 'has-value' : ''; ?>" data-toggle="month">
+                <?php echo $filter_month ? $filter_month . '月' : '月份 ▼'; ?>
+            </button>
+            <div class="filter-dropdown" id="month-dropdown">
+                <?php foreach ($months as $month) : ?>
+                    <a href="<?php echo esc_url(add_query_arg(array('filter_month' => $month, 'filter_day' => false))); ?>" 
+                       class="filter-option <?php echo $filter_month == $month ? 'active' : ''; ?>">
+                        <?php echo $month; ?>月
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <?php endif; ?>
+        
+        <!-- 日期筛选 -->
+        <?php if ($filter_year && $filter_month && !empty($days)) : ?>
+        <div class="filter-group">
+            <button class="filter-dropdown-toggle <?php echo $filter_day ? 'has-value' : ''; ?>" data-toggle="day">
+                <?php echo $filter_day ? $filter_day . '日' : '日期 ▼'; ?>
+            </button>
+            <div class="filter-dropdown" id="day-dropdown">
+                <?php foreach ($days as $day) : ?>
+                    <a href="<?php echo esc_url(add_query_arg('filter_day', $day)); ?>" 
+                       class="filter-option <?php echo $filter_day == $day ? 'active' : ''; ?>">
+                        <?php echo $day; ?>日
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <?php endif; ?>
+    </div>
+
+    <!-- 登录用户发布表单 -->
+    <?php if ($is_logged_in) : ?>
+    <div class="note-publish-form">
+        <div class="publish-header">
+            <img src="<?php echo esc_url(get_avatar_url($current_user->ID)); ?>" alt="" class="publish-avatar">
+            <span class="publish-name"><?php echo esc_html($current_user->display_name); ?></span>
+        </div>
+        <form id="quick-note-form" method="post" action="">
+            <?php wp_nonce_field('publish_note_action', 'publish_note_nonce'); ?>
+            <textarea name="note_content" class="publish-textarea" placeholder="写下此刻的心情..." required></textarea>
+            
+            <div class="publish-options">
+                <div class="option-group">
+                    <label>心情</label>
+                    <div class="mood-selector">
+                        <button type="button" class="mood-btn" data-mood="😊">😊</button>
+                        <button type="button" class="mood-btn" data-mood="😢">😢</button>
+                        <button type="button" class="mood-btn" data-mood="🥰">🥰</button>
+                        <button type="button" class="mood-btn" data-mood="😌">😌</button>
+                        <button type="button" class="mood-btn" data-mood="🤔">🤔</button>
+                        <button type="button" class="mood-btn" data-mood="😴">😴</button>
+                    </div>
+                    <input type="hidden" name="note_mood" id="selected-mood" value="😊">
+                </div>
+                
+                <div class="option-group">
+                    <label>思念度</label>
+                    <div class="miss-level-selector">
+                        <button type="button" class="star-btn" data-level="1">⭐</button>
+                        <button type="button" class="star-btn" data-level="2">⭐</button>
+                        <button type="button" class="star-btn" data-level="3">⭐</button>
+                        <button type="button" class="star-btn" data-level="4">⭐</button>
+                        <button type="button" class="star-btn" data-level="5">⭐</button>
+                    </div>
+                    <input type="hidden" name="note_miss_level" id="selected-miss-level" value="3">
+                </div>
+            </div>
+            
+            <div class="publish-actions">
+                <button type="submit" name="publish_note" class="publish-submit">发布说说</button>
+            </div>
+        </form>
+    </div>
+    <?php endif; ?>
+
+    <!-- 瀑布流说说列表 -->
     <?php if ($query->have_posts()) : ?>
-        <div class="notes-stream">
+        <div class="notes-waterfall" id="notesWaterfall">
             <?php while ($query->have_posts()) : $query->the_post(); 
                 $note_mood = get_post_meta(get_the_ID(), '_note_mood', true);
-                $note_images = brave_get_note_images(get_the_ID());
-                $image_count = count($note_images);
+                $note_miss_level = get_post_meta(get_the_ID(), '_note_miss_level', true);
+                if (empty($note_miss_level)) $note_miss_level = 3;
+                
+                $author_id = get_the_author_meta('ID');
+                $author_name = get_the_author();
+                $author_avatar = get_avatar_url($author_id);
+                $post_date = get_the_date('Y-m-d H:i');
             ?>
-                <article class="note-card fade-in">
-                    <div class="note-header">
-                        <span class="note-time"><?php echo human_time_diff(get_the_time('U'), current_time('timestamp')) . __('前', 'brave-love'); ?></span>
-                        <?php if ($note_mood) : ?>
-                            <span class="note-mood"><?php echo esc_html($note_mood); ?></span>
-                        <?php endif; ?>
+                <article class="note-waterfall-card">
+                    <div class="note-card-header">
+                        <img src="<?php echo esc_url($author_avatar); ?>" alt="" class="note-author-avatar">
+                        <div class="note-author-info">
+                            <span class="note-author-name"><?php echo esc_html($author_name); ?></span>
+                            <span class="note-datetime"><?php echo esc_html($post_date); ?></span>
+                        </div>
                     </div>
                     
-                    <?php if (get_the_content()) : ?>
+                    <div class="note-card-body">
+                        <?php if ($note_mood) : ?>
+                            <div class="note-mood-badge"><?php echo esc_html($note_mood); ?></div>
+                        <?php endif; ?>
+                        
                         <div class="note-content">
                             <?php the_content(); ?>
                         </div>
-                    <?php endif; ?>
+                    </div>
                     
-                    <?php if (!empty($note_images)) : ?>
-                        <div class="note-images count-<?php echo min($image_count, 9); ?>">
-                            <?php foreach ($note_images as $index => $image) : 
-                                if ($index >= 9) break;
-                            ?>
-                                <img src="<?php echo esc_url($image['url']); ?>" 
-                                     data-full="<?php echo esc_url($image['url']); ?>"
-                                     data-thumb="<?php echo esc_url($image['thumb']); ?>"
-                                     alt="" 
-                                     class="note-image"
-                                     loading="lazy">
-                            <?php endforeach; ?>
+                    <div class="note-card-footer">
+                        <div class="note-miss-level">
+                            <span class="miss-label">思念</span>
+                            <span class="miss-stars">
+                                <?php echo str_repeat('⭐', $note_miss_level); ?>
+                            </span>
                         </div>
-                    <?php endif; ?>
+                    </div>
                 </article>
             <?php endwhile; ?>
         </div>
 
         <!-- 分页 -->
         <?php if ($query->max_num_pages > 1) : ?>
-            <div class="text-center mt-4">
+            <nav class="notes-pagination">
                 <?php
+                $base = get_pagenum_link(999999999);
+                $base = str_replace('999999999', '%#%', $base);
+                
                 echo paginate_links(array(
-                    'total' => $query->max_num_pages,
+                    'base' => $base,
+                    'format' => '',
                     'current' => $paged,
-                    'prev_text' => __('← 上一页', 'brave-love'),
-                    'next_text' => __('下一页 →', 'brave-love'),
-                    'mid_size' => 1,
+                    'total' => $query->max_num_pages,
+                    'prev_text' => '← 上一页',
+                    'next_text' => '下一页 →',
+                    'mid_size' => 2,
+                    'add_args' => array_filter(array(
+                        'filter_year' => $filter_year ?: false,
+                        'filter_month' => $filter_month ?: false,
+                        'filter_day' => $filter_day ?: false,
+                    )),
                 ));
                 ?>
-            </div>
+            </nav>
         <?php endif; ?>
         
         <?php wp_reset_postdata(); ?>
     <?php else : ?>
-        <div class="text-center" style="padding: 3rem 1rem;">
-            <p style="color: #999; margin-bottom: 1rem;">📝</p>
-            <p style="color: #666;"><?php _e('还没有发布任何说说，快去记录心情吧！', 'brave-love'); ?></p>
+        <div class="notes-empty">
+            <div class="notes-empty-icon">📝</div>
+            <p class="notes-empty-text">还没有发布任何说说</p>
+            <?php if (!$is_logged_in) : ?>
+                <p class="notes-empty-hint">登录后可以发布你的第一条说说</p>
+            <?php endif; ?>
         </div>
     <?php endif; ?>
 </section>
+
+<script>
+// 级联筛选下拉菜单
+document.addEventListener('DOMContentLoaded', function() {
+    const toggles = document.querySelectorAll('.filter-dropdown-toggle');
+    
+    toggles.forEach(function(toggle) {
+        toggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const target = this.getAttribute('data-toggle');
+            const dropdown = document.getElementById(target + '-dropdown');
+            
+            // 关闭其他下拉菜单
+            document.querySelectorAll('.filter-dropdown').forEach(function(d) {
+                if (d !== dropdown) d.classList.remove('show');
+            });
+            
+            // 切换当前下拉菜单
+            dropdown.classList.toggle('show');
+        });
+    });
+    
+    // 点击外部关闭下拉菜单
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.filter-dropdown').forEach(function(d) {
+            d.classList.remove('show');
+        });
+    });
+    
+    // 心情选择
+    const moodBtns = document.querySelectorAll('.mood-btn');
+    const moodInput = document.getElementById('selected-mood');
+    
+    moodBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            moodBtns.forEach(function(b) { b.classList.remove('active'); });
+            this.classList.add('active');
+            moodInput.value = this.getAttribute('data-mood');
+        });
+    });
+    
+    // 默认选中第一个心情
+    if (moodBtns.length > 0) {
+        moodBtns[0].classList.add('active');
+    }
+    
+    // 思念度选择
+    const starBtns = document.querySelectorAll('.star-btn');
+    const missInput = document.getElementById('selected-miss-level');
+    
+    function updateStars(level) {
+        starBtns.forEach(function(btn, index) {
+            if (index < level) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+        missInput.value = level;
+    }
+    
+    starBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const level = parseInt(this.getAttribute('data-level'));
+            updateStars(level);
+        });
+    });
+    
+    // 默认选中3星
+    updateStars(3);
+});
+</script>
 
 <?php
 get_footer();

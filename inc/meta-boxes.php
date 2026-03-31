@@ -112,12 +112,28 @@ function brave_note_meta_box($post) {
     wp_nonce_field('brave_note_meta', 'brave_note_nonce');
     
     $note_mood = get_post_meta($post->ID, '_note_mood', true);
+    $note_miss_level = get_post_meta($post->ID, '_note_miss_level', true);
+    if (empty($note_miss_level)) {
+        $note_miss_level = 3; // 默认3星
+    }
     ?>
     <p>
         <label for="note_mood"><strong><?php _e('心情表情', 'brave-love'); ?></strong></label><br>
         <input type="text" id="note_mood" name="note_mood" value="<?php echo esc_attr($note_mood); ?>" class="widefat" placeholder="<?php _e('例如：😊 🤩 🥰', 'brave-love'); ?>">
     </p>
     <p class="description"><?php _e('在标题下方显示表情符号', 'brave-love'); ?></p>
+    
+    <p style="margin-top: 20px;">
+        <label for="note_miss_level"><strong><?php _e('思念度', 'brave-love'); ?></strong></label><br>
+        <select id="note_miss_level" name="note_miss_level" class="widefat">
+            <option value="1" <?php selected($note_miss_level, 1); ?>>⭐ (1星 - 轻微思念)</option>
+            <option value="2" <?php selected($note_miss_level, 2); ?>>⭐⭐ (2星 - 有点想你)</option>
+            <option value="3" <?php selected($note_miss_level, 3); ?>>⭐⭐⭐ (3星 - 很想你)</option>
+            <option value="4" <?php selected($note_miss_level, 4); ?>>⭐⭐⭐⭐ (4星 - 非常想你)</option>
+            <option value="5" <?php selected($note_miss_level, 5); ?>>⭐⭐⭐⭐⭐ (5星 - 思念成疾)</option>
+        </select>
+    </p>
+    <p class="description"><?php _e('选择对TA的思念程度', 'brave-love'); ?></p>
     <?php
 }
 
@@ -155,6 +171,9 @@ function brave_save_meta_boxes($post_id) {
     if (isset($_POST['brave_note_nonce']) && wp_verify_nonce($_POST['brave_note_nonce'], 'brave_note_meta')) {
         if (isset($_POST['note_mood'])) {
             update_post_meta($post_id, '_note_mood', sanitize_text_field($_POST['note_mood']));
+        }
+        if (isset($_POST['note_miss_level'])) {
+            update_post_meta($post_id, '_note_miss_level', intval($_POST['note_miss_level']));
         }
     }
 }

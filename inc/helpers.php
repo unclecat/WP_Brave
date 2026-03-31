@@ -263,12 +263,11 @@ function brave_get_all_moment_photos($args = array()) {
     );
     
     // 按年份筛选
-    $year = !empty($args['filter_year']) ? $args['filter_year'] : (!empty($args['year']) ? $args['year'] : 0);
-    if (!empty($year)) {
+    if (!empty($args['year'])) {
         $query_args['meta_query'] = array(
             array(
                 'key' => '_meet_date',
-                'value' => array($year . '-01-01', $year . '-12-31'),
+                'value' => array($args['year'] . '-01-01', $args['year'] . '-12-31'),
                 'compare' => 'BETWEEN',
                 'type' => 'DATE',
             ),
@@ -483,4 +482,67 @@ function brave_get_gallery_years() {
     ");
     
     return is_array($years) ? array_map('intval', array_filter($years, 'is_numeric')) : array();
+}
+
+/**
+ * 获取随笔说说的所有年份
+ *
+ * @return array 年份数组
+ */
+function brave_get_note_years() {
+    global $wpdb;
+    
+    $years = $wpdb->get_col("
+        SELECT DISTINCT YEAR(post_date) as year
+        FROM {$wpdb->posts}
+        WHERE post_type = 'note'
+        AND post_status = 'publish'
+        ORDER BY year DESC
+    ");
+    
+    return is_array($years) ? array_map('intval', array_filter($years, 'is_numeric')) : array();
+}
+
+/**
+ * 获取指定年份的月份
+ *
+ * @param int $year 年份
+ * @return array 月份数组
+ */
+function brave_get_note_months($year) {
+    global $wpdb;
+    
+    $months = $wpdb->get_col($wpdb->prepare("
+        SELECT DISTINCT MONTH(post_date) as month
+        FROM {$wpdb->posts}
+        WHERE post_type = 'note'
+        AND post_status = 'publish'
+        AND YEAR(post_date) = %d
+        ORDER BY month DESC
+    ", $year));
+    
+    return is_array($months) ? array_map('intval', array_filter($months, 'is_numeric')) : array();
+}
+
+/**
+ * 获取指定年月的天数
+ *
+ * @param int $year 年份
+ * @param int $month 月份
+ * @return array 日期数组
+ */
+function brave_get_note_days($year, $month) {
+    global $wpdb;
+    
+    $days = $wpdb->get_col($wpdb->prepare("
+        SELECT DISTINCT DAY(post_date) as day
+        FROM {$wpdb->posts}
+        WHERE post_type = 'note'
+        AND post_status = 'publish'
+        AND YEAR(post_date) = %d
+        AND MONTH(post_date) = %d
+        ORDER BY day DESC
+    ", $year, $month));
+    
+    return is_array($days) ? array_map('intval', array_filter($days, 'is_numeric')) : array();
 }
