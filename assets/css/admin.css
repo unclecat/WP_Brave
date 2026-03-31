@@ -2,22 +2,6 @@
  * Brave Love Admin Styles
  */
 
-/* 画廊上传说明框 */
-#memory_upload_guide .inside {
-    padding: 0 !important;
-    margin: 0 !important;
-}
-
-#memory_upload_guide .hndle {
-    background: linear-gradient(135deg, #ffebee 0%, #fce4ec 100%);
-    border-bottom: 2px solid #f8bbd0;
-}
-
-#memory_upload_guide .hndle span {
-    color: #c2185b;
-    font-weight: 600;
-}
-
 /* CPT 图标样式 */
 #menu-posts-moment .wp-menu-image::before {
     content: '💖';
@@ -32,82 +16,4 @@
 #menu-posts-note .wp-menu-image::before {
     content: '📝';
     font-family: inherit;
-}
-
-#menu-posts-memory .wp-menu-image::before {
-    content: '📷';
-    font-family: inherit;
-}
-
-/* 相册编辑页提示 */
-.post-type-memory #postdivrich::before {
-    content: '💡 提示：在下方编辑器中插入图片，它们会自动显示在相册中';
-    display: block;
-    background: #e3f2fd;
-    border-left: 4px solid #2196f3;
-    padding: 12px 15px;
-    margin-bottom: 15px;
-    color: #1565c0;
-    font-size: 13px;
-}
-
-/* 特色图片区域强调 */
-.post-type-memory #postimagediv .hndle {
-    background: #fff3e0;
-    border-bottom: 2px solid #ffb74d;
-}
-
-.post-type-memory #postimagediv .hndle span {
-    color: #e65100;
-    font-weight: 600;
-}
-
-/* 编辑器区域 */
-.post-type-memory #wp-content-editor-tools {
-    background: #fafafa;
-}
-
-/* 空相册提示 */
-.memory-empty-notice {
-    background: #fff8e1;
-    border: 1px dashed #ffc107;
-    padding: 20px;
-    text-align: center;
-    border-radius: 4px;
-    margin: 20px 0;
-}
-
-.memory-empty-notice .icon {
-    font-size: 48px;
-    margin-bottom: 10px;
-}
-
-.memory-empty-notice .text {
-    color: #666;
-    font-size: 14px;
-}
-
-/* 照片计数徽章 */
-.memory-photo-count {
-    display: inline-block;
-    background: #ff5162;
-    color: white;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 600;
-    margin-left: 5px;
-}
-
-/* 列表中的照片预览 */
-.column-photo_count .photo-preview {
-    display: inline-flex;
-    gap: 5px;
-}
-
-.column-photo_count .photo-preview img {
-    width: 40px;
-    height: 40px;
-    object-fit: cover;
-    border-radius: 4px;
 }
