@@ -200,14 +200,26 @@
 .card-title {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--text-color);
+    color: var(--primary-color);
     line-height: 1.4;
     margin-bottom: 0.25rem;
     word-break: break-word;
 }
 
-.love-list-card.done .card-title {
+/* 完成状态符号 */
+.card-title::before {
+    content: '○';
+    display: inline-block;
+    margin-right: 0.5rem;
+    font-size: 0.875rem;
     color: var(--primary-color);
+    opacity: 0.5;
+}
+
+.love-list-card.done .card-title::before {
+    content: '✓';
+    opacity: 1;
+    font-weight: 700;
 }
 
 .card-date {
