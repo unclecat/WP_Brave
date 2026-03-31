@@ -4,7 +4,7 @@ Theme URI: https://github.com/yourname/brave-wp
 Author: Kimi Code
 Author URI: https://kimi.moonshot.cn
 Description: 一个浪漫的 WordPress 情侣主题，记录你们的点点滴滴、恋爱清单、甜蜜相册和随笔说说。
-Version: 0.3.5
+Version: 0.3.6
 License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: brave-love
@@ -131,8 +131,8 @@ img {
 .hero-section {
     position: relative;
     width: 100%;
-    height: 40vh;
-    min-height: 320px;
+    height: 27vh;
+    min-height: 220px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -1243,7 +1243,7 @@ textarea.form-control {
    ================================ */
 @media (min-width: 576px) {
     .hero-section {
-        height: 45vh;
+        height: 30vh;
     }
     
     .lover-avatar {
@@ -1285,8 +1285,8 @@ textarea.form-control {
    ================================ */
 @media (min-width: 992px) {
     .hero-section {
-        height: 50vh;
-        min-height: 400px;
+        height: 33vh;
+        min-height: 280px;
     }
     
     .lover-avatar {
