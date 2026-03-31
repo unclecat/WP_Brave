@@ -21,10 +21,11 @@ function brave_get_couple_avatar($gender = 'boy', $size = 100) {
     }
     
     // 2. 尝试获取 WordPress 用户头像
-    $user_id = get_theme_mod('brave_' . $gender . '_user_id', 0);
+    $user_id = get_theme_mod('brave_' . $gender . '_user_id');
+    $user_id = intval($user_id);
     if ($user_id > 0) {
         $wp_avatar = get_avatar_url($user_id, array('size' => $size));
-        if ($wp_avatar && !strpos($wp_avatar, 'gravatar.com/avatar/')) {
+        if ($wp_avatar) {
             return esc_url($wp_avatar);
         }
     }
@@ -47,7 +48,8 @@ function brave_get_couple_name($gender = 'boy') {
     }
     
     // 尝试获取 WordPress 用户昵称
-    $user_id = get_theme_mod('brave_' . $gender . '_user_id', 0);
+    $user_id = get_theme_mod('brave_' . $gender . '_user_id');
+    $user_id = intval($user_id);
     if ($user_id > 0) {
         $user = get_userdata($user_id);
         if ($user) {
