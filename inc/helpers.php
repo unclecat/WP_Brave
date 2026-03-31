@@ -256,11 +256,12 @@ function brave_get_all_moment_photos($args = array()) {
     );
     
     // 按年份筛选
-    if (!empty($args['year'])) {
+    $year = !empty($args['filter_year']) ? $args['filter_year'] : (!empty($args['year']) ? $args['year'] : 0);
+    if (!empty($year)) {
         $query_args['meta_query'] = array(
             array(
                 'key' => '_meet_date',
-                'value' => array($args['year'] . '-01-01', $args['year'] . '-12-31'),
+                'value' => array($year . '-01-01', $year . '-12-31'),
                 'compare' => 'BETWEEN',
                 'type' => 'DATE',
             ),

@@ -13,15 +13,15 @@ get_header();
 $per_page = get_theme_mod('brave_gallery_per_page', 12);
 $show_info = get_theme_mod('brave_gallery_show_info', true);
 
-// 获取筛选参数
-$current_year = isset($_GET['year']) ? intval($_GET['year']) : 0;
+// 获取筛选参数 - 使用 filter_year 避免与 WordPress 保留参数 year 冲突
+$current_year = isset($_GET['filter_year']) ? intval($_GET['filter_year']) : 0;
 $paged = get_query_var('paged') ? get_query_var('paged') : 1;
 
 // 获取照片数据
 $photo_data = brave_get_all_moment_photos(array(
     'posts_per_page' => $per_page,
     'paged' => $paged,
-    'year' => $current_year,
+    'filter_year' => $current_year,
 ));
 
 $photos = $photo_data['photos'];
@@ -49,12 +49,12 @@ add_action('wp_footer', function() use ($photos, $show_info) {
     <?php if (!empty($years)) : ?>
     <!-- 年份筛选 - 使用锚点方式避免URL冲突 -->
     <nav class="gallery-year-nav">
-        <a href="<?php echo esc_url(remove_query_arg(array('year', 'paged'))); ?>" class="gallery-year-item <?php echo $current_year === 0 ? 'active' : ''; ?>">
+        <a href="<?php echo esc_url(remove_query_arg(array('filter_year', 'paged'))); ?>" class="gallery-year-item <?php echo $current_year === 0 ? 'active' : ''; ?>">
             <?php _e('全部', 'brave-love'); ?>
         </a>
         <?php foreach ($years as $year) : 
             // 构建年份筛选URL，确保与分页兼容
-            $year_url = add_query_arg(array('year' => $year, 'paged' => false));
+            $year_url = add_query_arg(array('filter_year' => $year, 'paged' => false));
         ?>
             <a href="<?php echo esc_url($year_url); ?>" class="gallery-year-item <?php echo $current_year === $year ? 'active' : ''; ?>">
                 <?php echo esc_html($year); ?>
@@ -133,7 +133,7 @@ add_action('wp_footer', function() use ($photos, $show_info) {
             }
             
             // 年份参数通过 add_args 传递
-            $paginate_args = array('year' => $current_year > 0 ? $current_year : false);
+            $paginate_args = array('filter_year' => $current_year > 0 ? $current_year : false);
         ?>
             <nav class="gallery-pagination">
                 <?php
