@@ -118,23 +118,25 @@ rsort($years);
                                         </div>
                                     </div>
                                     
-                                    <?php if ($has_thumbnail) : ?>
-                                        <div class="timeline-card-media">
-                                            <?php echo get_the_post_thumbnail($moment->ID, 'medium', array('class' => 'timeline-card-image')); ?>
-                                        </div>
-                                    <?php endif; ?>
-                                    
                                     <div class="timeline-card-body">
-                                        <div class="timeline-card-excerpt">
-                                            <?php 
-                                            // 优先显示自定义摘要
-                                            if (!empty($moment_summary)) {
-                                                echo wpautop(wp_kses_post($moment_summary));
-                                            } else {
-                                                // 无摘要时截取内容前120字
-                                                echo wpautop(wp_trim_words($moment->post_content, 120));
-                                            }
-                                            ?>
+                                        <div class="timeline-card-content">
+                                            <div class="timeline-card-excerpt">
+                                                <?php 
+                                                // 优先显示自定义摘要
+                                                if (!empty($moment_summary)) {
+                                                    echo wpautop(wp_kses_post($moment_summary));
+                                                } else {
+                                                    // 无摘要时截取内容前120字
+                                                    echo wpautop(wp_trim_words($moment->post_content, 120));
+                                                }
+                                                ?>
+                                            </div>
+                                            
+                                            <?php if ($has_thumbnail) : ?>
+                                                <div class="timeline-card-media">
+                                                    <?php echo get_the_post_thumbnail($moment->ID, 'medium', array('class' => 'timeline-card-image')); ?>
+                                                </div>
+                                            <?php endif; ?>
                                         </div>
                                         
                                         <?php if ($location) : ?>
