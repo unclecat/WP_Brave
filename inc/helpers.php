@@ -86,23 +86,6 @@ function brave_get_note_images($post_id, $size = 'medium') {
 }
 
 /**
- * 获取相册年份列表（用于筛选）
- */
-function brave_get_memory_years() {
-    global $wpdb;
-    
-    $years = $wpdb->get_col($wpdb->prepare("
-        SELECT DISTINCT YEAR(meta_value) as year
-        FROM {$wpdb->postmeta}
-        WHERE meta_key = %s
-        AND meta_value != ''
-        ORDER BY year DESC
-    ", '_memory_date'));
-    
-    return $years;
-}
-
-/**
  * 获取点滴年份列表（包括没有见面日期的文章）
  *
  * @return array 年份数组，按降序排列

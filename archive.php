@@ -24,8 +24,6 @@ get_header();
                 printf(__('月份：%s', 'brave-love'), '<span>' . get_the_date('F Y') . '</span>');
             elseif (is_day()) :
                 printf(__('日期：%s', 'brave-love'), '<span>' . get_the_date() . '</span>');
-            elseif (is_tax('memory_tag')) :
-                single_term_title();
             elseif (is_tax('list_category')) :
                 single_term_title();
             else :

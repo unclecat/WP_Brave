@@ -96,7 +96,6 @@ rsort($years);
                         }
                         $location = get_post_meta($moment->ID, '_meet_location', true);
                         $mood = get_post_meta($moment->ID, '_mood', true);
-                        $related_memory = get_post_meta($moment->ID, '_related_memory', true);
                         $moment_summary = get_post_meta($moment->ID, '_moment_summary', true);
                         $has_thumbnail = has_post_thumbnail($moment->ID);
                         $moment_link = get_permalink($moment->ID);
@@ -119,16 +118,9 @@ rsort($years);
                                         </div>
                                     </div>
                                     
-                                    <?php if ($has_thumbnail || $related_memory) : ?>
+                                    <?php if ($has_thumbnail) : ?>
                                         <div class="timeline-card-media">
-                                            <?php if ($has_thumbnail) : ?>
-                                                <?php echo get_the_post_thumbnail($moment->ID, 'medium', array('class' => 'timeline-card-image')); ?>
-                                            <?php else : 
-                                                $memory_photos = brave_get_memory_photos($related_memory, 'thumbnail');
-                                                if (!empty($memory_photos)) : ?>
-                                                    <img src="<?php echo esc_url($memory_photos[0]['url']); ?>" alt="" class="timeline-card-image">
-                                                <?php endif; ?>
-                                            <?php endif; ?>
+                                            <?php echo get_the_post_thumbnail($moment->ID, 'medium', array('class' => 'timeline-card-image')); ?>
                                         </div>
                                     <?php endif; ?>
                                     

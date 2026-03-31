@@ -13,7 +13,6 @@ while (have_posts()) :
     $meet_date = get_post_meta(get_the_ID(), '_meet_date', true);
     $location = get_post_meta(get_the_ID(), '_meet_location', true);
     $mood = get_post_meta(get_the_ID(), '_mood', true);
-    $related_memory = get_post_meta(get_the_ID(), '_related_memory', true);
 ?>
 
 <section class="content-section">
@@ -73,14 +72,7 @@ while (have_posts()) :
                 </div>
             <?php endif; ?>
             
-            <?php if ($related_memory) : ?>
-                <div class="moment-meta-item">
-                    <span class="meta-label">📷 相关相册</span>
-                    <a href="<?php echo esc_url(get_permalink($related_memory)); ?>" class="meta-link">
-                        <?php echo esc_html(get_the_title($related_memory)); ?>
-                    </a>
-                </div>
-            <?php endif; ?>
+
         </div>
 
         <!-- 导航 -->

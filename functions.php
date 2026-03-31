@@ -34,7 +34,6 @@ function brave_setup() {
 
     // 设置特色图片尺寸
     set_post_thumbnail_size(400, 400, true);
-    add_image_size('memory-thumb', 400, 400, true);
     add_image_size('timeline-thumb', 300, 300, true);
 
     // 注册导航菜单
@@ -107,14 +106,6 @@ function brave_admin_scripts($hook) {
     
     // 在所有后台页面加载样式
     wp_enqueue_style('brave-admin', $theme_uri . '/assets/css/admin.css', array(), $version);
-    
-    // 在相册编辑页面加载脚本
-    if ($hook === 'post.php' || $hook === 'post-new.php') {
-        global $post;
-        if (isset($post) && $post->post_type === 'memory') {
-            wp_enqueue_script('brave-admin', $theme_uri . '/assets/js/admin.js', array('jquery'), $version, true);
-        }
-    }
 }
 add_action('admin_enqueue_scripts', 'brave_admin_scripts');
 
