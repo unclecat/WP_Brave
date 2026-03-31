@@ -255,21 +255,21 @@ function brave_kses_svg($svg) {
  */
 function brave_get_all_moment_photos($args = array()) {
     $defaults = array(
-        'posts_per_page' => -1,
+        'posts_per_page' => 12,
         'paged' => 1,
         'year' => 0,
     );
     $args = wp_parse_args($args, $defaults);
     
-    // 构建查询参数
+    // 首先获取所有符合条件的 moment 文章
     $query_args = array(
         'post_type' => 'moment',
         'post_status' => 'publish',
-        'posts_per_page' => $args['posts_per_page'],
-        'paged' => $args['paged'],
+        'posts_per_page' => -1,  // 获取所有
         'orderby' => 'meta_value',
         'meta_key' => '_meet_date',
         'order' => 'DESC',
+        'fields' => 'ids',
     );
     
     // 按年份筛选
@@ -284,14 +284,14 @@ function brave_get_all_moment_photos($args = array()) {
         );
     }
     
-    $moments = new WP_Query($query_args);
-    $photos = array();
+    $moment_ids = get_posts($query_args);
+    $all_photos = array();
     
-    if ($moments->have_posts()) {
-        while ($moments->have_posts()) {
-            $moments->the_post();
-            $moment_id = get_the_ID();
-            
+    // 收集所有照片
+    foreach ($moment_ids as $moment_id) {
+        $moment_photos = brave_extract_photos_from_moment($moment_id);
+        
+        if (!empty($moment_photos)) {
             // 获取 moment 元数据
             $meet_date = get_post_meta($moment_id, '_meet_date', true);
             $location = get_post_meta($moment_id, '_meet_location', true);
@@ -300,7 +300,7 @@ function brave_get_all_moment_photos($args = array()) {
             
             // 如果没有见面日期，使用发布日期
             if (empty($meet_date)) {
-                $meet_date = get_the_date('Y-m-d');
+                $meet_date = get_the_date('Y-m-d', $moment_id);
             }
             
             // 格式化日期
@@ -308,14 +308,11 @@ function brave_get_all_moment_photos($args = array()) {
             $date_formatted = date_i18n(__('Y年n月j日', 'brave-love'), $date_obj);
             $weekday = date_i18n(__('l', 'brave-love'), $date_obj);
             
-            // 收集该 moment 的所有照片
-            $moment_photos = brave_extract_photos_from_moment($moment_id);
-            
             foreach ($moment_photos as $photo) {
-                $photos[] = array_merge($photo, array(
+                $all_photos[] = array_merge($photo, array(
                     'moment_id'     => $moment_id,
-                    'moment_title'  => get_the_title(),
-                    'moment_url'    => get_permalink(),
+                    'moment_title'  => get_the_title($moment_id),
+                    'moment_url'    => get_permalink($moment_id),
                     'date'          => $meet_date,
                     'date_formatted'=> $date_formatted,
                     'weekday'       => $weekday,
@@ -323,17 +320,31 @@ function brave_get_all_moment_photos($args = array()) {
                     'mood'          => $mood,
                     'mood_emoji'    => brave_get_mood_emoji($mood),
                     'mood_text'     => brave_get_mood_text($mood),
-                    'summary'       => $summary ? $summary : wp_trim_words(get_the_content(), 100),
+                    'summary'       => $summary ? $summary : wp_trim_words(get_post_field('post_content', $moment_id), 100),
                 ));
             }
         }
-        wp_reset_postdata();
     }
     
+    // 计算分页
+    $total_photos = count($all_photos);
+    $per_page = $args['posts_per_page'];
+    $paged = max(1, $args['paged']);
+    
+    // 手动分页
+    if ($per_page > 0) {
+        $offset = ($paged - 1) * $per_page;
+        $paged_photos = array_slice($all_photos, $offset, $per_page);
+    } else {
+        $paged_photos = $all_photos;
+    }
+    
+    $max_num_pages = ($per_page > 0) ? ceil($total_photos / $per_page) : 1;
+    
     return array(
-        'photos' => $photos,
-        'found_posts' => $moments->found_posts,
-        'max_num_pages' => $moments->max_num_pages,
+        'photos' => $paged_photos,
+        'total_photos' => $total_photos,
+        'max_num_pages' => $max_num_pages,
     );
 }
 

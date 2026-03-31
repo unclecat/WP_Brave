@@ -23,17 +23,19 @@ $photo_data = brave_get_all_moment_photos(array(
 ));
 
 $photos = $photo_data['photos'];
-$total_photos = count($photos);
-$max_num_pages = ceil($total_photos / $per_page);
+$total_photos = $photo_data['total_photos'];
+$max_num_pages = $photo_data['max_num_pages'];
 
 // 获取可用年份
 $years = brave_get_gallery_years();
 
-// 将照片数据传递给 JS
-wp_localize_script('brave-script', 'braveGalleryData', array(
-    'photos' => $photos,
-    'showInfo' => $show_info,
-));
+// 将照片数据传递给 JS - 在 footer 中内嵌
+add_action('wp_footer', function() use ($photos, $show_info) {
+    echo '<script>window.braveGalleryData = ' . json_encode(array(
+        'photos' => $photos,
+        'showInfo' => $show_info,
+    )) . ';</script>';
+}, 5);
 ?>
 
 <section class="content-section">
