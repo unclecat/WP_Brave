@@ -3,7 +3,7 @@
  * Template Name: 随笔说说
  *
  * @package Brave_Love
- * @version 0.4.0
+ * @version 0.4.1
  */
 
 get_header();
@@ -71,6 +71,7 @@ $current_user = wp_get_current_user();
 
     <!-- 级联筛选器 -->
     <div class="notes-filter-bar">
+        <!-- 全部按钮 -->
         <div class="filter-group">
             <a href="<?php echo esc_url(remove_query_arg(array('filter_year', 'filter_month', 'filter_day'))); ?>" 
                class="filter-btn <?php echo !$filter_year ? 'active' : ''; ?>">
@@ -78,51 +79,63 @@ $current_user = wp_get_current_user();
             </a>
         </div>
         
-        <!-- 年份筛选 -->
+        <!-- 年份筛选 - 始终显示 -->
         <div class="filter-group">
             <button class="filter-dropdown-toggle <?php echo $filter_year ? 'has-value' : ''; ?>" data-toggle="year">
-                <?php echo $filter_year ? $filter_year . '年' : '年份 ▼'; ?>
+                <?php echo $filter_year ? $filter_year . '年' : '年份'; ?>
             </button>
             <div class="filter-dropdown" id="year-dropdown">
-                <?php foreach ($years as $year) : ?>
-                    <a href="<?php echo esc_url(add_query_arg(array('filter_year' => $year, 'filter_month' => false, 'filter_day' => false))); ?>" 
-                       class="filter-option <?php echo $filter_year == $year ? 'active' : ''; ?>">
-                        <?php echo $year; ?>年
-                    </a>
-                <?php endforeach; ?>
+                <?php if (!empty($years)) : ?>
+                    <?php foreach ($years as $year) : ?>
+                        <a href="<?php echo esc_url(add_query_arg(array('filter_year' => $year, 'filter_month' => false, 'filter_day' => false))); ?>" 
+                           class="filter-option <?php echo $filter_year == $year ? 'active' : ''; ?>">
+                            <?php echo $year; ?>年
+                        </a>
+                    <?php endforeach; ?>
+                <?php else : ?>
+                    <span class="filter-option disabled">暂无数据</span>
+                <?php endif; ?>
             </div>
         </div>
         
-        <!-- 月份筛选 -->
-        <?php if ($filter_year && !empty($months)) : ?>
+        <!-- 月份筛选 - 选择年份后才显示 -->
+        <?php if ($filter_year) : ?>
         <div class="filter-group">
             <button class="filter-dropdown-toggle <?php echo $filter_month ? 'has-value' : ''; ?>" data-toggle="month">
-                <?php echo $filter_month ? $filter_month . '月' : '月份 ▼'; ?>
+                <?php echo $filter_month ? $filter_month . '月' : '月份'; ?>
             </button>
             <div class="filter-dropdown" id="month-dropdown">
-                <?php foreach ($months as $month) : ?>
-                    <a href="<?php echo esc_url(add_query_arg(array('filter_month' => $month, 'filter_day' => false))); ?>" 
-                       class="filter-option <?php echo $filter_month == $month ? 'active' : ''; ?>">
-                        <?php echo $month; ?>月
-                    </a>
-                <?php endforeach; ?>
+                <?php if (!empty($months)) : ?>
+                    <?php foreach ($months as $month) : ?>
+                        <a href="<?php echo esc_url(add_query_arg(array('filter_month' => $month, 'filter_day' => false))); ?>" 
+                           class="filter-option <?php echo $filter_month == $month ? 'active' : ''; ?>">
+                            <?php echo $month; ?>月
+                        </a>
+                    <?php endforeach; ?>
+                <?php else : ?>
+                    <span class="filter-option disabled">暂无数据</span>
+                <?php endif; ?>
             </div>
         </div>
         <?php endif; ?>
         
-        <!-- 日期筛选 -->
-        <?php if ($filter_year && $filter_month && !empty($days)) : ?>
+        <!-- 日期筛选 - 选择月份后才显示 -->
+        <?php if ($filter_year && $filter_month) : ?>
         <div class="filter-group">
             <button class="filter-dropdown-toggle <?php echo $filter_day ? 'has-value' : ''; ?>" data-toggle="day">
-                <?php echo $filter_day ? $filter_day . '日' : '日期 ▼'; ?>
+                <?php echo $filter_day ? $filter_day . '日' : '日期'; ?>
             </button>
             <div class="filter-dropdown" id="day-dropdown">
-                <?php foreach ($days as $day) : ?>
-                    <a href="<?php echo esc_url(add_query_arg('filter_day', $day)); ?>" 
-                       class="filter-option <?php echo $filter_day == $day ? 'active' : ''; ?>">
-                        <?php echo $day; ?>日
-                    </a>
-                <?php endforeach; ?>
+                <?php if (!empty($days)) : ?>
+                    <?php foreach ($days as $day) : ?>
+                        <a href="<?php echo esc_url(add_query_arg('filter_day', $day)); ?>" 
+                           class="filter-option <?php echo $filter_day == $day ? 'active' : ''; ?>">
+                            <?php echo $day; ?>日
+                        </a>
+                    <?php endforeach; ?>
+                <?php else : ?>
+                    <span class="filter-option disabled">暂无数据</span>
+                <?php endif; ?>
             </div>
         </div>
         <?php endif; ?>
