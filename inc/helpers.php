@@ -103,20 +103,37 @@ function brave_get_memory_years() {
 }
 
 /**
- * 获取点滴年份列表
+ * 获取点滴年份列表（包括没有见面日期的文章）
  */
 function brave_get_moment_years() {
     global $wpdb;
     
-    $years = $wpdb->get_col($wpdb->prepare("
+    // 先从 meta 获取年份
+    $meta_years = $wpdb->get_col($wpdb->prepare("
         SELECT DISTINCT YEAR(meta_value) as year
         FROM {$wpdb->postmeta}
         WHERE meta_key = %s
         AND meta_value != ''
+        AND meta_value IS NOT NULL
         ORDER BY year DESC
     ", '_meet_date'));
     
-    return $years;
+    // 从发布日期获取年份（针对没有 _meet_date 的文章）
+    $post_years = $wpdb->get_col("
+        SELECT DISTINCT YEAR(p.post_date) as year
+        FROM {$wpdb->posts} p
+        LEFT JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id AND pm.meta_key = '_meet_date'
+        WHERE p.post_type = 'moment'
+        AND p.post_status = 'publish'
+        AND (pm.meta_value IS NULL OR pm.meta_value = '')
+        ORDER BY year DESC
+    ");
+    
+    // 合并并去重
+    $all_years = array_unique(array_merge($meta_years, $post_years));
+    rsort($all_years);
+    
+    return $all_years;
 }
 
 /**

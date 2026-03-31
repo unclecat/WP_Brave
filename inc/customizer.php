@@ -339,6 +339,30 @@ function brave_customize_register($wp_customize) {
         'type' => 'dropdown-pages',
     ));
 
+    // ==================== 分页设置 ====================
+    $wp_customize->add_section('brave_pagination', array(
+        'title' => __('分页设置', 'brave-love'),
+        'panel' => 'brave_settings',
+    ));
+
+    // 点滴每页文章数
+    $wp_customize->add_setting('brave_moments_per_page', array(
+        'default' => 7,
+        'sanitize_callback' => 'absint',
+        'transport' => 'refresh',
+    ));
+    $wp_customize->add_control('brave_moments_per_page', array(
+        'label' => __('点点滴滴每页文章数', 'brave-love'),
+        'description' => __('设置点点滴滴页面每页显示的文章数量', 'brave-love'),
+        'section' => 'brave_pagination',
+        'type' => 'number',
+        'input_attrs' => array(
+            'min' => 1,
+            'max' => 50,
+            'step' => 1,
+        ),
+    ));
+
     // ==================== 自定义代码 ====================
     $wp_customize->add_section('brave_custom_code', array(
         'title' => __('自定义代码', 'brave-love'),
