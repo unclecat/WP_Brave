@@ -54,11 +54,22 @@ $nav_text = get_theme_mod('brave_nav_text', '世间最动情之事，莫过于�
     
     <div class="lover-container">
         <div class="lover-item">
-            <?php if ($boy_avatar) : ?>
-                <img src="<?php echo esc_url($boy_avatar); ?>" alt="<?php echo esc_attr($boy_name); ?>" class="lover-avatar">
-            <?php else : ?>
-                <div class="lover-avatar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
-            <?php endif; ?>
+            <div class="avatar-wrapper">
+                <?php if ($boy_avatar) : ?>
+                    <img src="<?php echo esc_url($boy_avatar); ?>" alt="<?php echo esc_attr($boy_name); ?>" class="lover-avatar">
+                <?php else : ?>
+                    <div class="lover-avatar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                <?php endif; ?>
+                <!-- 星星旋转动画 -->
+                <div class="stars-orbit">
+                    <span class="star" style="--delay:0s;--size:3px;"></span>
+                    <span class="star" style="--delay:0.5s;--size:2px;"></span>
+                    <span class="star" style="--delay:1s;--size:4px;"></span>
+                    <span class="star" style="--delay:1.5s;--size:2px;"></span>
+                    <span class="star" style="--delay:2s;--size:3px;"></span>
+                    <span class="star" style="--delay:2.5s;--size:2px;"></span>
+                </div>
+            </div>
             <span class="lover-name"><?php echo esc_html($boy_name); ?></span>
         </div>
         
@@ -67,11 +78,22 @@ $nav_text = get_theme_mod('brave_nav_text', '世间最动情之事，莫过于�
         </div>
         
         <div class="lover-item">
-            <?php if ($girl_avatar) : ?>
-                <img src="<?php echo esc_url($girl_avatar); ?>" alt="<?php echo esc_attr($girl_name); ?>" class="lover-avatar">
-            <?php else : ?>
-                <div class="lover-avatar" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
-            <?php endif; ?>
+            <div class="avatar-wrapper">
+                <?php if ($girl_avatar) : ?>
+                    <img src="<?php echo esc_url($girl_avatar); ?>" alt="<?php echo esc_attr($girl_name); ?>" class="lover-avatar">
+                <?php else : ?>
+                    <div class="lover-avatar" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
+                <?php endif; ?>
+                <!-- 星星旋转动画 -->
+                <div class="stars-orbit">
+                    <span class="star" style="--delay:0.3s;--size:2px;"></span>
+                    <span class="star" style="--delay:0.8s;--size:3px;"></span>
+                    <span class="star" style="--delay:1.3s;--size:2px;"></span>
+                    <span class="star" style="--delay:1.8s;--size:4px;"></span>
+                    <span class="star" style="--delay:2.3s;--size:2px;"></span>
+                    <span class="star" style="--delay:2.8s;--size:3px;"></span>
+                </div>
+            </div>
             <span class="lover-name"><?php echo esc_html($girl_name); ?></span>
         </div>
     </div>
