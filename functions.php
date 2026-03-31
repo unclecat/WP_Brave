@@ -6,7 +6,7 @@
  */
 
 // 定义常量
-define('BRAVE_VERSION', '0.2.5');
+define('BRAVE_VERSION', '0.3.0');
 define('BRAVE_DIR', get_template_directory());
 define('BRAVE_URI', get_template_directory_uri());
 
@@ -88,6 +88,12 @@ function brave_scripts() {
     // 恋爱清单存档页面样式
     if (is_post_type_archive('love_list')) {
         wp_enqueue_style('brave-love-list', BRAVE_URI . '/assets/css/love-list.css', array(), BRAVE_VERSION);
+    }
+    
+    // 甜蜜相册页面样式和脚本
+    if (is_page_template('page-templates/page-memories.php')) {
+        wp_enqueue_style('brave-memory', BRAVE_URI . '/assets/css/memory.css', array(), BRAVE_VERSION);
+        wp_enqueue_script('brave-memory', BRAVE_URI . '/assets/js/memory.js', array('photoswipe', 'photoswipe-lightbox'), BRAVE_VERSION, true);
     }
 }
 add_action('wp_enqueue_scripts', 'brave_scripts');

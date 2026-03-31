@@ -363,6 +363,43 @@ function brave_customize_register($wp_customize) {
         ),
     ));
 
+    // ==================== 相册设置 ====================
+    $wp_customize->add_section('brave_gallery', array(
+        'title' => __('相册设置', 'brave-love'),
+        'panel' => 'brave_settings',
+    ));
+
+    // 相册每页照片数
+    $wp_customize->add_setting('brave_gallery_per_page', array(
+        'default' => 12,
+        'sanitize_callback' => 'absint',
+        'transport' => 'refresh',
+    ));
+    $wp_customize->add_control('brave_gallery_per_page', array(
+        'label' => __('相册每页照片数', 'brave-love'),
+        'description' => __('设置相册页面每页显示的照片数量', 'brave-love'),
+        'section' => 'brave_gallery',
+        'type' => 'number',
+        'input_attrs' => array(
+            'min' => 4,
+            'max' => 48,
+            'step' => 4,
+        ),
+    ));
+
+    // 显示照片信息
+    $wp_customize->add_setting('brave_gallery_show_info', array(
+        'default' => true,
+        'sanitize_callback' => 'wp_validate_boolean',
+        'transport' => 'refresh',
+    ));
+    $wp_customize->add_control('brave_gallery_show_info', array(
+        'label' => __('显示照片信息', 'brave-love'),
+        'description' => __('在照片悬停时显示日期、地点和心情', 'brave-love'),
+        'section' => 'brave_gallery',
+        'type' => 'checkbox',
+    ));
+
     // ==================== 自定义代码 ====================
     $wp_customize->add_section('brave_custom_code', array(
         'title' => __('自定义代码', 'brave-love'),

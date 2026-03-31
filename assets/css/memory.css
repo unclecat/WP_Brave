@@ -1,0 +1,353 @@
+/**
+ * 甜蜜相册瀑布流样式
+ *
+ * @package Brave_Love
+ * @version 0.3.0
+ */
+
+/* ==================== 年份筛选 ==================== */
+.gallery-year-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    padding: 0 1rem;
+}
+
+.gallery-year-item {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: var(--card-bg);
+    border-radius: 20px;
+    color: var(--text-color);
+    font-size: 0.875rem;
+    text-decoration: none;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+}
+
+.gallery-year-item:hover {
+    background: var(--primary-color);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.gallery-year-item.active {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+/* ==================== 瀑布流布局 ==================== */
+.gallery-waterfall {
+    column-count: 3;
+    column-gap: 1rem;
+    padding: 0 1rem;
+}
+
+@media (max-width: 991px) {
+    .gallery-waterfall {
+        column-count: 2;
+    }
+}
+
+@media (max-width: 576px) {
+    .gallery-waterfall {
+        column-count: 1;
+    }
+}
+
+/* ==================== 照片卡片 ==================== */
+.gallery-item {
+    break-inside: avoid;
+    margin-bottom: 1rem;
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    background: var(--card-bg);
+    transition: var(--transition);
+}
+
+.gallery-item:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+}
+
+.gallery-item-link {
+    display: block;
+    position: relative;
+    text-decoration: none;
+}
+
+.gallery-item-img {
+    display: block;
+    width: 100%;
+    height: auto;
+    transition: transform 0.5s ease;
+}
+
+.gallery-item:hover .gallery-item-img {
+    transform: scale(1.03);
+}
+
+/* 宽高比特殊处理 */
+.gallery-item.tall .gallery-item-img {
+    aspect-ratio: 3/4;
+    object-fit: cover;
+}
+
+.gallery-item.wide .gallery-item-img {
+    aspect-ratio: 16/9;
+    object-fit: cover;
+}
+
+/* ==================== 悬停信息层 ==================== */
+.gallery-item-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 2rem 1rem 1rem;
+    background: linear-gradient(transparent, rgba(0,0,0,0.7));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.gallery-item:hover .gallery-item-overlay {
+    opacity: 1;
+}
+
+.gallery-item-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    color: #fff;
+    font-size: 0.8rem;
+}
+
+.gallery-item-date {
+    font-weight: 500;
+}
+
+.gallery-item-location {
+    opacity: 0.9;
+}
+
+.gallery-item-mood {
+    font-size: 1rem;
+    margin-left: auto;
+}
+
+/* ==================== 空状态 ==================== */
+.gallery-empty {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.gallery-empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.gallery-empty-title {
+    font-size: 1.5rem;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+}
+
+.gallery-empty-desc {
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.gallery-empty-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    background: var(--primary-color);
+    color: #fff;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.gallery-empty-btn:hover {
+    background: var(--secondary-color);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+/* ==================== 分页 ==================== */
+.gallery-pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 3rem;
+    padding: 0 1rem;
+}
+
+.gallery-pagination a,
+.gallery-pagination span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0 0.75rem;
+    background: var(--card-bg);
+    border-radius: 8px;
+    color: var(--text-color);
+    font-size: 0.875rem;
+    text-decoration: none;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+}
+
+.gallery-pagination a:hover {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+.gallery-pagination .current {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+/* ==================== PhotoSwipe 自定义样式 ==================== */
+.pswp__custom-info {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    max-width: 90%;
+    width: 400px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 1.25rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    z-index: 100;
+}
+
+.pswp__custom-info.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+.pswp-info-content {
+    text-align: center;
+}
+
+.pswp-info-date {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+}
+
+.pswp-info-location,
+.pswp-info-mood {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin: 0 0.5rem;
+}
+
+.pswp-info-summary {
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    line-height: 1.6;
+    max-height: 80px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+.pswp-info-link {
+    display: inline-block;
+    margin-top: 0.75rem;
+    padding: 0.5rem 1rem;
+    background: var(--primary-color);
+    color: #fff;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.pswp-info-link:hover {
+    background: var(--secondary-color);
+    color: #fff;
+}
+
+/* 暗黑模式适配 */
+@media (prefers-color-scheme: dark) {
+    .pswp__custom-info {
+        background: rgba(40, 40, 40, 0.95);
+    }
+    
+    .pswp-info-date {
+        color: #fff;
+    }
+    
+    .pswp-info-summary {
+        color: #ddd;
+    }
+}
+
+/* 移动端适配 */
+@media (max-width: 576px) {
+    .pswp__custom-info {
+        bottom: 70px;
+        width: calc(100% - 2rem);
+        padding: 1rem;
+    }
+    
+    .pswp-info-date {
+        font-size: 1rem;
+    }
+    
+    .pswp-info-summary {
+        max-height: 60px;
+        -webkit-line-clamp: 2;
+    }
+}
+
+/* ==================== 加载动画 ==================== */
+.gallery-loading {
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.gallery-loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: gallery-spin 1s linear infinite;
+}
+
+@keyframes gallery-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

@@ -7,122 +7,197 @@
 
 get_header();
 
+// 获取设置
+$per_page = get_theme_mod('brave_gallery_per_page', 12);
+$show_info = get_theme_mod('brave_gallery_show_info', true);
+
 // 获取筛选参数
 $current_year = isset($_GET['year']) ? intval($_GET['year']) : 0;
-$current_tag = isset($_GET['tag']) ? intval($_GET['tag']) : 0;
+$paged = get_query_var('paged') ? get_query_var('paged') : 1;
 
-// 构建查询
-$args = array(
-    'post_type' => 'memory',
-    'posts_per_page' => -1,
-    'orderby' => 'meta_value',
-    'meta_key' => '_memory_date',
-    'order' => 'DESC',
-);
+// 获取照片数据
+$photo_data = brave_get_all_moment_photos(array(
+    'posts_per_page' => $per_page,
+    'paged' => $paged,
+    'year' => $current_year,
+));
 
-if ($current_year > 0) {
-    $args['meta_query'] = array(
-        array(
-            'key' => '_memory_date',
-            'value' => array($current_year . '-01-01', $current_year . '-12-31'),
-            'compare' => 'BETWEEN',
-            'type' => 'DATE',
-        ),
-    );
-}
+$photos = $photo_data['photos'];
+$total_photos = count($photos);
+$max_num_pages = ceil($total_photos / $per_page);
 
-if ($current_tag > 0) {
-    $tax_query = isset($args['tax_query']) ? $args['tax_query'] : array('relation' => 'AND');
-    $tax_query[] = array(
-        'taxonomy' => 'memory_tag',
-        'field' => 'term_id',
-        'terms' => $current_tag,
-    );
-    $args['tax_query'] = $tax_query;
-}
+// 获取可用年份
+$years = brave_get_gallery_years();
 
-$memories = get_posts($args);
-$years = brave_get_memory_years();
-$tags = get_terms(array(
-    'taxonomy' => 'memory_tag',
-    'hide_empty' => true,
+// 将照片数据传递给 JS
+wp_localize_script('brave-script', 'braveGalleryData', array(
+    'photos' => $photos,
+    'showInfo' => $show_info,
 ));
 ?>
 
 <section class="content-section">
     <div class="section-header">
         <h1 class="section-title">📷 甜蜜相册</h1>
-        <p class="section-desc">在文章编辑器中上传照片，自动汇聚成册</p>
+        <p class="section-desc">记录我们在一起的每个瞬间</p>
     </div>
 
-    <!-- 年份筛选 -->
     <?php if (!empty($years)) : ?>
-    <div class="memory-filters">
-        <a href="<?php echo esc_url(remove_query_arg('year')); ?>" class="memory-filter <?php echo $current_year === 0 ? 'active' : ''; ?>">
-            <?php _e('全部年份', 'brave-love'); ?>
+    <!-- 年份筛选 -->
+    <nav class="gallery-year-nav">
+        <a href="<?php echo esc_url(remove_query_arg('year')); ?>" class="gallery-year-item <?php echo $current_year === 0 ? 'active' : ''; ?>">
+            <?php _e('全部', 'brave-love'); ?>
         </a>
         <?php foreach ($years as $year) : ?>
-            <a href="<?php echo esc_url(add_query_arg('year', $year)); ?>" class="memory-filter <?php echo $current_year === intval($year) ? 'active' : ''; ?>">
+            <a href="<?php echo esc_url(add_query_arg('year', $year)); ?>" class="gallery-year-item <?php echo $current_year === $year ? 'active' : ''; ?>">
                 <?php echo esc_html($year); ?>
             </a>
         <?php endforeach; ?>
-    </div>
+    </nav>
     <?php endif; ?>
 
-    <!-- 标签筛选 -->
-    <?php if (!empty($tags) && !is_wp_error($tags)) : ?>
-    <div class="memory-filters">
-        <a href="<?php echo esc_url(remove_query_arg('tag')); ?>" class="memory-filter <?php echo $current_tag === 0 ? 'active' : ''; ?>">
-            <?php _e('全部标签', 'brave-love'); ?>
-        </a>
-        <?php foreach ($tags as $tag) : ?>
-            <a href="<?php echo esc_url(add_query_arg('tag', $tag->term_id)); ?>" class="memory-filter <?php echo $current_tag === $tag->term_id ? 'active' : ''; ?>">
-                <?php echo esc_html($tag->name); ?>
-            </a>
-        <?php endforeach; ?>
-    </div>
-    <?php endif; ?>
-
-    <!-- 相册网格 -->
-    <?php if (!empty($memories)) : ?>
-        <div class="memory-grid" id="memory-grid">
-            <?php foreach ($memories as $memory) : 
-                $photos = brave_get_memory_photos($memory->ID, 'memory-thumb');
-                $photo_count = count($photos);
-                $memory_date = get_post_meta($memory->ID, '_memory_date', true);
-                $cover = !empty($photos) ? $photos[0]['url'] : '';
+    <?php if (!empty($photos)) : ?>
+        <!-- 瀑布流容器 -->
+        <div class="gallery-waterfall" id="galleryWaterfall">
+            <?php foreach ($photos as $index => $photo) : 
+                // 根据宽高比计算合适的高度类
+                $ratio_class = '';
+                if ($photo['aspect_ratio'] < 0.8) {
+                    $ratio_class = 'tall';      // 竖图
+                } elseif ($photo['aspect_ratio'] > 1.5) {
+                    $ratio_class = 'wide';      // 横图
+                }
+                
+                // 信息面板数据
+                $info_data = array(
+                    'date' => $photo['date_formatted'] . ' ' . $photo['weekday'],
+                    'location' => $photo['location'],
+                    'mood' => $photo['mood_emoji'] . ' ' . $photo['mood_text'],
+                    'moment' => $photo['moment_title'],
+                    'momentUrl' => $photo['moment_url'],
+                    'summary' => $photo['summary'],
+                );
             ?>
-                <div class="memory-card" data-photos='<?php echo esc_attr(json_encode($photos)); ?>' data-title="<?php echo esc_attr($memory->post_title); ?>">
-                    <?php if ($cover) : ?>
-                        <img src="<?php echo esc_url($cover); ?>" alt="<?php echo esc_attr($memory->post_title); ?>" class="memory-cover" loading="lazy">
-                    <?php else : ?>
-                        <div class="memory-cover" style="background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%); display: flex; align-items: center; justify-content: center; color: #999; flex-direction: column; gap: 10px;">
-                            <span style="font-size: 3rem;">📷</span>
-                            <span style="font-size: 0.85rem;">点击添加照片</span>
+                <div class="gallery-item <?php echo esc_attr($ratio_class); ?>" 
+                     data-index="<?php echo esc_attr($index); ?>"
+                     data-pswp-width="<?php echo esc_attr($photo['width']); ?>"
+                     data-pswp-height="<?php echo esc_attr($photo['height']); ?>">
+                    
+                    <a href="<?php echo esc_url($photo['url']); ?>" 
+                       class="gallery-item-link"
+                       data-caption="<?php echo esc_attr($photo['caption']); ?>"
+                       data-info="<?php echo esc_attr(json_encode($info_data)); ?>">
+                        
+                        <img src="<?php echo esc_url($photo['thumb']); ?>" 
+                             alt="<?php echo esc_attr($photo['alt'] ? $photo['alt'] : $photo['title']); ?>"
+                             class="gallery-item-img"
+                             loading="lazy">
+                        
+                        <?php if ($show_info) : ?>
+                        <div class="gallery-item-overlay">
+                            <div class="gallery-item-meta">
+                                <span class="gallery-item-date"><?php echo esc_html($photo['date_formatted']); ?></span>
+                                <?php if ($photo['location']) : ?>
+                                    <span class="gallery-item-location">📍 <?php echo esc_html($photo['location']); ?></span>
+                                <?php endif; ?>
+                                <?php if ($photo['mood']) : ?>
+                                    <span class="gallery-item-mood"><?php echo esc_html($photo['mood_emoji']); ?></span>
+                                <?php endif; ?>
+                            </div>
                         </div>
-                    <?php endif; ?>
-                    <div class="memory-info">
-                        <div class="memory-title"><?php echo esc_html($memory->post_title); ?></div>
-                        <div class="memory-meta">
-                            <span><?php echo esc_html($memory_date); ?></span>
-                            <span class="memory-count">
-                                <span>📷</span> <?php echo $photo_count; ?>
-                            </span>
-                        </div>
-                    </div>
+                        <?php endif; ?>
+                    </a>
                 </div>
             <?php endforeach; ?>
         </div>
+
+        <!-- 分页/加载更多 -->
+        <?php if ($photo_data['max_num_pages'] > 1) : 
+            global $wp_rewrite;
+            $format = $wp_rewrite->using_permalinks() ? 'page/%#%/' : '?paged=%#%';
+            $base = trailingslashit(get_permalink()) . '%_%';
+            if ($current_year > 0) {
+                $base = add_query_arg('year', $current_year, $base);
+            }
+        ?>
+            <nav class="gallery-pagination">
+                <?php
+                echo paginate_links(array(
+                    'base' => $base,
+                    'format' => $format,
+                    'current' => max(1, $paged),
+                    'total' => $photo_data['max_num_pages'],
+                    'prev_text' => '← ' . __('上一页', 'brave-love'),
+                    'next_text' => __('下一页', 'brave-love') . ' →',
+                    'mid_size' => 2,
+                    'end_size' => 1,
+                ));
+                ?>
+            </nav>
+        <?php endif; ?>
+
     <?php else : ?>
-        <div class="text-center" style="padding: 3rem 1rem;">
-            <p style="color: #999; margin-bottom: 1rem; font-size: 3rem;">📷</p>
-            <p style="color: #666; margin-bottom: 1rem;"><?php _e('还没有创建相册', 'brave-love'); ?></p>
-            <p style="color: #999; font-size: 0.9rem;">
-                <?php _e('点击「新建相册」，在编辑器中上传照片即可', 'brave-love'); ?>
+        <!-- 空状态 -->
+        <div class="gallery-empty">
+            <div class="gallery-empty-icon">📷</div>
+            <h3 class="gallery-empty-title"><?php _e('还没有照片', 'brave-love'); ?></h3>
+            <p class="gallery-empty-desc">
+                <?php _e('在「点点滴滴」中添加文章并上传照片，它们会自动显示在这里。', 'brave-love'); ?>
             </p>
+            <a href="<?php echo esc_url(admin_url('post-new.php?post_type=moment')); ?>" class="gallery-empty-btn">
+                <?php _e('添加第一篇点滴', 'brave-love'); ?>
+            </a>
         </div>
     <?php endif; ?>
 </section>
+
+<!-- PhotoSwipe 模板 -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="pswp__bg"></div>
+    <div class="pswp__scroll-wrap">
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="<?php _e('关闭 (Esc)', 'brave-love'); ?>"></button>
+                <button class="pswp__button pswp__button--share" title="<?php _e('分享', 'brave-love'); ?>"></button>
+                <button class="pswp__button pswp__button--fs" title="<?php _e('全屏', 'brave-love'); ?>"></button>
+                <button class="pswp__button pswp__button--zoom" title="<?php _e('缩放', 'brave-love'); ?>"></button>
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="<?php _e('上一张 (左箭头)', 'brave-love'); ?>"></button>
+            <button class="pswp__button pswp__button--arrow--right" title="<?php _e('下一张 (右箭头)', 'brave-love'); ?>"></button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+    <!-- 自定义信息面板 -->
+    <div class="pswp__custom-info" id="pswpCustomInfo">
+        <div class="pswp-info-content">
+            <div class="pswp-info-date"></div>
+            <div class="pswp-info-location"></div>
+            <div class="pswp-info-mood"></div>
+            <div class="pswp-info-summary"></div>
+            <a href="#" class="pswp-info-link" target="_blank">
+                <?php _e('查看点滴详情 →', 'brave-love'); ?>
+            </a>
+        </div>
+    </div>
+</div>
 
 <?php
 get_footer();

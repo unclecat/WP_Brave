@@ -246,3 +246,229 @@ function brave_kses_svg($svg) {
     
     return wp_kses($svg, $allowed_tags);
 }
+
+/**
+ * 获取所有点滴照片（用于瀑布流相册）
+ *
+ * @param array $args 查询参数
+ * @return array 照片数组
+ */
+function brave_get_all_moment_photos($args = array()) {
+    $defaults = array(
+        'posts_per_page' => -1,
+        'paged' => 1,
+        'year' => 0,
+    );
+    $args = wp_parse_args($args, $defaults);
+    
+    // 构建查询参数
+    $query_args = array(
+        'post_type' => 'moment',
+        'post_status' => 'publish',
+        'posts_per_page' => $args['posts_per_page'],
+        'paged' => $args['paged'],
+        'orderby' => 'meta_value',
+        'meta_key' => '_meet_date',
+        'order' => 'DESC',
+    );
+    
+    // 按年份筛选
+    if (!empty($args['year'])) {
+        $query_args['meta_query'] = array(
+            array(
+                'key' => '_meet_date',
+                'value' => array($args['year'] . '-01-01', $args['year'] . '-12-31'),
+                'compare' => 'BETWEEN',
+                'type' => 'DATE',
+            ),
+        );
+    }
+    
+    $moments = new WP_Query($query_args);
+    $photos = array();
+    
+    if ($moments->have_posts()) {
+        while ($moments->have_posts()) {
+            $moments->the_post();
+            $moment_id = get_the_ID();
+            
+            // 获取 moment 元数据
+            $meet_date = get_post_meta($moment_id, '_meet_date', true);
+            $location = get_post_meta($moment_id, '_meet_location', true);
+            $mood = get_post_meta($moment_id, '_mood', true);
+            $summary = get_post_meta($moment_id, '_moment_summary', true);
+            
+            // 如果没有见面日期，使用发布日期
+            if (empty($meet_date)) {
+                $meet_date = get_the_date('Y-m-d');
+            }
+            
+            // 格式化日期
+            $date_obj = strtotime($meet_date);
+            $date_formatted = date_i18n(__('Y年n月j日', 'brave-love'), $date_obj);
+            $weekday = date_i18n(__('l', 'brave-love'), $date_obj);
+            
+            // 收集该 moment 的所有照片
+            $moment_photos = brave_extract_photos_from_moment($moment_id);
+            
+            foreach ($moment_photos as $photo) {
+                $photos[] = array_merge($photo, array(
+                    'moment_id'     => $moment_id,
+                    'moment_title'  => get_the_title(),
+                    'moment_url'    => get_permalink(),
+                    'date'          => $meet_date,
+                    'date_formatted'=> $date_formatted,
+                    'weekday'       => $weekday,
+                    'location'      => $location,
+                    'mood'          => $mood,
+                    'mood_emoji'    => brave_get_mood_emoji($mood),
+                    'mood_text'     => brave_get_mood_text($mood),
+                    'summary'       => $summary ? $summary : wp_trim_words(get_the_content(), 100),
+                ));
+            }
+        }
+        wp_reset_postdata();
+    }
+    
+    return array(
+        'photos' => $photos,
+        'found_posts' => $moments->found_posts,
+        'max_num_pages' => $moments->max_num_pages,
+    );
+}
+
+/**
+ * 从点滴文章提取所有照片
+ *
+ * @param int $moment_id 点滴文章ID
+ * @return array 照片数组
+ */
+function brave_extract_photos_from_moment($moment_id) {
+    $photos = array();
+    
+    // 1. 特色图片作为第一张
+    if (has_post_thumbnail($moment_id)) {
+        $thumb_id = get_post_thumbnail_id($moment_id);
+        $photo_data = brave_get_photo_data($thumb_id);
+        if ($photo_data) {
+            $photo_data['is_cover'] = true;
+            $photos[] = $photo_data;
+        }
+    }
+    
+    // 2. 从内容中提取的图片
+    $post = get_post($moment_id);
+    if (!$post) {
+        return $photos;
+    }
+    
+    $content = $post->post_content;
+    $image_ids = array();
+    
+    // 方法1：古腾堡图片块和画廊块
+    if (function_exists('parse_blocks')) {
+        $blocks = parse_blocks($content);
+        foreach ($blocks as $block) {
+            // 单张图片块
+            if ($block['blockName'] === 'core/image' && !empty($block['attrs']['id'])) {
+                $image_ids[] = $block['attrs']['id'];
+            }
+            // 画廊块
+            if ($block['blockName'] === 'core/gallery' && !empty($block['attrs']['ids'])) {
+                $image_ids = array_merge($image_ids, $block['attrs']['ids']);
+            }
+        }
+    }
+    
+    // 方法2：经典编辑器图片 (wp-image-xxx)
+    preg_match_all('/wp-image-(\d+)/', $content, $matches);
+    if (!empty($matches[1])) {
+        $image_ids = array_merge($image_ids, array_map('intval', $matches[1]));
+    }
+    
+    // 去重并获取图片数据
+    $image_ids = array_unique($image_ids);
+    $cover_id = isset($thumb_id) ? $thumb_id : 0;
+    
+    foreach ($image_ids as $image_id) {
+        // 跳过已添加的特色图片
+        if ($image_id == $cover_id) {
+            continue;
+        }
+        
+        $photo_data = brave_get_photo_data($image_id);
+        if ($photo_data) {
+            $photo_data['is_cover'] = false;
+            $photos[] = $photo_data;
+        }
+    }
+    
+    return $photos;
+}
+
+/**
+ * 获取单张照片的完整数据
+ *
+ * @param int $attachment_id 附件ID
+ * @return array|false 照片数据
+ */
+function brave_get_photo_data($attachment_id) {
+    $url = wp_get_attachment_image_url($attachment_id, 'large');
+    if (!$url) {
+        return false;
+    }
+    
+    $thumb = wp_get_attachment_image_url($attachment_id, 'medium');
+    $meta = wp_get_attachment_metadata($attachment_id);
+    $attachment_post = get_post($attachment_id);
+    
+    // 计算宽高比
+    $width = !empty($meta['width']) ? $meta['width'] : 0;
+    $height = !empty($meta['height']) ? $meta['height'] : 0;
+    $aspect_ratio = ($height > 0) ? round($width / $height, 2) : 1;
+    
+    return array(
+        'id'            => $attachment_id,
+        'url'           => $url,
+        'thumb'         => $thumb,
+        'title'         => $attachment_post ? $attachment_post->post_title : '',
+        'caption'       => $attachment_post ? $attachment_post->post_excerpt : '',
+        'alt'           => get_post_meta($attachment_id, '_wp_attachment_image_alt', true),
+        'width'         => $width,
+        'height'        => $height,
+        'aspect_ratio'  => $aspect_ratio,
+    );
+}
+
+/**
+ * 获取相册可用年份列表
+ *
+ * @return array 年份数组
+ */
+function brave_get_gallery_years() {
+    global $wpdb;
+    
+    // 获取有照片的 moment 年份
+    $years = $wpdb->get_col("
+        SELECT DISTINCT YEAR(pm.meta_value) as year
+        FROM {$wpdb->posts} p
+        JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
+        WHERE p.post_type = 'moment'
+        AND p.post_status = 'publish'
+        AND pm.meta_key = '_meet_date'
+        AND pm.meta_value != ''
+        AND pm.meta_value IS NOT NULL
+        AND (
+            p.ID IN (
+                SELECT post_id FROM {$wpdb->postmeta} 
+                WHERE meta_key = '_thumbnail_id'
+            )
+            OR p.post_content LIKE '%wp-image-%'
+            OR p.post_content LIKE '%<!-- wp:image%'
+            OR p.post_content LIKE '%<!-- wp:gallery%'
+        )
+        ORDER BY year DESC
+    ");
+    
+    return is_array($years) ? array_map('intval', array_filter($years, 'is_numeric')) : array();
+}

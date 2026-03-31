@@ -141,12 +141,14 @@ add_action('init', 'brave_register_note_post_type');
 
 /**
  * 注册甜蜜相册 CPT
+ * 
+ * @deprecated 0.3.0 相册功能已迁移到瀑布流，保留CPT用于兼容旧数据
  */
 function brave_register_memory_post_type() {
     $labels = array(
-        'name'                  => __('甜蜜相册', 'brave-love'),
+        'name'                  => __('甜蜜相册 (旧)', 'brave-love'),
         'singular_name'         => __('相册', 'brave-love'),
-        'menu_name'             => __('甜蜜相册', 'brave-love'),
+        'menu_name'             => __('甜蜜相册 (旧)', 'brave-love'),
         'add_new'               => __('添加相册', 'brave-love'),
         'add_new_item'          => __('添加新相册', 'brave-love'),
         'edit_item'             => __('编辑相册', 'brave-love'),
@@ -159,16 +161,16 @@ function brave_register_memory_post_type() {
 
     $args = array(
         'labels'                => $labels,
-        'public'                => true,
-        'publicly_queryable'    => true,
-        'show_ui'               => true,
-        'show_in_menu'          => true,
+        'public'                => false,  // 不再公开访问
+        'publicly_queryable'    => false,
+        'show_ui'               => true,   // 后台仍可见（用于迁移数据）
+        'show_in_menu'          => false,  // 从菜单隐藏
         'menu_position'         => 8,
         'menu_icon'             => 'dashicons-format-gallery',
-        'query_var'             => true,
-        'rewrite'               => array('slug' => 'memory'),
+        'query_var'             => false,
+        'rewrite'               => false,
         'capability_type'       => 'post',
-        'has_archive'           => true,
+        'has_archive'           => false,
         'hierarchical'          => false,
         'supports'              => array('title', 'editor', 'thumbnail', 'author'),
         'show_in_rest'          => true,
@@ -185,15 +187,30 @@ function brave_register_memory_post_type() {
     $tax_args = array(
         'labels'                => $tax_labels,
         'hierarchical'          => false,
-        'public'                => true,
-        'show_ui'               => true,
-        'show_admin_column'     => true,
-        'rewrite'               => array('slug' => 'memory-tag'),
+        'public'                => false,
+        'show_ui'               => false,  // 隐藏标签管理
+        'show_admin_column'     => false,
+        'rewrite'               => false,
     );
 
     register_taxonomy('memory_tag', 'memory', $tax_args);
 }
-add_action('init', 'brave_register_memory_post_type');
+add_action('init', 'brave_register_memory_post_type', 5);
+
+/**
+ * 在后台菜单中添加隐藏相册的入口（仅用于数据迁移）
+ */
+function brave_add_hidden_memory_menu() {
+    // 在「点点滴滴」子菜单中添加旧相册入口
+    add_submenu_page(
+        'edit.php?post_type=moment',
+        __('旧相册数据', 'brave-love'),
+        __('旧相册数据', 'brave-love'),
+        'manage_options',
+        'edit.php?post_type=memory'
+    );
+}
+add_action('admin_menu', 'brave_add_hidden_memory_menu', 20);
 
 /**
  * 修改 CPT 列表显示列
