@@ -7,23 +7,32 @@
 
 get_header();
 
-// 构建查询
+// 构建查询 - 获取所有点滴（包括没有见面日期的）
 $args = array(
     'post_type' => 'moment',
     'posts_per_page' => -1,
     'orderby' => 'meta_value',
     'meta_key' => '_meet_date',
     'order' => 'DESC',
+    'post_status' => 'publish',
 );
 
-$moments = get_posts($args);
+// 使用 WP_Query 获取所有文章
+$query = new WP_Query($args);
+$moments = $query->posts;
 
-// 按年份分组
+// 按年份分组（如果没有见面日期，使用发布日期年份）
 $grouped_moments = array();
 $years = array();
 
 foreach ($moments as $moment) {
     $meet_date = get_post_meta($moment->ID, '_meet_date', true);
+    
+    // 如果没有见面日期，使用发布日期
+    if (empty($meet_date)) {
+        $meet_date = get_the_date('Y-m-d', $moment->ID);
+    }
+    
     $year = !empty($meet_date) ? substr($meet_date, 0, 4) : '未知';
     
     if (!isset($grouped_moments[$year])) {
@@ -63,6 +72,10 @@ rsort($years);
                 <div class="timeline">
                     <?php foreach ($grouped_moments[$year] as $moment) : 
                         $meet_date = get_post_meta($moment->ID, '_meet_date', true);
+                        // 如果没有见面日期，使用发布日期
+                        if (empty($meet_date)) {
+                            $meet_date = get_the_date('Y-m-d', $moment->ID);
+                        }
                         $location = get_post_meta($moment->ID, '_meet_location', true);
                         $mood = get_post_meta($moment->ID, '_mood', true);
                         $related_memory = get_post_meta($moment->ID, '_related_memory', true);
