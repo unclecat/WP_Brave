@@ -108,13 +108,29 @@ $hero_bg_url = !empty($hero_bg) ? $hero_bg : 'https://images.unsplash.com/photo-
     </div>
 </section>
 
-<!-- 测试区域3: 实际使用的page-hero-section -->
+<!-- 测试区域3: 实际使用的page-hero-section - 诊断版 -->
 <section class="page-hero-section" style="margin-top: 20px; border: 3px solid orange;">
+    <!-- 背景图div添加红色边框和备用背景色用于诊断 -->
+    <div class="page-hero-bg" style="background-image: url('<?php echo esc_url($hero_bg_url); ?>'); border: 5px solid red; background-color: lime;"></div>
+    <!-- 遮罩层添加蓝色边框用于诊断 -->
+    <div class="page-hero-overlay" style="border: 3px solid blue;"></div>
+    <div class="test-info" style="background: rgba(255,255,255,0.95); z-index: 10;">
+        <strong>测试3: 诊断版</strong><br>
+        背景图div有<span style="color:red">红色边框</span>和<span style="color:lime">绿色备用背景</span><br>
+        遮罩层有<span style="color:blue">蓝色边框</span><br>
+        如果看到红色/绿色/蓝色 = div存在<br>
+        如果看到背景图 = 背景图正常加载
+    </div>
+    <!-- 暂时移除波浪，排除干扰 -->
+</section>
+
+<!-- 测试区域3b: 有波浪的版本 -->
+<section class="page-hero-section" style="margin-top: 20px; border: 3px solid pink;">
     <div class="page-hero-bg" style="background-image: url('<?php echo esc_url($hero_bg_url); ?>');"></div>
     <div class="page-hero-overlay"></div>
     <div class="test-info">
-        <strong>测试3: 实际page-hero-section</strong><br>
-        检查这个区域是否显示背景图
+        <strong>测试3b: 有波浪</strong><br>
+        测试波浪是否影响背景图显示
     </div>
     <div class="waves-area">
         <svg class="waves-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 24 150 28" preserveAspectRatio="none">
