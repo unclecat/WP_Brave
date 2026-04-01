@@ -109,19 +109,31 @@ $hero_bg_url = !empty($hero_bg) ? $hero_bg : 'https://images.unsplash.com/photo-
 </section>
 
 <!-- 测试区域3: 实际使用的page-hero-section - 诊断版 -->
-<section class="page-hero-section" style="margin-top: 20px; border: 3px solid orange;">
+<section class="page-hero-section" style="margin-top: 20px; border: 3px solid orange; background: rgba(255,165,0,0.1);">
     <!-- 背景图div添加红色边框和备用背景色用于诊断 -->
-    <div class="page-hero-bg" style="background-image: url('<?php echo esc_url($hero_bg_url); ?>'); border: 5px solid red; background-color: lime;"></div>
+    <div class="page-hero-bg" style="background-image: url('<?php echo esc_url($hero_bg_url); ?>'); border: 5px solid red; background-color: lime; box-sizing: border-box;"></div>
     <!-- 遮罩层添加蓝色边框用于诊断 -->
-    <div class="page-hero-overlay" style="border: 3px solid blue;"></div>
-    <div class="test-info" style="background: rgba(255,255,255,0.95); z-index: 10;">
-        <strong>测试3: 诊断版</strong><br>
+    <div class="page-hero-overlay" style="border: 3px solid blue; box-sizing: border-box;"></div>
+    <div class="test-info" style="background: rgba(255,255,255,0.95); position: relative; z-index: 10;">
+        <strong>测试3: 诊断版（带高度信息）</strong><br>
+        section高度应为: 300px<br>
         背景图div有<span style="color:red">红色边框</span>和<span style="color:lime">绿色备用背景</span><br>
         遮罩层有<span style="color:blue">蓝色边框</span><br>
-        如果看到红色/绿色/蓝色 = div存在<br>
-        如果看到背景图 = 背景图正常加载
+        <strong>如果看到红色/绿色/蓝色边框是细线 = 高度塌陷!</strong>
     </div>
     <!-- 暂时移除波浪，排除干扰 -->
+</section>
+
+<!-- 测试区域3c: 固定像素高度对照组 -->
+<section style="margin-top: 20px; border: 3px solid brown; position: relative; height: 300px; overflow: hidden;">
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url('<?php echo esc_url($hero_bg_url); ?>'); background-size: cover; border: 5px solid cyan; background-color: yellow;"></div>
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3);"></div>
+    <div class="test-info" style="position: relative;">
+        <strong>测试3c: 固定高度对照组</strong><br>
+        不使用.page-hero-section类<br>
+        直接设置style="height: 300px"<br>
+        背景图div有<span style="color:cyan">青色边框</span>+黄色备用背景
+    </div>
 </section>
 
 <!-- 测试区域3b: 有波浪的版本 -->
