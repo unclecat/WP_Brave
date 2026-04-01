@@ -7,6 +7,33 @@
 
 get_header();
 
+// 获取Hero背景图
+$hero_bg = get_theme_mod('brave_hero_bg');
+
+?>
+<!-- 页面Hero区域 -->
+<section class="page-hero-section">
+    <div class="page-hero-bg" style="background-image: url('<?php echo $hero_bg ? esc_url($hero_bg) : 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=1920'; ?>');"></div>
+    <div class="page-hero-content">
+        <h1 class="page-hero-title">💖 点点滴滴</h1>
+    </div>
+    <!-- 波浪 -->
+    <div class="waves-area">
+        <svg class="waves-svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none">
+            <defs>
+                <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18v44h-352z"/>
+            </defs>
+            <g class="parallax">
+                <use xlink:href="#gentle-wave" x="48" y="0"/>
+                <use xlink:href="#gentle-wave" x="48" y="3"/>
+                <use xlink:href="#gentle-wave" x="48" y="5"/>
+                <use xlink:href="#gentle-wave" x="48" y="7"/>
+            </g>
+        </svg>
+    </div>
+</section>
+
+<?php
 // 获取当前页码
 $paged = get_query_var('paged') ? get_query_var('paged') : 1;
 
