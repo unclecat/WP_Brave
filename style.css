@@ -4,7 +4,7 @@ Theme URI: https://github.com/yourname/brave-wp
 Author: Kimi Code
 Author URI: https://kimi.moonshot.cn
 Description: 一个浪漫的 WordPress 情侣主题，记录你们的点点滴滴、恋爱清单、甜蜜相册和随笔说说。
-Version: 0.6.1
+Version: 0.6.2
 License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: brave-love
@@ -2379,5 +2379,83 @@ textarea.form-control {
     
     .form-title {
         font-size: 1.1rem;
+    }
+}
+
+/* ================================
+   祝福留言深色模式
+   ================================ */
+@media (prefers-color-scheme: dark) {
+    .blessing-card {
+        background: #1e1e1e;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    .blessing-card:hover {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+    
+    .blessing-card-header {
+        border-bottom-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .blessing-author {
+        color: #e0e0e0;
+    }
+    
+    .blessing-time {
+        color: #888;
+    }
+    
+    .blessing-content {
+        color: #ccc;
+    }
+    
+    .blessing-form-box {
+        background: #1e1e1e;
+        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .blessing-form-header .form-title {
+        color: #e0e0e0;
+    }
+    
+    .blessing-form .form-input,
+    .blessing-form .form-textarea {
+        background: #2a2a2a;
+        border-color: #333;
+        color: #e0e0e0;
+    }
+    
+    .blessing-form .form-input::placeholder,
+    .blessing-form .form-textarea::placeholder {
+        color: #666;
+    }
+    
+    .form-notice {
+        background: rgba(255, 193, 7, 0.15);
+    }
+    
+    .notice-text {
+        color: #ffc107;
+    }
+    
+    .blessing-empty {
+        background: #1e1e1e;
+    }
+    
+    .blessing-empty .empty-text {
+        color: #888;
+    }
+    
+    .btn-load-more {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+    
+    .btn-load-more:hover {
+        background: var(--primary-color);
+        color: #fff;
     }
 }
