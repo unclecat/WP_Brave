@@ -108,20 +108,15 @@ $hero_bg_url = !empty($hero_bg) ? $hero_bg : 'https://images.unsplash.com/photo-
     </div>
 </section>
 
-<!-- 测试区域3: 实际使用的page-hero-section - 诊断版 -->
-<section class="page-hero-section" style="margin-top: 20px; border: 3px solid orange; background: rgba(255,165,0,0.1);">
-    <!-- 背景图div添加红色边框和备用背景色用于诊断 -->
-    <div class="page-hero-bg" style="background-image: url('<?php echo esc_url($hero_bg_url); ?>'); border: 5px solid red; background-color: lime; box-sizing: border-box;"></div>
-    <!-- 遮罩层添加蓝色边框用于诊断 -->
-    <div class="page-hero-overlay" style="border: 3px solid blue; box-sizing: border-box;"></div>
-    <div class="test-info" style="background: rgba(255,255,255,0.95); position: relative; z-index: 10;">
-        <strong>测试3: 诊断版（带高度信息）</strong><br>
-        section高度应为: 300px<br>
-        背景图div有<span style="color:red">红色边框</span>和<span style="color:lime">绿色备用背景</span><br>
-        遮罩层有<span style="color:blue">蓝色边框</span><br>
-        <strong>如果看到红色/绿色/蓝色边框是细线 = 高度塌陷!</strong>
+<!-- 测试区域3: 和实际页面完全一致 -->
+<section class="page-hero-section" style="margin-top: 20px; border: 3px solid orange;">
+    <div class="page-hero-bg" style="background-image: url('<?php echo esc_url($hero_bg_url); ?>');"></div>
+    <div class="page-hero-overlay"></div>
+    <div class="test-info">
+        <strong>测试3: 和实际页面一致</strong><br>
+        无波浪，无额外诊断样式<br>
+        检查是否能显示背景图
     </div>
-    <!-- 暂时移除波浪，排除干扰 -->
 </section>
 
 <!-- 测试区域3c: 固定像素高度对照组 -->
