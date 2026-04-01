@@ -4,7 +4,7 @@ Theme URI: https://github.com/yourname/brave-wp
 Author: Kimi Code
 Author URI: https://kimi.moonshot.cn
 Description: 一个浪漫的 WordPress 情侣主题，记录你们的点点滴滴、恋爱清单、甜蜜相册和随笔说说。
-Version: 0.5.8
+Version: 0.6.0
 License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: brave-love
@@ -1972,4 +1972,268 @@ textarea.form-control {
 
 .hidden {
     display: none !important;
+}
+
+/* ================================
+   祝福留言页面样式
+   ================================ */
+
+.blessing-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding: 0 1rem;
+}
+
+.blessing-count {
+    font-size: 1rem;
+    color: var(--text-muted);
+}
+
+.blessing-count strong {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.blessing-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, var(--primary-color), #ff6b7a);
+    color: #fff;
+    border: none;
+    border-radius: 2rem;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(255, 81, 98, 0.3);
+}
+
+.blessing-toggle-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 81, 98, 0.4);
+}
+
+.blessing-toggle-btn.active {
+    background: linear-gradient(135deg, #666, #888);
+}
+
+.toggle-icon {
+    font-size: 1.2rem;
+}
+
+/* 展开式表单 */
+.blessing-form-wrapper {
+    margin-bottom: 2rem;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.blessing-form-inner {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-color);
+}
+
+.blessing-form-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+    text-align: center;
+}
+
+.blessing-form .form-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.blessing-form .form-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.blessing-form .form-group:last-child {
+    margin-bottom: 1rem;
+}
+
+.blessing-form input,
+.blessing-form textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.blessing-form input:focus,
+.blessing-form textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 81, 98, 0.1);
+}
+
+/* 瀑布流布局 */
+.blessing-waterfall {
+    column-count: 1;
+    column-gap: 1rem;
+    padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+    .blessing-waterfall {
+        column-count: 2;
+    }
+}
+
+@media (min-width: 1024px) {
+    .blessing-waterfall {
+        column-count: 3;
+    }
+}
+
+/* 祝福卡片 */
+.blessing-card {
+    break-inside: avoid;
+    margin-bottom: 1rem;
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+}
+
+.blessing-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(255, 81, 98, 0.15);
+}
+
+.blessing-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px dashed var(--border-color);
+}
+
+.blessing-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.blessing-author-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.blessing-author {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.blessing-time {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.blessing-content {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--text-color);
+    word-wrap: break-word;
+}
+
+.blessing-content p {
+    margin: 0 0 0.5rem;
+}
+
+.blessing-content p:last-child {
+    margin-bottom: 0;
+}
+
+/* 加载更多 */
+.blessing-load-more {
+    text-align: center;
+    margin-top: 2rem;
+    padding: 0 1rem;
+}
+
+.btn-load-more {
+    padding: 0.75rem 2rem;
+    background: transparent;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    border-radius: 2rem;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-load-more:hover {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+/* 空状态 */
+.blessing-empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    margin: 0 1rem;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.empty-text {
+    font-size: 1rem;
+    color: var(--text-muted);
+}
+
+/* 响应式 */
+@media (max-width: 640px) {
+    .blessing-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .blessing-toggle-btn {
+        justify-content: center;
+    }
+    
+    .blessing-form .form-row {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .blessing-card {
+        padding: 1rem;
+    }
 }
