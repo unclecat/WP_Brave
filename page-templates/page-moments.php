@@ -96,9 +96,16 @@ rsort($years);
                         }
                         $location = get_post_meta($moment->ID, '_meet_location', true);
                         $mood = get_post_meta($moment->ID, '_mood', true);
+                        $mood_text = brave_get_mood_text($mood);
+                        $mood_emoji = brave_get_mood_emoji($mood);
                         $moment_summary = get_post_meta($moment->ID, '_moment_summary', true);
                         $has_thumbnail = has_post_thumbnail($moment->ID);
                         $moment_link = get_permalink($moment->ID);
+                        
+                        // 获取作者信息
+                        $author_id = $moment->post_author;
+                        $author_name = get_the_author_meta('display_name', $author_id);
+                        $author_avatar = get_avatar_url($author_id, array('size' => 40));
                     ?>
                         <article class="timeline-card" data-moment-id="<?php echo esc_attr($moment->ID); ?>">
                             <a href="<?php echo esc_url($moment_link); ?>" class="timeline-card-link">
@@ -110,11 +117,6 @@ rsort($years);
                                         </div>
                                         <div class="timeline-card-meta">
                                             <h4 class="timeline-card-title"><?php echo esc_html($moment->post_title); ?></h4>
-                                            <?php if ($mood) : ?>
-                                                <span class="timeline-card-mood" title="<?php echo esc_attr(brave_get_mood_text($mood)); ?>">
-                                                    <?php echo brave_get_mood_emoji($mood); ?>
-                                                </span>
-                                            <?php endif; ?>
                                         </div>
                                     </div>
                                     
@@ -139,12 +141,26 @@ rsort($years);
                                             <?php endif; ?>
                                         </div>
                                         
-                                        <?php if ($location) : ?>
-                                            <div class="timeline-card-location">
-                                                <span class="location-icon">📍</span>
-                                                <span><?php echo esc_html($location); ?></span>
-                                            </div>
-                                        <?php endif; ?>
+                                        <div class="timeline-card-footer-meta">
+                                            <?php if ($mood) : ?>
+                                                <div class="timeline-card-mood">
+                                                    <span class="mood-emoji"><?php echo $mood_emoji; ?></span>
+                                                    <span class="mood-text"><?php echo esc_html($mood_text); ?></span>
+                                                </div>
+                                            <?php endif; ?>
+                                            
+                                            <?php if ($location) : ?>
+                                                <div class="timeline-card-location">
+                                                    <span class="location-icon">📍</span>
+                                                    <span><?php echo esc_html($location); ?></span>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                        
+                                        <div class="timeline-card-author">
+                                            <img src="<?php echo esc_url($author_avatar); ?>" alt="" class="author-avatar">
+                                            <span class="author-name"><?php echo esc_html($author_name); ?></span>
+                                        </div>
                                     </div>
                                     
                                     <div class="timeline-card-footer">
