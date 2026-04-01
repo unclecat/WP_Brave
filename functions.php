@@ -6,7 +6,7 @@
  */
 
 // 定义常量
-define('BRAVE_VERSION', '0.6.3');
+define('BRAVE_VERSION', '0.6.4');
 define('BRAVE_DIR', get_template_directory());
 define('BRAVE_URI', get_template_directory_uri());
 
@@ -398,8 +398,12 @@ function brave_comment_moderation($approved, $commentdata) {
  * PV 访问统计
  */
 function brave_update_pv_stats() {
+    // 检查是否启用
+    if (!get_theme_mod('brave_pv_enabled', true)) {
+        return;
+    }
+    
     $today = date('Y-m-d');
-    $current_hour = date('Y-m-d-H');
     
     // 获取统计数据
     $stats = get_option('brave_pv_stats', array(
@@ -407,6 +411,22 @@ function brave_update_pv_stats() {
         'today_count' => 0,
         'total_count' => 0,
     ));
+    
+    // 检查手动覆盖
+    $manual_today = get_theme_mod('brave_pv_today_manual', '');
+    $manual_total = get_theme_mod('brave_pv_total_manual', '');
+    
+    if ($manual_today !== '' && $manual_today !== '0') {
+        $stats['today_count'] = intval($manual_today);
+        // 清空手动设置，避免重复应用
+        set_theme_mod('brave_pv_today_manual', '');
+    }
+    
+    if ($manual_total !== '' && $manual_total !== '0') {
+        $stats['total_count'] = intval($manual_total);
+        // 清空手动设置，避免重复应用
+        set_theme_mod('brave_pv_total_manual', '');
+    }
     
     // 检查是否跨天，重置当日计数
     if ($stats['today_date'] !== $today) {
@@ -439,4 +459,18 @@ function brave_get_pv_stats() {
     }
     
     return $stats;
+}
+
+/**
+ * 获取 PV 显示文字
+ */
+function brave_get_pv_display_text($type = 'today') {
+    if ($type === 'today') {
+        return get_theme_mod('brave_pv_today_text', __('今日', 'brave-love'));
+    } elseif ($type === 'total') {
+        return get_theme_mod('brave_pv_total_text', __('累计', 'brave-love'));
+    } elseif ($type === 'unit') {
+        return get_theme_mod('brave_pv_unit_text', __('次浏览', 'brave-love'));
+    }
+    return '';
 }

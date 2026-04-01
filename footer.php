@@ -8,12 +8,14 @@
     <div class="footer-text">
         <?php _e('用 ❤️ 记录我们的故事', 'brave-love'); ?>
     </div>
+    <?php if (get_theme_mod('brave_pv_enabled', true)) : ?>
     <div class="footer-pv-stats">
         <?php $pv = brave_get_pv_stats(); ?>
-        <span class="pv-item">📊 今日 <?php echo number_format($pv['today_count']); ?> 次浏览</span>
+        <span class="pv-item"><?php echo esc_html(brave_get_pv_display_text('today')); ?> <?php echo number_format($pv['today_count']); ?> <?php echo esc_html(brave_get_pv_display_text('unit')); ?></span>
         <span class="pv-separator">·</span>
-        <span class="pv-item">累计 <?php echo number_format($pv['total_count']); ?> 次</span>
+        <span class="pv-item"><?php echo esc_html(brave_get_pv_display_text('total')); ?> <?php echo number_format($pv['total_count']); ?> <?php echo esc_html(brave_get_pv_display_text('unit')); ?></span>
     </div>
+    <?php endif; ?>
 </footer>
 
 <!-- 返回顶部 -->
