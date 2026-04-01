@@ -15,13 +15,12 @@ $hero_bg = get_theme_mod('brave_hero_bg');
 <?php 
 $hero_bg_url = !empty($hero_bg) ? $hero_bg : 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=1920';
 ?>
-<section class="page-hero-section" style="border: 3px solid red;">
-    <!-- 纯内联样式，不使用page-hero-bg类 -->
-    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url('<?php echo esc_url($hero_bg_url); ?>'); background-size: cover; background-position: center; background-color: magenta; z-index: 0; border: 5px solid lime;"></div>
-    <div class="page-hero-overlay" style="border: 5px solid blue;"></div>
+<section class="page-hero-section">
+    <div class="page-hero-bg" style="background-image: url('<?php echo esc_url($hero_bg_url); ?>');"></div>
+    <div class="page-hero-overlay"></div>
     <!-- 页面标题在内容区域显示 -->
     <!-- 波浪 -->
-    <div class="waves-area" style="border: 5px solid cyan;">
+    <div class="waves-area">
         <svg class="waves-svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none">
             <defs>
                 <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18v44h-352z"/>
