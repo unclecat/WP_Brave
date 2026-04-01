@@ -132,6 +132,10 @@ rsort($years);
                                         <div class="timeline-card-meta">
                                             <h4 class="timeline-card-title"><?php echo esc_html($moment->post_title); ?></h4>
                                         </div>
+                                        <div class="timeline-card-author">
+                                            <img src="<?php echo esc_url($author_avatar); ?>" alt="" class="author-avatar">
+                                            <span class="author-name"><?php echo esc_html($author_name); ?></span>
+                                        </div>
                                     </div>
                                     
                                     <div class="timeline-card-body">
@@ -169,11 +173,6 @@ rsort($years);
                                                     <span><?php echo esc_html($location); ?></span>
                                                 </div>
                                             <?php endif; ?>
-                                        </div>
-                                        
-                                        <div class="timeline-card-author">
-                                            <img src="<?php echo esc_url($author_avatar); ?>" alt="" class="author-avatar">
-                                            <span class="author-name"><?php echo esc_html($author_name); ?></span>
                                         </div>
                                     </div>
                                     
