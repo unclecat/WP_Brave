@@ -141,64 +141,6 @@ $current_user = wp_get_current_user();
         <?php endif; ?>
     </div>
 
-    <!-- 登录用户发布表单 -->
-    <?php if ($is_logged_in) : 
-        // 获取当前用户头像
-        $current_user_id = $current_user->ID;
-        $boy_user_id = intval(get_theme_mod('brave_boy_user_id'));
-        $girl_user_id = intval(get_theme_mod('brave_girl_user_id'));
-        
-        if ($boy_user_id > 0 && $current_user_id == $boy_user_id) {
-            $current_avatar = brave_get_couple_avatar('boy', 100);
-        } elseif ($girl_user_id > 0 && $current_user_id == $girl_user_id) {
-            $current_avatar = brave_get_couple_avatar('girl', 100);
-        } else {
-            $current_avatar = get_avatar_url($current_user_id);
-        }
-    ?>
-    <div class="note-publish-form">
-        <div class="publish-header">
-            <img src="<?php echo esc_url($current_avatar); ?>" alt="" class="publish-avatar">
-            <span class="publish-name"><?php echo esc_html($current_user->display_name); ?></span>
-        </div>
-        <form id="quick-note-form" method="post" action="">
-            <?php wp_nonce_field('publish_note_action', 'publish_note_nonce'); ?>
-            <textarea name="note_content" class="publish-textarea" placeholder="写下此刻的心情..." required></textarea>
-            
-            <div class="publish-options">
-                <div class="option-group">
-                    <label>心情</label>
-                    <div class="mood-selector">
-                        <button type="button" class="mood-btn" data-mood="😊">😊</button>
-                        <button type="button" class="mood-btn" data-mood="😢">😢</button>
-                        <button type="button" class="mood-btn" data-mood="🥰">🥰</button>
-                        <button type="button" class="mood-btn" data-mood="😌">😌</button>
-                        <button type="button" class="mood-btn" data-mood="🤔">🤔</button>
-                        <button type="button" class="mood-btn" data-mood="😴">😴</button>
-                    </div>
-                    <input type="hidden" name="note_mood" id="selected-mood" value="😊">
-                </div>
-                
-                <div class="option-group">
-                    <label>思念度</label>
-                    <div class="miss-level-selector">
-                        <button type="button" class="star-btn" data-level="1">⭐</button>
-                        <button type="button" class="star-btn" data-level="2">⭐</button>
-                        <button type="button" class="star-btn" data-level="3">⭐</button>
-                        <button type="button" class="star-btn" data-level="4">⭐</button>
-                        <button type="button" class="star-btn" data-level="5">⭐</button>
-                    </div>
-                    <input type="hidden" name="note_miss_level" id="selected-miss-level" value="3">
-                </div>
-            </div>
-            
-            <div class="publish-actions">
-                <button type="submit" name="publish_note" class="publish-submit">发布说说</button>
-            </div>
-        </form>
-    </div>
-    <?php endif; ?>
-
     <!-- 瀑布流说说列表 -->
     <?php if ($query->have_posts()) : ?>
         <div class="notes-waterfall" id="notesWaterfall">
@@ -292,6 +234,64 @@ $current_user = wp_get_current_user();
                 <p class="notes-empty-hint">登录后可以发布你的第一条说说</p>
             <?php endif; ?>
         </div>
+    <?php endif; ?>
+
+    <!-- 登录用户发布表单 - 移到说说列表下方 -->
+    <?php if ($is_logged_in) : 
+        // 获取当前用户头像
+        $current_user_id = $current_user->ID;
+        $boy_user_id = intval(get_theme_mod('brave_boy_user_id'));
+        $girl_user_id = intval(get_theme_mod('brave_girl_user_id'));
+        
+        if ($boy_user_id > 0 && $current_user_id == $boy_user_id) {
+            $current_avatar = brave_get_couple_avatar('boy', 100);
+        } elseif ($girl_user_id > 0 && $current_user_id == $girl_user_id) {
+            $current_avatar = brave_get_couple_avatar('girl', 100);
+        } else {
+            $current_avatar = get_avatar_url($current_user_id);
+        }
+    ?>
+    <div class="note-publish-form">
+        <div class="publish-header">
+            <img src="<?php echo esc_url($current_avatar); ?>" alt="" class="publish-avatar">
+            <span class="publish-name"><?php echo esc_html($current_user->display_name); ?></span>
+        </div>
+        <form id="quick-note-form" method="post" action="">
+            <?php wp_nonce_field('publish_note_action', 'publish_note_nonce'); ?>
+            <textarea name="note_content" class="publish-textarea" placeholder="写下此刻的心情..." required></textarea>
+            
+            <div class="publish-options">
+                <div class="option-group">
+                    <label>心情</label>
+                    <div class="mood-selector">
+                        <button type="button" class="mood-btn" data-mood="😊">😊</button>
+                        <button type="button" class="mood-btn" data-mood="😢">😢</button>
+                        <button type="button" class="mood-btn" data-mood="🥰">🥰</button>
+                        <button type="button" class="mood-btn" data-mood="😌">😌</button>
+                        <button type="button" class="mood-btn" data-mood="🤔">🤔</button>
+                        <button type="button" class="mood-btn" data-mood="😴">😴</button>
+                    </div>
+                    <input type="hidden" name="note_mood" id="selected-mood" value="😊">
+                </div>
+                
+                <div class="option-group">
+                    <label>思念度</label>
+                    <div class="miss-level-selector">
+                        <button type="button" class="star-btn" data-level="1">⭐</button>
+                        <button type="button" class="star-btn" data-level="2">⭐</button>
+                        <button type="button" class="star-btn" data-level="3">⭐</button>
+                        <button type="button" class="star-btn" data-level="4">⭐</button>
+                        <button type="button" class="star-btn" data-level="5">⭐</button>
+                    </div>
+                    <input type="hidden" name="note_miss_level" id="selected-miss-level" value="3">
+                </div>
+            </div>
+            
+            <div class="publish-actions">
+                <button type="submit" name="publish_note" class="publish-submit">发布说说</button>
+            </div>
+        </form>
+    </div>
     <?php endif; ?>
 </section>
 
