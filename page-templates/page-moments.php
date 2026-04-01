@@ -106,6 +106,11 @@ rsort($years);
                         $author_id = $moment->post_author;
                         $author_name = get_the_author_meta('display_name', $author_id);
                         $author_avatar = get_avatar_url($author_id, array('size' => 40));
+                        
+                        // 如果没有头像，使用默认头像
+                        if (empty($author_avatar) || strpos($author_avatar, 'gravatar.com/avatar/') !== false) {
+                            $author_avatar = 'https://ui-avatars.com/api/?name=' . urlencode($author_name) . '&size=40&background=ff5162&color=fff';
+                        }
                     ?>
                         <article class="timeline-card" data-moment-id="<?php echo esc_attr($moment->ID); ?>">
                             <a href="<?php echo esc_url($moment_link); ?>" class="timeline-card-link">
