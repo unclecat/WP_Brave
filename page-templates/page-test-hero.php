@@ -112,7 +112,7 @@ $hero_bg_url = !empty($hero_bg) ? $hero_bg : 'https://images.unsplash.com/photo-
 <section class="page-hero-section" style="margin-top: 20px; border: 3px solid orange;">
     <div class="page-hero-bg" style="background-image: url('<?php echo esc_url($hero_bg_url); ?>');"></div>
     <div class="page-hero-overlay"></div>
-    <div class="test-info" style="z-index: 10;">
+    <div class="test-info">
         <strong>测试3: 实际page-hero-section</strong><br>
         检查这个区域是否显示背景图
     </div>
