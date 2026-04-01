@@ -14,13 +14,29 @@ $hero_bg = get_theme_mod('brave_hero_bg');
 <!-- Hero区域已移除 -->
 
 <?php
-// 获取已审核的评论
+// 当前页的祝福留言分页
+$comments_per_page = 50;
+$blessing_page = isset($_GET['blessing_page']) ? max(1, intval($_GET['blessing_page'])) : 1;
+$comment_offset = ($blessing_page - 1) * $comments_per_page;
+$current_page_id = get_the_ID();
+
+// 获取当前留言页的已审核评论
 $comments = get_comments(array(
+    'post_id' => $current_page_id,
     'status' => 'approve', // 只显示已审核的
     'orderby' => 'comment_date',
     'order' => 'DESC',
-    'number' => 50,
+    'number' => $comments_per_page,
+    'offset' => $comment_offset,
 ));
+
+$total_comments = get_comments(array(
+    'post_id' => $current_page_id,
+    'status' => 'approve',
+    'count' => true,
+));
+
+$max_comment_pages = $total_comments > 0 ? (int) ceil($total_comments / $comments_per_page) : 1;
 ?>
 
 <section class="content-section">
@@ -33,7 +49,7 @@ $comments = get_comments(array(
     <?php if (!empty($comments)) : ?>
         <div class="blessing-waterfall" id="blessingWaterfall">
             <?php foreach ($comments as $comment) : 
-                $avatar = get_avatar_url($comment->comment_author_email, array('size' => 50));
+                $avatar = brave_get_avatar_url($comment->comment_author_email);
                 $time = human_time_diff(strtotime($comment->comment_date), current_time('timestamp')) . '前';
             ?>
                 <article class="blessing-card">
@@ -51,16 +67,19 @@ $comments = get_comments(array(
             <?php endforeach; ?>
         </div>
 
-        <!-- 加载更多 -->
-        <?php 
-        $total_comments = get_comments_number();
-        if ($total_comments > 50) : 
-        ?>
-            <div class="blessing-load-more">
-                <button type="button" class="btn-load-more" id="loadMore">
-                    加载更多祝福
-                </button>
-            </div>
+        <?php if ($max_comment_pages > 1) : ?>
+            <nav class="pagination" style="margin-top: 2rem; text-align: center;">
+                <?php
+                echo paginate_links(array(
+                    'base' => esc_url_raw(add_query_arg('blessing_page', '%#%')),
+                    'format' => '',
+                    'current' => $blessing_page,
+                    'total' => $max_comment_pages,
+                    'prev_text' => '← 上一页',
+                    'next_text' => '下一页 →',
+                ));
+                ?>
+            </nav>
         <?php endif; ?>
     <?php else : ?>
         <div class="blessing-empty">

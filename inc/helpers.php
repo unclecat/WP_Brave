@@ -171,8 +171,11 @@ function brave_get_moment_years() {
     // 先从 meta 获取年份
     $meta_years = $wpdb->get_col($wpdb->prepare("
         SELECT DISTINCT YEAR(meta_value) as year
-        FROM {$wpdb->postmeta}
-        WHERE meta_key = %s
+        FROM {$wpdb->postmeta} pm
+        INNER JOIN {$wpdb->posts} p ON pm.post_id = p.ID
+        WHERE pm.meta_key = %s
+        AND p.post_type = 'moment'
+        AND p.post_status = 'publish'
         AND meta_value != ''
         AND meta_value IS NOT NULL
         ORDER BY year DESC
