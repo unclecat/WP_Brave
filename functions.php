@@ -6,7 +6,7 @@
  */
 
 // 定义常量
-define('BRAVE_VERSION', '0.6.5');
+define('BRAVE_VERSION', '0.6.6');
 define('BRAVE_DIR', get_template_directory());
 define('BRAVE_URI', get_template_directory_uri());
 
@@ -412,20 +412,20 @@ function brave_update_pv_stats() {
         'total_count' => 0,
     ));
     
-    // 检查手动覆盖
-    $manual_today = get_theme_mod('brave_pv_today_manual', '');
-    $manual_total = get_theme_mod('brave_pv_total_manual', '');
+    // 检查手动覆盖（使用单独的option标记已应用）
+    $manual_today = get_theme_mod('brave_pv_today_manual');
+    $manual_total = get_theme_mod('brave_pv_total_manual');
     
-    if ($manual_today !== '' && $manual_today !== '0') {
+    if ($manual_today !== '' && $manual_today !== false && $manual_today !== null) {
         $stats['today_count'] = intval($manual_today);
-        // 清空手动设置，避免重复应用
-        set_theme_mod('brave_pv_today_manual', '');
+        // 应用后清空
+        remove_theme_mod('brave_pv_today_manual');
     }
     
-    if ($manual_total !== '' && $manual_total !== '0') {
+    if ($manual_total !== '' && $manual_total !== false && $manual_total !== null) {
         $stats['total_count'] = intval($manual_total);
-        // 清空手动设置，避免重复应用
-        set_theme_mod('brave_pv_total_manual', '');
+        // 应用后清空
+        remove_theme_mod('brave_pv_total_manual');
     }
     
     // 检查是否跨天，重置当日计数

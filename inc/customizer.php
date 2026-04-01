@@ -6,6 +6,16 @@
  */
 
 /**
+ * PV 数字 sanitize（允许空值或数字）
+ */
+function brave_sanitize_pv_number($value) {
+    if ($value === '' || $value === null) {
+        return '';
+    }
+    return intval($value);
+}
+
+/**
  * 自定义控制类 - 纪念日管理说明
  */
 if (class_exists('WP_Customize_Control')) {
@@ -541,11 +551,11 @@ function brave_customize_register($wp_customize) {
     // 手动修改今日计数
     $wp_customize->add_setting('brave_pv_today_manual', array(
         'default' => '',
-        'sanitize_callback' => 'intval',
+        'sanitize_callback' => 'brave_sanitize_pv_number',
     ));
     $wp_customize->add_control('brave_pv_today_manual', array(
         'label' => __('手动设置今日计数', 'brave-love'),
-        'description' => __('留空则使用自动计数，输入数字后保存即可覆盖', 'brave-love'),
+        'description' => __('输入数字后保存即可覆盖当前值，输入0清空今日计数', 'brave-love'),
         'section' => 'brave_pv_stats',
         'type' => 'number',
     ));
@@ -553,11 +563,11 @@ function brave_customize_register($wp_customize) {
     // 手动修改累计计数
     $wp_customize->add_setting('brave_pv_total_manual', array(
         'default' => '',
-        'sanitize_callback' => 'intval',
+        'sanitize_callback' => 'brave_sanitize_pv_number',
     ));
     $wp_customize->add_control('brave_pv_total_manual', array(
         'label' => __('手动设置累计计数', 'brave-love'),
-        'description' => __('留空则使用自动计数，输入数字后保存即可覆盖', 'brave-love'),
+        'description' => __('输入数字后保存即可覆盖当前值', 'brave-love'),
         'section' => 'brave_pv_stats',
         'type' => 'number',
     ));
