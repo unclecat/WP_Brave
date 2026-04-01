@@ -4,7 +4,7 @@ Theme URI: https://github.com/yourname/brave-wp
 Author: Kimi Code
 Author URI: https://kimi.moonshot.cn
 Description: 一个浪漫的 WordPress 情侣主题，记录你们的点点滴滴、恋爱清单、甜蜜相册和随笔说说。
-Version: 0.6.6
+Version: 0.6.7
 License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: brave-love
@@ -68,7 +68,7 @@ img {
 }
 
 /* ================================
-   导航栏
+   导航栏优化
    ================================ */
 .navbar-brave {
     position: absolute;
@@ -76,10 +76,39 @@ img {
     left: 0;
     right: 0;
     z-index: 100;
-    padding: 1rem 0;
+    /* 增加上下内边距，让内容不那么贴边 */
+    padding: 1.25rem 0;
     transition: var(--transition);
 }
 
+/* 站点标题字体优化 */
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.35rem;
+    color: #fff !important;
+    /* 使用更有设计感的字体组合 */
+    font-family: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+    /* 添加字间距让标题更有质感 */
+    letter-spacing: 1px;
+    /* 添加轻微的文字阴影提升可读性 */
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* 右上方文字优化 */
+.nav-say {
+    font-size: 0.9rem;
+    opacity: 0.95;
+    /* 使用更优雅的字体 */
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    /* 添加字间距 */
+    letter-spacing: 0.5px;
+    /* 限制最大宽度避免过长 */
+    max-width: 280px;
+    text-align: right;
+    line-height: 1.4;
+}
+
+/* 滚动后的导航栏更紧凑 */
 .navbar-brave.scrolled {
     position: fixed;
     background: rgba(255, 255, 255, 0.95);
@@ -90,20 +119,14 @@ img {
     animation: slideDown 0.3s ease;
 }
 
-.navbar-brave.scrolled .navbar-brand,
-.navbar-brave.scrolled .nav-link {
+/* 滚动后文字颜色调整 */
+.navbar-brave.scrolled .navbar-brand {
     color: var(--text-color) !important;
+    text-shadow: none;
 }
 
-.navbar-brand {
-    font-weight: 700;
-    font-size: 1.25rem;
-    color: #fff !important;
-}
-
-.nav-say {
-    font-size: 0.875rem;
-    opacity: 0.9;
+.navbar-brave.scrolled .nav-say {
+    color: var(--text-muted) !important;
 }
 
 .navbar-toggler {
@@ -534,17 +557,34 @@ img {
 }
 
 /* ================================
+   页面内容区域 - 为导航栏预留空间
+   ================================ */
+/* 非首页的主内容区添加顶部间距 */
+.site-main {
+    /* 为固定导航栏预留空间 */
+    padding-top: 80px;
+}
+
+/* 首页不需要额外的padding，因为有hero区域 */
+.home .site-main,
+.page-template-page-home .site-main {
+    padding-top: 0;
+}
+
+/* 页面标题区域增加上边距 */
+.section-header {
+    /* 确保标题不会被导航栏遮挡 */
+    margin-top: 1rem;
+    padding-top: 1rem;
+}
+
+/* ================================
    内容区域通用
    ================================ */
 .content-section {
     padding: 1.5rem 1rem;
     max-width: 800px;
     margin: 0 auto;
-}
-
-.section-header {
-    text-align: center;
-    margin-bottom: 1.5rem;
 }
 
 .section-title {
