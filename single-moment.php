@@ -20,20 +20,15 @@ while (have_posts()) :
         
         <!-- 头部信息 -->
         <header class="moment-header">
-            <div class="moment-header-main">
-                <div class="moment-date-badge">
-                    <?php if ($meet_date) : ?>
-                        <span class="moment-day"><?php echo esc_html(substr($meet_date, 8, 2)); ?></span>
-                        <span class="moment-month"><?php echo esc_html(substr($meet_date, 5, 2)); ?>月</span>
-                        <span class="moment-year"><?php echo esc_html(substr($meet_date, 0, 4)); ?></span>
-                    <?php else : ?>
-                        <span class="moment-day">--</span>
-                        <span class="moment-month">--</span>
-                    <?php endif; ?>
-                </div>
-                
-                <h1 class="moment-title"><?php the_title(); ?></h1>
+            <div class="moment-date-line">
+                <?php if ($meet_date) : ?>
+                    <span class="date-text"><?php echo esc_html(substr($meet_date, 0, 4)); ?>年<?php echo esc_html(substr($meet_date, 5, 2)); ?>月<?php echo esc_html(substr($meet_date, 8, 2)); ?>日</span>
+                <?php else : ?>
+                    <span class="date-text">日期未知</span>
+                <?php endif; ?>
             </div>
+            
+            <h1 class="moment-title"><?php the_title(); ?></h1>
         </header>
 
         <!-- 摘要 -->
@@ -60,17 +55,21 @@ while (have_posts()) :
 
         <!-- 元信息 -->
         <div class="moment-meta">
-            <?php if ($location) : ?>
-                <div class="moment-meta-item">
-                    <span class="meta-label">📍 地点</span>
-                    <span class="meta-value"><?php echo esc_html($location); ?></span>
-                </div>
-            <?php endif; ?>
-            
-            <?php if ($mood) : ?>
-                <div class="moment-meta-item">
-                    <span class="meta-label"><?php echo brave_get_mood_emoji($mood); ?> 心情</span>
-                    <span class="meta-value"><?php echo brave_get_mood_text($mood); ?></span>
+            <?php if ($location || $mood) : ?>
+                <div class="moment-meta-row">
+                    <?php if ($location) : ?>
+                        <span class="meta-tag">
+                            <span class="meta-icon">📍</span>
+                            <span><?php echo esc_html($location); ?></span>
+                        </span>
+                    <?php endif; ?>
+                    
+                    <?php if ($mood) : ?>
+                        <span class="meta-tag">
+                            <span class="meta-icon"><?php echo brave_get_mood_emoji($mood); ?></span>
+                            <span><?php echo brave_get_mood_text($mood); ?></span>
+                        </span>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
         </div>
