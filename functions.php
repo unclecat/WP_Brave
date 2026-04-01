@@ -6,7 +6,7 @@
  */
 
 // 定义常量
-define('BRAVE_VERSION', '0.6.0');
+define('BRAVE_VERSION', '0.6.1');
 define('BRAVE_DIR', get_template_directory());
 define('BRAVE_URI', get_template_directory_uri());
 
@@ -383,3 +383,13 @@ function brave_handle_frontend_note_publish() {
     exit;
 }
 add_action('template_redirect', 'brave_handle_frontend_note_publish');
+
+/**
+ * 祝福留言必须审核
+ * 所有新评论都需要管理员审核
+ */
+add_filter('pre_comment_approved', 'brave_comment_moderation', 99, 2);
+function brave_comment_moderation($approved, $commentdata) {
+    // 所有评论都需要审核
+    return 0; // 0 = 待审核
+}

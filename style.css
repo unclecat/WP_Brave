@@ -4,7 +4,7 @@ Theme URI: https://github.com/yourname/brave-wp
 Author: Kimi Code
 Author URI: https://kimi.moonshot.cn
 Description: 一个浪漫的 WordPress 情侣主题，记录你们的点点滴滴、恋爱清单、甜蜜相册和随笔说说。
-Version: 0.6.0
+Version: 0.6.1
 License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: brave-love
@@ -2235,5 +2235,149 @@ textarea.form-control {
     
     .blessing-card {
         padding: 1rem;
+    }
+}
+
+/* ================================
+   祝福表单区域
+   ================================ */
+
+.blessing-form-section {
+    margin-top: 3rem;
+    padding: 0 1rem;
+}
+
+.blessing-form-header {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.form-icon {
+    font-size: 2rem;
+    margin-right: 0.5rem;
+}
+
+.form-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.blessing-form-box {
+    max-width: 600px;
+    margin: 0 auto;
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-color);
+}
+
+.blessing-form .form-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.blessing-form .form-group {
+    flex: 1;
+    margin-bottom: 1rem;
+}
+
+.blessing-form .form-input,
+.blessing-form .form-textarea {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: all 0.3s ease;
+    background: #fff;
+}
+
+.blessing-form .form-input:focus,
+.blessing-form .form-textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 81, 98, 0.1);
+}
+
+.blessing-form .form-textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-notice {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 193, 7, 0.1);
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+}
+
+.notice-icon {
+    font-size: 1rem;
+}
+
+.notice-text {
+    font-size: 0.85rem;
+    color: #856404;
+}
+
+.form-submit {
+    text-align: center;
+}
+
+.btn-submit-blessing {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 2.5rem;
+    background: linear-gradient(135deg, var(--primary-color), #ff6b7a);
+    color: #fff;
+    border: none;
+    border-radius: 2.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(255, 81, 98, 0.3);
+}
+
+.btn-submit-blessing:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 81, 98, 0.4);
+}
+
+.btn-submit-blessing .btn-icon {
+    font-size: 1.1rem;
+}
+
+.blessing-closed {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+}
+
+/* 响应式 */
+@media (max-width: 640px) {
+    .blessing-form-section {
+        margin-top: 2rem;
+    }
+    
+    .blessing-form-box {
+        padding: 1rem;
+    }
+    
+    .blessing-form .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .form-title {
+        font-size: 1.1rem;
     }
 }
