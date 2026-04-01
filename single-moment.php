@@ -20,20 +20,20 @@ while (have_posts()) :
         
         <!-- 头部信息 -->
         <header class="moment-header">
-            <div class="moment-header-top">
-                <div class="moment-date-badge">
+            <div class="moment-header-row">
+                <h1 class="moment-title"><?php the_title(); ?></h1>
+                
+                <div class="moment-date-tag">
                     <?php if ($meet_date) : ?>
-                        <span class="date-year"><?php echo esc_html(substr($meet_date, 0, 4)); ?></span>
-                        <span class="date-divider">/</span>
-                        <span class="date-month"><?php echo esc_html(substr($meet_date, 5, 2)); ?></span>
-                        <span class="date-divider">/</span>
-                        <span class="date-day"><?php echo esc_html(substr($meet_date, 8, 2)); ?></span>
+                        <span><?php echo esc_html(substr($meet_date, 0, 4)); ?></span>
+                        <span class="date-sep">/</span>
+                        <span><?php echo esc_html(substr($meet_date, 5, 2)); ?></span>
+                        <span class="date-sep">/</span>
+                        <span><?php echo esc_html(substr($meet_date, 8, 2)); ?></span>
                     <?php else : ?>
                         <span>--</span>
                     <?php endif; ?>
                 </div>
-                
-                <h1 class="moment-title"><?php the_title(); ?></h1>
             </div>
         </header>
 
