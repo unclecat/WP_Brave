@@ -11,28 +11,7 @@ get_header();
 $hero_bg = get_theme_mod('brave_hero_bg');
 
 ?>
-<!-- 页面Hero区域 -->
-<?php 
-$hero_bg_url = !empty($hero_bg) ? $hero_bg : 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=1920';
-?>
-<section class="page-hero-section" style="position: relative; height: 300px; overflow: hidden; isolation: isolate;">
-    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url('<?php echo esc_url($hero_bg_url); ?>'); background-size: cover; background-position: center; z-index: 0;"></div>
-    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.35); z-index: 1;"></div>
-    <!-- 波浪 -->
-    <div class="waves-area" style="position: absolute; bottom: 0; left: 0; right: 0; z-index: 2;">
-        <svg class="waves-svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none">
-            <defs>
-                <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18v44h-352z"/>
-            </defs>
-            <g class="parallax">
-                <use xlink:href="#gentle-wave" x="48" y="0"/>
-                <use xlink:href="#gentle-wave" x="48" y="3"/>
-                <use xlink:href="#gentle-wave" x="48" y="5"/>
-                <use xlink:href="#gentle-wave" x="48" y="7"/>
-            </g>
-        </svg>
-    </div>
-</section>
+<!-- Hero区域已移除 -->
 
 <?php
 // 获取当前页码

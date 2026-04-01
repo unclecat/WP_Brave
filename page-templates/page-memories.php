@@ -13,29 +13,7 @@ get_header();
 $hero_bg = get_theme_mod('brave_hero_bg');
 
 ?>
-<!-- 页面Hero区域 -->
-<?php 
-$hero_bg_url = !empty($hero_bg) ? $hero_bg : 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=1920';
-?>
-<section class="page-hero-section">
-    <div class="page-hero-bg" style="background-image: url('<?php echo esc_url($hero_bg_url); ?>');"></div>
-    <div class="page-hero-overlay"></div>
-    <!-- 页面标题在内容区域显示 -->
-    <!-- 波浪 -->
-    <div class="waves-area">
-        <svg class="waves-svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none">
-            <defs>
-                <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18v44h-352z"/>
-            </defs>
-            <g class="parallax">
-                <use xlink:href="#gentle-wave" x="48" y="0"/>
-                <use xlink:href="#gentle-wave" x="48" y="3"/>
-                <use xlink:href="#gentle-wave" x="48" y="5"/>
-                <use xlink:href="#gentle-wave" x="48" y="7"/>
-            </g>
-        </svg>
-    </div>
-</section>
+<!-- Hero区域已移除 -->
 
 <?php
 // 获取设置
