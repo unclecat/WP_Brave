@@ -478,3 +478,75 @@
         padding: 1rem;
     }
 }
+
+
+/* ================================
+   夜间模式支持
+   ================================ */
+@media (prefers-color-scheme: dark) {
+    .notes-filter-bar {
+        background: #1e1e1e;
+        box-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
+    }
+    
+    .filter-btn,
+    .filter-dropdown-toggle {
+        background: #2a2a2a;
+        color: #a0a0a0;
+    }
+    
+    .filter-dropdown {
+        background: #1e1e1e;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+    
+    .filter-option {
+        color: #a0a0a0;
+    }
+    
+    .filter-option:hover {
+        background: rgba(255, 154, 158, 0.1);
+        color: #ff9a9e;
+    }
+    
+    .note-publish-form {
+        background: #1e1e1e;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .publish-textarea {
+        background: #2a2a2a;
+        border-color: #333;
+        color: #e0e0e0;
+    }
+    
+    .mood-btn,
+    .star-btn {
+        background: #2a2a2a;
+    }
+    
+    .note-waterfall-card {
+        background: #1e1e1e;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    .note-waterfall-card:hover {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+    
+    .note-content {
+        color: #ccc;
+    }
+    
+    .notes-empty {
+        background: #1e1e1e;
+    }
+    
+    .notes-empty-text {
+        color: #a0a0a0;
+    }
+    
+    .notes-empty-hint {
+        color: #666;
+    }
+}

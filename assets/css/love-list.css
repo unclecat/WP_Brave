@@ -378,3 +378,41 @@
         font-size: 0.8rem;
     }
 }
+
+
+/* ================================
+   夜间模式支持
+   ================================ */
+@media (prefers-color-scheme: dark) {
+    .love-list-section {
+        background: linear-gradient(180deg, #1a1a1a 0%, #121212 100%);
+    }
+    
+    .love-list-card {
+        background: #1e1e1e;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .love-list-card:hover {
+        border-color: rgba(255, 81, 98, 0.3);
+    }
+    
+    .filter-btn {
+        background: #1e1e1e;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #a0a0a0;
+    }
+    
+    .progress-bar {
+        background: rgba(255, 81, 98, 0.2);
+    }
+    
+    .card-number {
+        background: linear-gradient(135deg, #333, #444);
+        color: #888;
+    }
+    
+    .detail-text {
+        color: #a0a0a0;
+    }
+}
