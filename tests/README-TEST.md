@@ -24,7 +24,7 @@
 ### 1. 检查主题（可选）
 
 ```bash
-./check-theme-simple.sh
+bash tests/check-theme-simple.sh
 ```
 
 这会检查：
@@ -36,7 +36,7 @@
 ### 2. 启动 WordPress 环境
 
 ```bash
-./test-theme.sh
+bash tests/test-theme.sh
 ```
 
 此脚本会：
@@ -70,7 +70,7 @@
 ### 5. 创建测试数据
 
 ```bash
-./setup-test-data.sh
+bash tests/setup-test-data.sh
 ```
 
 此脚本会自动：
@@ -132,19 +132,19 @@
 
 ```bash
 # 启动环境
-docker-compose up -d
+docker-compose -f tests/docker-compose.yml up -d
 
 # 停止环境
-docker-compose down
+docker-compose -f tests/docker-compose.yml down
 
 # 重启环境
-docker-compose restart
+docker-compose -f tests/docker-compose.yml restart
 
 # 查看日志
-docker-compose logs -f wordpress
+docker-compose -f tests/docker-compose.yml logs -f wordpress
 
 # 重置所有数据（包括数据库）
-docker-compose down -v
+docker-compose -f tests/docker-compose.yml down -v
 
 # 进入 WordPress 容器
 docker exec -it brave_wp_app bash
@@ -248,7 +248,7 @@ cd brave-wp && zip -r ../brave-love-prod.zip . -x ".git/*" -x ".DS_Store"
 docker stats
 
 # 检查日志中的慢查询
-docker-compose logs -f db | grep -i slow
+docker-compose -f tests/docker-compose.yml logs -f db | grep -i slow
 ```
 
 ---

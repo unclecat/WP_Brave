@@ -4,7 +4,7 @@
  * 运行: php check-theme.php
  */
 
-$theme_dir = __DIR__ . '/brave-wp';
+$theme_dir = dirname(__DIR__);
 $errors = [];
 $warnings = [];
 
@@ -65,7 +65,16 @@ echo "\n";
 // 检查 PHP 语法
 echo "🔍 检查 PHP 语法...\n";
 $php_files = new RecursiveIteratorIterator(
-    new RecursiveDirectoryIterator($theme_dir)
+    new RecursiveCallbackFilterIterator(
+        new RecursiveDirectoryIterator($theme_dir, RecursiveDirectoryIterator::SKIP_DOTS),
+        function ($current, $key, $iterator) {
+            if ($current->isDir()) {
+                return !in_array($current->getFilename(), ['.git', 'tests'], true);
+            }
+
+            return true;
+        }
+    )
 );
 $php_count = 0;
 foreach ($php_files as $file) {

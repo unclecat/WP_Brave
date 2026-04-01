@@ -6,7 +6,7 @@ echo "================================"
 echo ""
 
 cd "$(dirname "$0")"
-THEME_DIR="brave-wp"
+THEME_DIR="$(cd .. && pwd)"
 
 # 检查目录
 if [ ! -d "$THEME_DIR" ]; then
@@ -93,7 +93,10 @@ echo ""
 # 检查文件大小
 echo "📦 文件大小..."
 theme_size=$(du -sh "$THEME_DIR" | cut -f1)
-zip_size=$(du -sh brave-love-v0.1.zip 2>/dev/null | cut -f1 || echo "未打包")
+zip_size=$(find "$THEME_DIR/.." -maxdepth 1 -type f -name 'brave-love*.zip' -exec du -sh {} \; 2>/dev/null | tail -n 1 | cut -f1)
+if [ -z "$zip_size" ]; then
+    zip_size="未打包"
+fi
 echo "   主题目录: $theme_size"
 echo "   ZIP 包: $zip_size"
 echo ""
@@ -111,7 +114,7 @@ echo ""
 echo "🔒 安全检查..."
 dangerous=0
 for func in "eval(" "exec(" "system(" "shell_exec(" "passthru("; do
-    count=$(grep -r "$func" "$THEME_DIR" --include="*.php" 2>/dev/null | wc -l)
+    count=$(find "$THEME_DIR" -path "$THEME_DIR/tests" -prune -o -name "*.php" -type f -print0 2>/dev/null | xargs -0 grep -h "$func" 2>/dev/null | wc -l)
     if [ $count -gt 0 ]; then
         echo "   ⚠️  发现 $func ($count 处)"
         ((dangerous++))
@@ -152,7 +155,7 @@ fi
 
 echo ""
 echo "🚀 下一步："
-echo "   1. 运行 ./test-theme.sh 启动 WordPress 测试环境"
+echo "   1. 运行 tests/test-theme.sh 启动 WordPress 测试环境"
 echo "   2. 访问 http://localhost:8080 完成安装"
-echo "   3. 运行 ./setup-test-data.sh 创建测试数据"
+echo "   3. 运行 tests/setup-test-data.sh 创建测试数据"
 echo ""

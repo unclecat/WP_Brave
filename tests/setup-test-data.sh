@@ -4,6 +4,9 @@
 echo "📝 创建测试数据..."
 echo ""
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+THEME_DIR="$(dirname "$SCRIPT_DIR")"
+
 # 检查 WP-CLI 容器是否存在，不存在则创建
 if ! docker ps | grep -q wp_cli; then
     echo "🚀 启动 WP-CLI 容器..."
@@ -11,7 +14,7 @@ if ! docker ps | grep -q wp_cli; then
         --name wp_cli \
         --network wordpress_default \
         --volumes-from brave_wp_app \
-        -v $(pwd)/brave-wp:/var/www/html/wp-content/themes/brave-love:ro \
+        -v "$THEME_DIR":/var/www/html/wp-content/themes/brave-love:ro \
         wordpress:cli \
         /bin/bash -c "
             # 等待数据库就绪
@@ -38,9 +41,6 @@ if ! docker ps | grep -q wp_cli; then
             
             # 点点滴滴
             wp post create --post_type=page --post_title='点点滴滴' --post_status=publish --page_template='page-templates/page-moments.php' --allow-root 2>/dev/null || echo '点点滴滴页面已存在'
-            
-            # 恋爱清单
-            wp post create --post_type=page --post_title='恋爱清单' --post_status=publish --page_template='page-templates/page-list.php' --allow-root 2>/dev/null || echo '恋爱清单页面已存在'
             
             # 甜蜜相册
             wp post create --post_type=page --post_title='甜蜜相册' --post_status=publish --page_template='page-templates/page-memories.php' --allow-root 2>/dev/null || echo '甜蜜相册页面已存在'

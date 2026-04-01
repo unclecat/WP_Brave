@@ -24,7 +24,7 @@ services:
       - db
     volumes:
       - wp_data:/var/www/html
-      - ./brave-wp:/var/www/html/wp-content/themes/brave-love:ro
+      - ..:/var/www/html/wp-content/themes/brave-love:ro
     environment:
       WORDPRESS_DB_HOST: db:3306
       WORDPRESS_DB_USER: wordpress

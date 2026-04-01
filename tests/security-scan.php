@@ -13,7 +13,16 @@ $results = [
 
 $all_files = [];
 $iterator = new RecursiveIteratorIterator(
-    new RecursiveDirectoryIterator(dirname(__DIR__), RecursiveDirectoryIterator::SKIP_DOTS)
+    new RecursiveCallbackFilterIterator(
+        new RecursiveDirectoryIterator(dirname(__DIR__), RecursiveDirectoryIterator::SKIP_DOTS),
+        function ($current, $key, $iterator) {
+            if ($current->isDir()) {
+                return !in_array($current->getFilename(), ['.git', 'tests'], true);
+            }
+
+            return true;
+        }
+    )
 );
 
 foreach ($iterator as $file) {
