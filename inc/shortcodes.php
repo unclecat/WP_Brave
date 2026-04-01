@@ -13,7 +13,7 @@ function brave_timer_shortcode($atts) {
         'show_seconds' => 'true',
     ), $atts);
 
-    $start_date = get_theme_mod('brave_love_start_date', '2020-01-01');
+    $start_date = brave_get_love_start_datetime();
     $show_seconds = $atts['show_seconds'] === 'true';
 
     ob_start();

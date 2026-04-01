@@ -6,7 +6,7 @@
  */
 
 // 定义常量
-define('BRAVE_VERSION', '0.7.0');
+define('BRAVE_VERSION', '0.7.1');
 define('BRAVE_DIR', get_template_directory());
 define('BRAVE_URI', get_template_directory_uri());
 
@@ -248,8 +248,7 @@ function brave_comment_callback($comment, $args, $depth) {
  * 获取恋爱天数
  */
 function brave_get_love_days() {
-    $start_date = get_theme_mod('brave_love_start_date', '2020-01-01');
-    $start = strtotime($start_date);
+    $start = strtotime(brave_get_love_start_datetime());
     $now = current_time('timestamp');
     $days = floor(($now - $start) / 86400);
     return max(0, $days);
@@ -347,6 +346,12 @@ function brave_handle_frontend_note_publish() {
     if (!is_user_logged_in()) {
         wp_die('请先登录');
     }
+
+    $note_post_type = get_post_type_object('note');
+    $publish_cap = ($note_post_type && !empty($note_post_type->cap->publish_posts)) ? $note_post_type->cap->publish_posts : 'publish_posts';
+    if (!current_user_can($publish_cap)) {
+        wp_die('权限不足');
+    }
     
     // 获取内容
     $content = isset($_POST['note_content']) ? sanitize_textarea_field($_POST['note_content']) : '';
@@ -357,7 +362,7 @@ function brave_handle_frontend_note_publish() {
     
     // 获取心情和思念度
     $mood = isset($_POST['note_mood']) ? sanitize_text_field($_POST['note_mood']) : '😊';
-    $miss_level = isset($_POST['note_miss_level']) ? intval($_POST['note_miss_level']) : 3;
+    $miss_level = isset($_POST['note_miss_level']) ? max(1, min(5, intval($_POST['note_miss_level']))) : 3;
     
     // 创建文章
     $post_data = array(
@@ -379,7 +384,12 @@ function brave_handle_frontend_note_publish() {
     update_post_meta($post_id, '_note_miss_level', $miss_level);
     
     // 重定向回当前页面
-    wp_redirect($_SERVER['HTTP_REFERER']);
+    $redirect_url = wp_get_referer();
+    if (!$redirect_url) {
+        $redirect_url = brave_get_page_link('notes');
+    }
+
+    wp_safe_redirect($redirect_url);
     exit;
 }
 add_action('template_redirect', 'brave_handle_frontend_note_publish');

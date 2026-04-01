@@ -259,6 +259,22 @@ function brave_get_page_link($type) {
 }
 
 /**
+ * 获取恋爱起始日期时间
+ *
+ * 兼容旧版本仅保存日期的配置项。
+ *
+ * @return string
+ */
+function brave_get_love_start_datetime() {
+    $start_datetime = get_theme_mod('brave_love_start_datetime', '');
+    if (!empty($start_datetime)) {
+        return $start_datetime;
+    }
+
+    return get_theme_mod('brave_love_start_date', '2020-01-01 00:00');
+}
+
+/**
  * 获取主题选项
  */
 function brave_get_option($key, $default = '') {
@@ -323,8 +339,10 @@ function brave_get_all_moment_photos($args = array()) {
         'posts_per_page' => 12,
         'paged' => 1,
         'year' => 0,
+        'filter_year' => 0,
     );
     $args = wp_parse_args($args, $defaults);
+    $selected_year = !empty($args['filter_year']) ? intval($args['filter_year']) : intval($args['year']);
     
     // 首先获取所有符合条件的 moment 文章
     $query_args = array(
@@ -338,11 +356,11 @@ function brave_get_all_moment_photos($args = array()) {
     );
     
     // 按年份筛选
-    if (!empty($args['year'])) {
+    if (!empty($selected_year)) {
         $query_args['meta_query'] = array(
             array(
                 'key' => '_meet_date',
-                'value' => array($args['year'] . '-01-01', $args['year'] . '-12-31'),
+                'value' => array($selected_year . '-01-01', $selected_year . '-12-31'),
                 'compare' => 'BETWEEN',
                 'type' => 'DATE',
             ),

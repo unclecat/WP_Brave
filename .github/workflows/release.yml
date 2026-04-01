@@ -22,7 +22,9 @@ jobs:
         # 删除不需要的文件
         rm -rf /tmp/brave-love/.git
         rm -rf /tmp/brave-love/.github
+        rm -rf /tmp/brave-love/tests
         rm -f /tmp/brave-love/.gitignore
+        rm -f /tmp/brave-love/TEST-REPORT.md
         # 创建 ZIP，使用固定文件名 brave-love.zip
         cd /tmp
         zip -r brave-love.zip brave-love/
@@ -35,50 +37,24 @@ jobs:
         files: brave-love.zip
         body: |
           ## Brave Love ${{ github.ref_name }}
-          
-          一个浪漫的 WordPress 情侣主题
-          
-          ### 安装/更新方法
-          
-          **方法一：直接覆盖（推荐）**
+
+          一个浪漫的 WordPress 情侣主题，记录点点滴滴、恋爱清单、甜蜜相册、随笔说说和祝福留言。
+
+          ### 安装方法
+
           1. 下载 `brave-love.zip`
-          2. 解压后会得到 `brave-love/` 文件夹
-          3. 通过 FTP 上传到 `wp-content/themes/brave-love/`，覆盖原有文件
-          4. 清除浏览器缓存
-          
-          **方法二：WordPress 后台**
-          1. 外观 → 主题
-          2. 如果已有旧版本，先删除旧主题
-          3. 上传 `brave-love.zip`
-          4. 启用主题
-          
-          ### ⚠️ 重要提示
-          
-          主题文件夹名称**必须是** `brave-love`。
-          
-          如果之前安装过旧版本，建议通过 FTP 直接覆盖文件，这样可以保留所有设置和数据。
-          
-          详见 [UPDATE-GUIDE.md](https://github.com/unclecat/WP_Brave/blob/main/UPDATE-GUIDE.md)
-          
-          ### 更新日志
-          
-          #### v0.1.1
-          - 🐛 修复计时器日期解析问题
-          - 🐛 修复相册照片管理界面
-          - 💄 优化首页日期显示
-          
-          #### v0.1
-          - ✨ 初始版本发布
-          
-          ### 功能特性
-          - 💕 恋爱计时器
-          - 📅 纪念日管理
-          - 💖 点点滴滴
-          - 📜 恋爱清单
-          - 📷 甜蜜相册
-          - 📝 随笔说说
-          - 💌 祝福留言
-          
+          2. 确保解压后的目录名是 `brave-love`
+          3. 上传到 `wp-content/themes/brave-love/` 或通过后台上传安装
+          4. 启用主题并根据 README 完成页面与自定义设置
+
+          ### 本次发布
+
+          - 修复主题测试工具路径和 Docker 挂载路径
+          - 修复前台发布说说的权限边界和安全跳转
+          - 修复甜蜜相册年份筛选参数
+          - 统一恋爱起始时间配置读取逻辑
+          - 加固 Meta Box 保存流程
+
           ### 系统要求
           - WordPress 6.0+
           - PHP 7.4+

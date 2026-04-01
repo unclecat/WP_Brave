@@ -141,6 +141,18 @@ function brave_note_meta_box($post) {
  * 保存 Meta Box 数据
  */
 function brave_save_meta_boxes($post_id) {
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+
+    if (wp_is_post_revision($post_id)) {
+        return;
+    }
+
+    if (!current_user_can('edit_post', $post_id)) {
+        return;
+    }
+
     // 点点滴滴
     if (isset($_POST['brave_moment_nonce']) && wp_verify_nonce($_POST['brave_moment_nonce'], 'brave_moment_meta')) {
         if (isset($_POST['meet_date'])) {
@@ -173,7 +185,7 @@ function brave_save_meta_boxes($post_id) {
             update_post_meta($post_id, '_note_mood', sanitize_text_field($_POST['note_mood']));
         }
         if (isset($_POST['note_miss_level'])) {
-            update_post_meta($post_id, '_note_miss_level', intval($_POST['note_miss_level']));
+            update_post_meta($post_id, '_note_miss_level', max(1, min(5, intval($_POST['note_miss_level']))));
         }
     }
 }
