@@ -12,8 +12,10 @@ $hero_bg = get_theme_mod('brave_hero_bg');
 
 ?>
 <!-- 页面Hero区域 -->
-<section class="page-hero-section">
-    <div class="page-hero-bg" style="background-image: url('<?php echo !empty($hero_bg) ? esc_url($hero_bg) : 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=1920'; ?>');"></div>
+<?php 
+$hero_bg_url = !empty($hero_bg) ? $hero_bg : 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=1920';
+?>
+<section class="page-hero-section" style="background-image: url('<?php echo esc_url($hero_bg_url); ?>'); background-size: cover; background-position: center;">
     <div class="page-hero-overlay"></div>
     <!-- 页面标题在内容区域显示 -->
     <!-- 波浪 -->
