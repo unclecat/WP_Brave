@@ -35,28 +35,6 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: brave-love.zip
-        body: |
-          ## Brave Love ${{ github.ref_name }}
-
-          一个浪漫的 WordPress 情侣主题，记录点点滴滴、恋爱清单、甜蜜相册、随笔说说和祝福留言。
-
-          ### 安装方法
-
-          1. 下载 `brave-love.zip`
-          2. 确保解压后的目录名是 `brave-love`
-          3. 上传到 `wp-content/themes/brave-love/` 或通过后台上传安装
-          4. 启用主题并根据 README 完成页面与自定义设置
-
-          ### 本次发布
-
-          - 修复主题测试工具路径和 Docker 挂载路径
-          - 修复前台发布说说的权限边界和安全跳转
-          - 修复甜蜜相册年份筛选参数
-          - 统一恋爱起始时间配置读取逻辑
-          - 加固 Meta Box 保存流程
-
-          ### 系统要求
-          - WordPress 6.0+
-          - PHP 7.4+
+        body_path: RELEASE.md
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
