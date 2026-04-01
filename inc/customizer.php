@@ -24,6 +24,30 @@ if (class_exists('WP_Customize_Control')) {
 }
 
 /**
+ * 自定义控制类 - PV 统计当前数值显示
+ */
+if (class_exists('WP_Customize_Control')) {
+    class Brave_PV_Stats_Control extends WP_Customize_Control {
+        public function render_content() {
+            // 确保函数存在
+            if (!function_exists('brave_get_pv_stats')) {
+                echo '<p style="color: red;">PV 统计功能未加载</p>';
+                return;
+            }
+            $stats = brave_get_pv_stats();
+            ?>
+            <div class="brave-pv-current">
+                <p style="margin-bottom: 5px;"><strong><?php _e('当前数值', 'brave-love'); ?></strong></p>
+                <p style="margin: 0;"><?php _e('今日：', 'brave-love'); ?> <code><?php echo number_format($stats['today_count']); ?></code></p>
+                <p style="margin: 0;"><?php _e('累计：', 'brave-love'); ?> <code><?php echo number_format($stats['total_count']); ?></code></p>
+                <p style="margin-top: 10px; color: #666; font-size: 12px;"><?php _e('提示：修改上方数字并保存即可覆盖', 'brave-love'); ?></p>
+            </div>
+            <?php
+        }
+    }
+}
+
+/**
  * Customizer 注册
  */
 function brave_customize_register($wp_customize) {
@@ -461,8 +485,8 @@ function brave_customize_register($wp_customize) {
 
     // 启用 PV 统计
     $wp_customize->add_setting('brave_pv_enabled', array(
-        'default' => true,
-        'sanitize_callback' => 'wp_validate_boolean',
+        'default' => '1',
+        'sanitize_callback' => 'sanitize_text_field',
     ));
     $wp_customize->add_control('brave_pv_enabled', array(
         'label' => __('启用访问统计', 'brave-love'),
@@ -470,35 +494,46 @@ function brave_customize_register($wp_customize) {
         'type' => 'checkbox',
     ));
 
-    // 今日文字
-    $wp_customize->add_setting('brave_pv_today_text', array(
-        'default' => __('今日', 'brave-love'),
+    // 今日文字前缀
+    $wp_customize->add_setting('brave_pv_today_prefix', array(
+        'default' => __('你是今日第', 'brave-love'),
         'sanitize_callback' => 'sanitize_text_field',
     ));
-    $wp_customize->add_control('brave_pv_today_text', array(
-        'label' => __('今日文字', 'brave-love'),
+    $wp_customize->add_control('brave_pv_today_prefix', array(
+        'label' => __('今日前缀', 'brave-love'),
         'section' => 'brave_pv_stats',
         'type' => 'text',
     ));
 
-    // 累计文字
-    $wp_customize->add_setting('brave_pv_total_text', array(
-        'default' => __('累计', 'brave-love'),
+    // 今日文字后缀
+    $wp_customize->add_setting('brave_pv_today_suffix', array(
+        'default' => __('位访客', 'brave-love'),
         'sanitize_callback' => 'sanitize_text_field',
     ));
-    $wp_customize->add_control('brave_pv_total_text', array(
-        'label' => __('累计文字', 'brave-love'),
+    $wp_customize->add_control('brave_pv_today_suffix', array(
+        'label' => __('今日后缀', 'brave-love'),
         'section' => 'brave_pv_stats',
         'type' => 'text',
     ));
 
-    // 单位文字
-    $wp_customize->add_setting('brave_pv_unit_text', array(
-        'default' => __('次浏览', 'brave-love'),
+    // 累计文字前缀
+    $wp_customize->add_setting('brave_pv_total_prefix', array(
+        'default' => __('累计第', 'brave-love'),
         'sanitize_callback' => 'sanitize_text_field',
     ));
-    $wp_customize->add_control('brave_pv_unit_text', array(
-        'label' => __('单位文字', 'brave-love'),
+    $wp_customize->add_control('brave_pv_total_prefix', array(
+        'label' => __('累计前缀', 'brave-love'),
+        'section' => 'brave_pv_stats',
+        'type' => 'text',
+    ));
+
+    // 累计文字后缀
+    $wp_customize->add_setting('brave_pv_total_suffix', array(
+        'default' => __('位访客', 'brave-love'),
+        'sanitize_callback' => 'sanitize_text_field',
+    ));
+    $wp_customize->add_control('brave_pv_total_suffix', array(
+        'label' => __('累计后缀', 'brave-love'),
         'section' => 'brave_pv_stats',
         'type' => 'text',
     ));
@@ -531,21 +566,6 @@ function brave_customize_register($wp_customize) {
     $wp_customize->add_setting('brave_pv_current_stats', array(
         'default' => '',
     ));
-    if (class_exists('WP_Customize_Control')) {
-        class Brave_PV_Stats_Control extends WP_Customize_Control {
-            public function render_content() {
-                $stats = brave_get_pv_stats();
-                ?>
-                <div class="brave-pv-current">
-                    <p style="margin-bottom: 5px;"><strong><?php _e('当前数值', 'brave-love'); ?></strong></p>
-                    <p style="margin: 0;"><?php _e('今日：', 'brave-love'); ?> <code><?php echo number_format($stats['today_count']); ?></code></p>
-                    <p style="margin: 0;"><?php _e('累计：', 'brave-love'); ?> <code><?php echo number_format($stats['total_count']); ?></code></p>
-                    <p style="margin-top: 10px; color: #666; font-size: 12px;"><?php _e('提示：修改上方数字并保存即可覆盖', 'brave-love'); ?></p>
-                </div>
-                <?php
-            }
-        }
-    }
     $wp_customize->add_control(new Brave_PV_Stats_Control($wp_customize, 'brave_pv_current_stats', array(
         'section' => 'brave_pv_stats',
         'label' => __('当前数值', 'brave-love'),

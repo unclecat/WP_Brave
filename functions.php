@@ -6,7 +6,7 @@
  */
 
 // 定义常量
-define('BRAVE_VERSION', '0.6.4');
+define('BRAVE_VERSION', '0.6.5');
 define('BRAVE_DIR', get_template_directory());
 define('BRAVE_URI', get_template_directory_uri());
 
@@ -399,7 +399,7 @@ function brave_comment_moderation($approved, $commentdata) {
  */
 function brave_update_pv_stats() {
     // 检查是否启用
-    if (!get_theme_mod('brave_pv_enabled', true)) {
+    if (!get_theme_mod('brave_pv_enabled', '1')) {
         return;
     }
     
@@ -464,13 +464,13 @@ function brave_get_pv_stats() {
 /**
  * 获取 PV 显示文字
  */
-function brave_get_pv_display_text($type = 'today') {
-    if ($type === 'today') {
-        return get_theme_mod('brave_pv_today_text', __('今日', 'brave-love'));
-    } elseif ($type === 'total') {
-        return get_theme_mod('brave_pv_total_text', __('累计', 'brave-love'));
-    } elseif ($type === 'unit') {
-        return get_theme_mod('brave_pv_unit_text', __('次浏览', 'brave-love'));
-    }
-    return '';
+function brave_get_pv_display_text($type = 'today_prefix') {
+    $defaults = array(
+        'today_prefix' => __('你是今日第', 'brave-love'),
+        'today_suffix' => __('位访客', 'brave-love'),
+        'total_prefix' => __('累计第', 'brave-love'),
+        'total_suffix' => __('位访客', 'brave-love'),
+    );
+    
+    return get_theme_mod("brave_pv_{$type}", $defaults[$type] ?? '');
 }

@@ -749,28 +749,66 @@
 }
 
 /* ================================
-   底部 PV 统计
+   底部 PV 统计（液晶数字效果）
    ================================ */
-.footer-pv-stats {
-    margin-top: 0.75rem;
-    font-size: 0.8rem;
+.footer-copyright {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    font-size: 0.85rem;
     color: var(--text-muted);
-    opacity: 0.75;
-    letter-spacing: 0.5px;
 }
 
-.footer-pv-stats .pv-item {
+.pv-stats-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+}
+
+.pv-label {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+/* 液晶数字效果 */
+.pv-number {
+    font-family: 'Courier New', 'SF Mono', 'Consolas', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ff4444;
+    text-shadow: 
+        0 0 2px rgba(255, 68, 68, 0.5),
+        0 0 4px rgba(255, 68, 68, 0.3),
+        1px 1px 0 rgba(0, 0, 0, 0.1);
+    letter-spacing: 1px;
+    padding: 0 2px;
     display: inline-block;
 }
 
-.footer-pv-stats .pv-separator {
+.pv-separator {
     margin: 0 0.4rem;
     opacity: 0.4;
 }
 
+.pv-copyright-separator {
+    opacity: 0.5;
+    margin: 0 0.3rem;
+}
+
 /* 深色模式 */
 @media (prefers-color-scheme: dark) {
-    .footer-pv-stats {
-        color: #888;
+    .pv-label,
+    .pv-copyright-separator {
+        color: #aaa;
+    }
+    
+    .pv-number {
+        color: #ff6666;
+        text-shadow: 
+            0 0 2px rgba(255, 102, 102, 0.6),
+            0 0 6px rgba(255, 102, 102, 0.4),
+            0 0 10px rgba(255, 102, 102, 0.2);
     }
 }
