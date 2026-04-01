@@ -20,25 +20,20 @@ while (have_posts()) :
         
         <!-- 头部信息 -->
         <header class="moment-header">
-            <div class="moment-date-badge">
-                <?php if ($meet_date) : ?>
-                    <span class="moment-day"><?php echo esc_html(substr($meet_date, 8, 2)); ?></span>
-                    <span class="moment-month"><?php echo esc_html(substr($meet_date, 5, 2)); ?>月</span>
-                    <span class="moment-year"><?php echo esc_html(substr($meet_date, 0, 4)); ?></span>
-                <?php else : ?>
-                    <span class="moment-day">--</span>
-                    <span class="moment-month">--</span>
-                <?php endif; ?>
-            </div>
-            
-            <h1 class="moment-title"><?php the_title(); ?></h1>
-            
-            <?php if ($mood) : ?>
-                <div class="moment-mood">
-                    <span class="mood-emoji"><?php echo brave_get_mood_emoji($mood); ?></span>
-                    <span class="mood-text"><?php echo brave_get_mood_text($mood); ?></span>
+            <div class="moment-header-main">
+                <div class="moment-date-badge">
+                    <?php if ($meet_date) : ?>
+                        <span class="moment-day"><?php echo esc_html(substr($meet_date, 8, 2)); ?></span>
+                        <span class="moment-month"><?php echo esc_html(substr($meet_date, 5, 2)); ?>月</span>
+                        <span class="moment-year"><?php echo esc_html(substr($meet_date, 0, 4)); ?></span>
+                    <?php else : ?>
+                        <span class="moment-day">--</span>
+                        <span class="moment-month">--</span>
+                    <?php endif; ?>
                 </div>
-            <?php endif; ?>
+                
+                <h1 class="moment-title"><?php the_title(); ?></h1>
+            </div>
         </header>
 
         <!-- 摘要 -->
@@ -72,7 +67,12 @@ while (have_posts()) :
                 </div>
             <?php endif; ?>
             
-
+            <?php if ($mood) : ?>
+                <div class="moment-meta-item">
+                    <span class="meta-label"><?php echo brave_get_mood_emoji($mood); ?> 心情</span>
+                    <span class="meta-value"><?php echo brave_get_mood_text($mood); ?></span>
+                </div>
+            <?php endif; ?>
         </div>
 
         <!-- 导航 -->

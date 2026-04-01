@@ -160,17 +160,17 @@ rsort($years);
                                         </div>
                                         
                                         <div class="timeline-card-footer-meta">
-                                            <?php if ($mood) : ?>
-                                                <div class="timeline-card-mood">
-                                                    <span class="mood-emoji"><?php echo $mood_emoji; ?></span>
-                                                    <span class="mood-text"><?php echo esc_html($mood_text); ?></span>
-                                                </div>
-                                            <?php endif; ?>
-                                            
                                             <?php if ($location) : ?>
                                                 <div class="timeline-card-location">
                                                     <span class="location-icon">📍</span>
                                                     <span><?php echo esc_html($location); ?></span>
+                                                </div>
+                                            <?php endif; ?>
+                                            
+                                            <?php if ($mood) : ?>
+                                                <div class="timeline-card-mood">
+                                                    <span class="mood-emoji"><?php echo $mood_emoji; ?></span>
+                                                    <span class="mood-text"><?php echo esc_html($mood_text); ?></span>
                                                 </div>
                                             <?php endif; ?>
                                         </div>
