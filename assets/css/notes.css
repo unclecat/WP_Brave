@@ -534,6 +534,15 @@
     .note-waterfall-card:hover {
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
     }
+
+    .publish-name,
+    .note-author-name {
+        color: #f3f3f3;
+    }
+
+    .note-datetime {
+        color: #9a9a9a;
+    }
     
     .note-content {
         color: #ccc;
