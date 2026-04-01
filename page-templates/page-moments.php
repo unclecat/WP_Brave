@@ -105,10 +105,19 @@ rsort($years);
                         // 获取作者信息
                         $author_id = $moment->post_author;
                         $author_name = get_the_author_meta('display_name', $author_id);
-                        $author_avatar = get_avatar_url($author_id, array('size' => 40));
                         
-                        // 如果没有头像，使用默认头像
-                        if (empty($author_avatar) || strpos($author_avatar, 'gravatar.com/avatar/') !== false) {
+                        // 使用主题设置的头像（与 Hero 区域保持一致）
+                        $boy_user_id = intval(get_theme_mod('brave_boy_user_id'));
+                        $girl_user_id = intval(get_theme_mod('brave_girl_user_id'));
+                        
+                        if ($boy_user_id > 0 && $author_id == $boy_user_id) {
+                            // 作者是男生
+                            $author_avatar = brave_get_couple_avatar('boy', 40);
+                        } elseif ($girl_user_id > 0 && $author_id == $girl_user_id) {
+                            // 作者是女生
+                            $author_avatar = brave_get_couple_avatar('girl', 40);
+                        } else {
+                            // 其他用户，使用默认头像
                             $author_avatar = 'https://ui-avatars.com/api/?name=' . urlencode($author_name) . '&size=40&background=ff5162&color=fff';
                         }
                     ?>
