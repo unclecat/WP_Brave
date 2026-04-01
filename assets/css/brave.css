@@ -747,3 +747,30 @@
         font-size: 2.5rem;
     }
 }
+
+/* ================================
+   底部 PV 统计
+   ================================ */
+.footer-pv-stats {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    opacity: 0.75;
+    letter-spacing: 0.5px;
+}
+
+.footer-pv-stats .pv-item {
+    display: inline-block;
+}
+
+.footer-pv-stats .pv-separator {
+    margin: 0 0.4rem;
+    opacity: 0.4;
+}
+
+/* 深色模式 */
+@media (prefers-color-scheme: dark) {
+    .footer-pv-stats {
+        color: #888;
+    }
+}
