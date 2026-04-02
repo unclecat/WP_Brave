@@ -6,33 +6,235 @@
  */
 
 /**
+ * 允许 data URI 作为主题内联头像输出。
+ *
+ * @param string $url 头像 URL
+ * @return string
+ */
+function brave_esc_avatar_url($url) {
+    return esc_url($url, array('http', 'https', 'data'));
+}
+
+/**
+ * 获取头像占位字符。
+ *
+ * @param string $text 原始文本
+ * @return string
+ */
+function brave_get_avatar_character($text) {
+    $text = html_entity_decode(wp_strip_all_tags((string) $text), ENT_QUOTES, get_bloginfo('charset'));
+    $chars = preg_split('//u', trim($text), -1, PREG_SPLIT_NO_EMPTY);
+
+    if (empty($chars)) {
+        return '?';
+    }
+
+    $char = $chars[0];
+
+    if (preg_match('/^[a-z]$/i', $char)) {
+        return strtoupper($char);
+    }
+
+    return $char;
+}
+
+/**
+ * 获取头像文本标签。
+ *
+ * @param string $name 名称
+ * @return string
+ */
+function brave_get_avatar_label($name) {
+    $name = html_entity_decode(wp_strip_all_tags((string) $name), ENT_QUOTES, get_bloginfo('charset'));
+    $parts = preg_split('/\s+/u', trim($name), -1, PREG_SPLIT_NO_EMPTY);
+
+    if (empty($parts)) {
+        return '?';
+    }
+
+    if (count($parts) === 1) {
+        return brave_get_avatar_character($parts[0]);
+    }
+
+    $label = '';
+
+    foreach (array_slice($parts, 0, 2) as $part) {
+        $label .= brave_get_avatar_character($part);
+    }
+
+    return $label ?: '?';
+}
+
+/**
+ * 规范化头像颜色值。
+ *
+ * @param string $color 颜色值
+ * @param string $default 默认颜色
+ * @return string
+ */
+function brave_normalize_avatar_color($color, $default = 'ff5162') {
+    $color = preg_replace('/[^0-9a-f]/i', '', (string) $color);
+
+    if (strlen($color) === 3 || strlen($color) === 6) {
+        return strtolower($color);
+    }
+
+    return $default;
+}
+
+/**
+ * 生成本地 SVG 占位头像。
+ *
+ * @param string $name 显示名称
+ * @param int $size 头像尺寸
+ * @param string $background 背景色
+ * @param string $foreground 前景色
+ * @return string
+ */
+function brave_get_placeholder_avatar_url($name = '', $size = 100, $background = 'ff5162', $foreground = 'ffffff') {
+    $label = brave_get_avatar_label($name);
+    $background = brave_normalize_avatar_color($background, 'ff5162');
+    $foreground = brave_normalize_avatar_color($foreground, 'ffffff');
+    $size = max(40, absint($size));
+
+    $svg = sprintf(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="%1$d" height="%1$d" viewBox="0 0 100 100" role="img" aria-hidden="true"><rect width="100" height="100" rx="50" fill="#%2$s"/><text x="50" y="54" fill="#%3$s" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="40" font-weight="700" text-anchor="middle">%4$s</text></svg>',
+        $size,
+        $background,
+        $foreground,
+        htmlspecialchars($label, ENT_QUOTES, 'UTF-8')
+    );
+
+    return 'data:image/svg+xml;charset=UTF-8,' . rawurlencode($svg);
+}
+
+/**
+ * 判断头像 URL 是否来自站点本地资源。
+ *
+ * @param string $url 头像 URL
+ * @return bool
+ */
+function brave_is_local_avatar_url($url) {
+    if (empty($url)) {
+        return false;
+    }
+
+    if (strpos($url, 'data:image/') === 0) {
+        return true;
+    }
+
+    $avatar_host = wp_parse_url($url, PHP_URL_HOST);
+
+    if (empty($avatar_host)) {
+        return true;
+    }
+
+    $site_host = wp_parse_url(home_url('/'), PHP_URL_HOST);
+
+    if (empty($site_host)) {
+        return false;
+    }
+
+    return strtolower($avatar_host) === strtolower($site_host);
+}
+
+/**
+ * 获取仅允许本地站点资源的 WordPress 头像 URL。
+ *
+ * @param mixed $id_or_email 用户 ID、邮箱或评论对象
+ * @param int $size 头像尺寸
+ * @return string
+ */
+function brave_get_safe_wp_avatar_url($id_or_email, $size = 100) {
+    $avatar_url = get_avatar_url($id_or_email, array('size' => absint($size)));
+
+    if ($avatar_url && brave_is_local_avatar_url($avatar_url)) {
+        return esc_url_raw($avatar_url);
+    }
+
+    return '';
+}
+
+/**
+ * 获取普通用户头像，优先使用站点内头像，否则使用本地 SVG 占位头像。
+ *
+ * @param int $user_id 用户 ID
+ * @param string $name 显示名称
+ * @param int $size 头像尺寸
+ * @param string $background 背景色
+ * @return string
+ */
+function brave_get_person_avatar_url($user_id = 0, $name = '', $size = 100, $background = 'ff5162') {
+    $user_id = absint($user_id);
+
+    if ($user_id > 0) {
+        $avatar_url = brave_get_safe_wp_avatar_url($user_id, $size);
+
+        if ($avatar_url) {
+            return $avatar_url;
+        }
+
+        if (empty($name)) {
+            $user = get_userdata($user_id);
+            if ($user) {
+                $name = $user->display_name;
+            }
+        }
+    }
+
+    return brave_get_placeholder_avatar_url($name, $size, $background);
+}
+
+/**
+ * 获取评论头像 URL。
+ *
+ * @param WP_Comment|int $comment 评论对象或评论 ID
+ * @param int $size 头像尺寸
+ * @param string $background 背景色
+ * @return string
+ */
+function brave_get_comment_avatar_url($comment, $size = 100, $background = 'ff5162') {
+    $comment = get_comment($comment);
+
+    if (!$comment) {
+        return brave_get_placeholder_avatar_url('', $size, $background);
+    }
+
+    if (!empty($comment->user_id)) {
+        return brave_get_person_avatar_url($comment->user_id, $comment->comment_author, $size, $background);
+    }
+
+    return brave_get_avatar_url($comment->comment_author_email, $comment->comment_author, $size, $background);
+}
+
+/**
  * 获取情侣头像
- * 优先使用主题设置的头像，如果没有则使用 WordPress 用户头像
+ * 优先使用主题设置的头像，如果没有则使用站点内头像，再回退到本地占位头像
  *
  * @param string $gender 'boy' 或 'girl'
  * @param int $size 头像尺寸
  * @return string 头像URL
  */
 function brave_get_couple_avatar($gender = 'boy', $size = 100) {
-    // 1. 优先使用主题设置的头像
     $theme_avatar = get_theme_mod('brave_' . $gender . '_avatar');
     if (!empty($theme_avatar)) {
-        return esc_url($theme_avatar);
+        return esc_url_raw($theme_avatar);
     }
-    
-    // 2. 尝试获取 WordPress 用户头像
+
     $user_id = get_theme_mod('brave_' . $gender . '_user_id');
     $user_id = intval($user_id);
     if ($user_id > 0) {
-        $wp_avatar = get_avatar_url($user_id, array('size' => $size));
+        $wp_avatar = brave_get_safe_wp_avatar_url($user_id, $size);
         if ($wp_avatar) {
-            return esc_url($wp_avatar);
+            return $wp_avatar;
         }
     }
-    
-    // 3. 使用默认头像生成服务
-    $name = brave_get_couple_name($gender);
-    return 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&size=' . $size . '&background=' . ($gender === 'boy' ? '667eea' : 'f5576c') . '&color=fff';
+
+    return brave_get_placeholder_avatar_url(
+        brave_get_couple_name($gender),
+        $size,
+        $gender === 'boy' ? '667eea' : 'f5576c'
+    );
 }
 
 /**
@@ -69,15 +271,15 @@ function brave_get_couple_name($gender = 'boy') {
  * @return string 头像HTML
  */
 function brave_get_avatar_html($user_id_or_gender = 'boy', $size = 100) {
-    // 如果传入的是性别
     if (in_array($user_id_or_gender, array('boy', 'girl'))) {
         $avatar_url = brave_get_couple_avatar($user_id_or_gender, $size);
         $name = brave_get_couple_name($user_id_or_gender);
-        return '<img src="' . $avatar_url . '" alt="' . $name . '" class="avatar avatar-' . $size . ' photo" width="' . $size . '" height="' . $size . '">';
+        return '<img src="' . brave_esc_avatar_url($avatar_url) . '" alt="' . esc_attr($name) . '" class="avatar avatar-' . absint($size) . ' photo" width="' . absint($size) . '" height="' . absint($size) . '">';
     }
-    
-    // 如果是用户ID，使用默认 get_avatar
-    return get_avatar($user_id_or_gender, $size);
+
+    $avatar_url = brave_get_person_avatar_url($user_id_or_gender, '', $size);
+
+    return '<img src="' . brave_esc_avatar_url($avatar_url) . '" alt="" class="avatar avatar-' . absint($size) . ' photo" width="' . absint($size) . '" height="' . absint($size) . '">';
 }
 
 /**
@@ -208,6 +410,258 @@ function brave_get_moment_years() {
     
     return $all_years;
 }
+
+/**
+ * 获取点滴的有效日期。
+ *
+ * 优先使用 _meet_date，缺失时回退到文章发布日期，
+ * 保证展示、筛选、排序使用同一套日期口径。
+ *
+ * @param int $moment_id 点滴文章 ID
+ * @return string 日期字符串
+ */
+function brave_get_moment_effective_date($moment_id) {
+    $meet_date = get_post_meta($moment_id, '_meet_date', true);
+    if (!empty($meet_date)) {
+        return $meet_date;
+    }
+
+    return get_the_date('Y-m-d', $moment_id);
+}
+
+/**
+ * 获取点滴有效日期对应的 SQL 表达式。
+ *
+ * @param string $post_alias 文章表别名
+ * @param string $meta_alias 元数据表别名
+ * @return string SQL 表达式
+ */
+function brave_get_moment_effective_date_sql($post_alias = 'p', $meta_alias = 'pm') {
+    return "COALESCE(NULLIF({$meta_alias}.meta_value, ''), DATE({$post_alias}.post_date))";
+}
+
+/**
+ * 按有效日期获取点滴文章 ID 列表。
+ *
+ * @param int $year 年份，0 表示全部
+ * @return array 点滴文章 ID 数组
+ */
+function brave_get_moment_ids_by_effective_date($year = 0) {
+    global $wpdb;
+
+    $year = absint($year);
+    $effective_date_sql = brave_get_moment_effective_date_sql('p', 'pm');
+
+    $query = "
+        SELECT p.ID
+        FROM {$wpdb->posts} p
+        LEFT JOIN {$wpdb->postmeta} pm
+            ON p.ID = pm.post_id
+            AND pm.meta_key = %s
+        WHERE p.post_type = 'moment'
+        AND p.post_status = 'publish'
+    ";
+
+    if ($year > 0) {
+        $query .= $wpdb->prepare(" AND YEAR({$effective_date_sql}) = %d", $year);
+    }
+
+    $query .= " ORDER BY {$effective_date_sql} DESC, p.ID DESC";
+
+    $ids = $wpdb->get_col($wpdb->prepare($query, '_meet_date'));
+
+    return is_array($ids) ? array_map('intval', $ids) : array();
+}
+
+/**
+ * 获取指定年份的点滴文章 ID 列表。
+ *
+ * 使用 _meet_date 作为主日期；缺失时回退到文章发布日期，
+ * 保证年份筛选与页面展示逻辑一致。
+ *
+ * @param int $year 年份
+ * @return array 点滴文章 ID 数组
+ */
+function brave_get_moment_ids_by_year($year) {
+    return brave_get_moment_ids_by_effective_date($year);
+}
+
+/**
+ * 获取附件缓存版本号。
+ *
+ * @return int 缓存版本
+ */
+function brave_get_gallery_attachment_cache_version() {
+    return max(1, absint(get_option('brave_gallery_attachment_cache_version', 1)));
+}
+
+/**
+ * 递增附件缓存版本号。
+ */
+function brave_bump_gallery_attachment_cache_version() {
+    update_option(
+        'brave_gallery_attachment_cache_version',
+        brave_get_gallery_attachment_cache_version() + 1,
+        false
+    );
+}
+
+/**
+ * 生成单篇点滴照片缓存签名。
+ *
+ * @param int     $moment_id 点滴文章 ID
+ * @param WP_Post $post      点滴文章对象
+ * @return string 缓存签名
+ */
+function brave_get_moment_photo_cache_signature($moment_id, $post = null) {
+    $post = $post ?: get_post($moment_id);
+    if (!$post) {
+        return '';
+    }
+
+    $thumbnail_id = get_post_thumbnail_id($moment_id);
+
+    return md5(implode('|', array(
+        $post->post_modified_gmt,
+        $thumbnail_id,
+        md5($post->post_content),
+        brave_get_gallery_attachment_cache_version(),
+    )));
+}
+
+/**
+ * 构建相册照片索引。
+ *
+ * 将所有点滴里的照片展开成扁平数组，供相册页分页和年份筛选复用。
+ *
+ * @return array 照片索引
+ */
+function brave_build_gallery_photo_index() {
+    $moment_ids = brave_get_moment_ids_by_effective_date();
+    $all_photos = array();
+
+    foreach ($moment_ids as $moment_id) {
+        $moment_photos = brave_extract_photos_from_moment($moment_id);
+        if (empty($moment_photos)) {
+            continue;
+        }
+
+        $meet_date = brave_get_moment_effective_date($moment_id);
+        $effective_year = absint(substr($meet_date, 0, 4));
+        $location = get_post_meta($moment_id, '_meet_location', true);
+        $mood = get_post_meta($moment_id, '_mood', true);
+        $summary = get_post_meta($moment_id, '_moment_summary', true);
+
+        $date_obj = strtotime($meet_date);
+        $date_formatted = date_i18n(__('Y年n月j日', 'brave-love'), $date_obj);
+        $weekday = date_i18n(__('l', 'brave-love'), $date_obj);
+
+        foreach ($moment_photos as $photo) {
+            $all_photos[] = array_merge($photo, array(
+                'moment_id'      => $moment_id,
+                'moment_title'   => get_the_title($moment_id),
+                'moment_url'     => get_permalink($moment_id),
+                'date'           => $meet_date,
+                'year'           => $effective_year,
+                'date_formatted' => $date_formatted,
+                'weekday'        => $weekday,
+                'location'       => $location,
+                'mood'           => $mood,
+                'mood_emoji'     => brave_get_mood_emoji($mood),
+                'mood_text'      => brave_get_mood_text($mood),
+                'summary'        => $summary ? $summary : wp_trim_words(get_post_field('post_content', $moment_id), 100),
+            ));
+        }
+    }
+
+    return $all_photos;
+}
+
+/**
+ * 获取相册照片索引缓存。
+ *
+ * @return array 照片索引
+ */
+function brave_get_gallery_photo_index() {
+    $cache_key = 'brave_gallery_photo_index_v1';
+    $cached_photos = get_transient($cache_key);
+
+    if (is_array($cached_photos)) {
+        return $cached_photos;
+    }
+
+    $all_photos = brave_build_gallery_photo_index();
+    set_transient($cache_key, $all_photos, WEEK_IN_SECONDS);
+
+    return $all_photos;
+}
+
+/**
+ * 清理相册照片索引缓存。
+ */
+function brave_flush_gallery_photo_index() {
+    delete_transient('brave_gallery_photo_index_v1');
+}
+
+/**
+ * 点滴保存时清理相册缓存。
+ *
+ * @param int $post_id 文章 ID
+ */
+function brave_flush_gallery_cache_on_moment_save($post_id) {
+    if (wp_is_post_revision($post_id) || (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)) {
+        return;
+    }
+
+    delete_post_meta($post_id, '_brave_photo_cache_signature');
+    delete_post_meta($post_id, '_brave_photo_cache_photos');
+    brave_flush_gallery_photo_index();
+}
+add_action('save_post_moment', 'brave_flush_gallery_cache_on_moment_save');
+
+/**
+ * 点滴状态变更时清理相册缓存。
+ *
+ * @param string  $new_status 新状态
+ * @param string  $old_status 旧状态
+ * @param WP_Post $post       文章对象
+ */
+function brave_flush_gallery_cache_on_moment_status_change($new_status, $old_status, $post) {
+    if (!$post || 'moment' !== $post->post_type || $new_status === $old_status) {
+        return;
+    }
+
+    brave_flush_gallery_photo_index();
+}
+add_action('transition_post_status', 'brave_flush_gallery_cache_on_moment_status_change', 10, 3);
+
+/**
+ * 删除点滴时清理相册缓存。
+ *
+ * @param int $post_id 文章 ID
+ */
+function brave_flush_gallery_cache_on_moment_delete($post_id) {
+    $post = get_post($post_id);
+    if (!$post || 'moment' !== $post->post_type) {
+        return;
+    }
+
+    brave_flush_gallery_photo_index();
+}
+add_action('before_delete_post', 'brave_flush_gallery_cache_on_moment_delete');
+
+/**
+ * 附件变更时清理相册缓存。
+ *
+ * @param int $attachment_id 附件 ID
+ */
+function brave_flush_gallery_cache_on_attachment_change($attachment_id) {
+    brave_bump_gallery_attachment_cache_version();
+    brave_flush_gallery_photo_index();
+}
+add_action('add_attachment', 'brave_flush_gallery_cache_on_attachment_change');
+add_action('edit_attachment', 'brave_flush_gallery_cache_on_attachment_change');
+add_action('delete_attachment', 'brave_flush_gallery_cache_on_attachment_change');
 
 /**
  * 格式化日期差
@@ -346,70 +800,13 @@ function brave_get_all_moment_photos($args = array()) {
     );
     $args = wp_parse_args($args, $defaults);
     $selected_year = !empty($args['filter_year']) ? intval($args['filter_year']) : intval($args['year']);
-    
-    // 首先获取所有符合条件的 moment 文章
-    $query_args = array(
-        'post_type' => 'moment',
-        'post_status' => 'publish',
-        'posts_per_page' => -1,  // 获取所有
-        'orderby' => 'meta_value',
-        'meta_key' => '_meet_date',
-        'order' => 'DESC',
-        'fields' => 'ids',
-    );
-    
-    // 按年份筛选
-    if (!empty($selected_year)) {
-        $query_args['meta_query'] = array(
-            array(
-                'key' => '_meet_date',
-                'value' => array($selected_year . '-01-01', $selected_year . '-12-31'),
-                'compare' => 'BETWEEN',
-                'type' => 'DATE',
-            ),
-        );
-    }
-    
-    $moment_ids = get_posts($query_args);
-    $all_photos = array();
-    
-    // 收集所有照片
-    foreach ($moment_ids as $moment_id) {
-        $moment_photos = brave_extract_photos_from_moment($moment_id);
-        
-        if (!empty($moment_photos)) {
-            // 获取 moment 元数据
-            $meet_date = get_post_meta($moment_id, '_meet_date', true);
-            $location = get_post_meta($moment_id, '_meet_location', true);
-            $mood = get_post_meta($moment_id, '_mood', true);
-            $summary = get_post_meta($moment_id, '_moment_summary', true);
-            
-            // 如果没有见面日期，使用发布日期
-            if (empty($meet_date)) {
-                $meet_date = get_the_date('Y-m-d', $moment_id);
-            }
-            
-            // 格式化日期
-            $date_obj = strtotime($meet_date);
-            $date_formatted = date_i18n(__('Y年n月j日', 'brave-love'), $date_obj);
-            $weekday = date_i18n(__('l', 'brave-love'), $date_obj);
-            
-            foreach ($moment_photos as $photo) {
-                $all_photos[] = array_merge($photo, array(
-                    'moment_id'     => $moment_id,
-                    'moment_title'  => get_the_title($moment_id),
-                    'moment_url'    => get_permalink($moment_id),
-                    'date'          => $meet_date,
-                    'date_formatted'=> $date_formatted,
-                    'weekday'       => $weekday,
-                    'location'      => $location,
-                    'mood'          => $mood,
-                    'mood_emoji'    => brave_get_mood_emoji($mood),
-                    'mood_text'     => brave_get_mood_text($mood),
-                    'summary'       => $summary ? $summary : wp_trim_words(get_post_field('post_content', $moment_id), 100),
-                ));
-            }
-        }
+
+    $all_photos = brave_get_gallery_photo_index();
+
+    if ($selected_year > 0) {
+        $all_photos = array_values(array_filter($all_photos, function($photo) use ($selected_year) {
+            return isset($photo['year']) && intval($photo['year']) === $selected_year;
+        }));
     }
     
     // 计算分页
@@ -441,6 +838,19 @@ function brave_get_all_moment_photos($args = array()) {
  * @return array 照片数组
  */
 function brave_extract_photos_from_moment($moment_id) {
+    $post = get_post($moment_id);
+    if (!$post) {
+        return array();
+    }
+
+    $cache_signature = brave_get_moment_photo_cache_signature($moment_id, $post);
+    $cached_signature = get_post_meta($moment_id, '_brave_photo_cache_signature', true);
+    $cached_photos = get_post_meta($moment_id, '_brave_photo_cache_photos', true);
+
+    if ($cache_signature && $cached_signature === $cache_signature && is_array($cached_photos)) {
+        return $cached_photos;
+    }
+
     $photos = array();
     
     // 1. 特色图片作为第一张
@@ -454,11 +864,6 @@ function brave_extract_photos_from_moment($moment_id) {
     }
     
     // 2. 从内容中提取的图片
-    $post = get_post($moment_id);
-    if (!$post) {
-        return $photos;
-    }
-    
     $content = $post->post_content;
     $image_ids = array();
     
@@ -499,6 +904,9 @@ function brave_extract_photos_from_moment($moment_id) {
             $photos[] = $photo_data;
         }
     }
+
+    update_post_meta($moment_id, '_brave_photo_cache_signature', $cache_signature);
+    update_post_meta($moment_id, '_brave_photo_cache_photos', $photos);
     
     return $photos;
 }
@@ -553,31 +961,19 @@ function brave_get_photo_data($attachment_id) {
  * @return array 年份数组
  */
 function brave_get_gallery_years() {
-    global $wpdb;
-    
-    // 获取有照片的 moment 年份
-    $years = $wpdb->get_col("
-        SELECT DISTINCT YEAR(pm.meta_value) as year
-        FROM {$wpdb->posts} p
-        JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
-        WHERE p.post_type = 'moment'
-        AND p.post_status = 'publish'
-        AND pm.meta_key = '_meet_date'
-        AND pm.meta_value != ''
-        AND pm.meta_value IS NOT NULL
-        AND (
-            p.ID IN (
-                SELECT post_id FROM {$wpdb->postmeta} 
-                WHERE meta_key = '_thumbnail_id'
-            )
-            OR p.post_content LIKE '%wp-image-%'
-            OR p.post_content LIKE '%<!-- wp:image%'
-            OR p.post_content LIKE '%<!-- wp:gallery%'
-        )
-        ORDER BY year DESC
-    ");
-    
-    return is_array($years) ? array_map('intval', array_filter($years, 'is_numeric')) : array();
+    $years = array();
+
+    foreach (brave_get_gallery_photo_index() as $photo) {
+        $year = isset($photo['year']) ? absint($photo['year']) : 0;
+        if ($year > 0) {
+            $years[$year] = $year;
+        }
+    }
+
+    $years = array_values($years);
+    rsort($years, SORT_NUMERIC);
+
+    return $years;
 }
 
 /**

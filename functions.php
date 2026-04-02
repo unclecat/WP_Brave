@@ -6,7 +6,9 @@
  */
 
 // 定义常量
-define('BRAVE_VERSION', '0.7.3');
+define('BRAVE_VERSION', '0.7.4');
+define('BRAVE_BOOTSTRAP_VERSION', '5.3.2');
+define('BRAVE_PHOTOSWIPE_VERSION', '5.4.2');
 define('BRAVE_DIR', get_template_directory());
 define('BRAVE_URI', get_template_directory_uri());
 
@@ -47,24 +49,19 @@ add_action('after_setup_theme', 'brave_setup');
  * 加载样式和脚本
  */
 function brave_scripts() {
-    // Bootstrap 5 CSS
-    wp_enqueue_style('bootstrap', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css', array(), '5.3.2');
+    // 本地化前端依赖，避免页面运行时依赖外部 CDN。
+    wp_enqueue_style('bootstrap', BRAVE_URI . '/assets/vendor/bootstrap/bootstrap.min.css', array(), BRAVE_BOOTSTRAP_VERSION);
+
+    // 主题字体
+    wp_enqueue_style('brave-fonts', BRAVE_URI . '/assets/css/fonts.css', array(), BRAVE_VERSION);
     
     // 主题样式
-    wp_enqueue_style('brave-style', get_stylesheet_uri(), array(), BRAVE_VERSION);
+    wp_enqueue_style('brave-style', get_stylesheet_uri(), array('bootstrap', 'brave-fonts'), BRAVE_VERSION);
     
     // 额外样式
-    wp_enqueue_style('brave-extra', BRAVE_URI . '/assets/css/brave.css', array(), BRAVE_VERSION);
+    wp_enqueue_style('brave-extra', BRAVE_URI . '/assets/css/brave.css', array('brave-style'), BRAVE_VERSION);
     
-    // PhotoSwipe CSS
-    wp_enqueue_style('photoswipe', 'https://cdn.jsdelivr.net/npm/photoswipe@5.4.2/dist/photoswipe.css', array(), '5.4.2');
-    
-    // Bootstrap JS
-    wp_enqueue_script('bootstrap', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js', array(), '5.3.2', true);
-    
-    // PhotoSwipe JS
-    wp_enqueue_script('photoswipe', 'https://cdn.jsdelivr.net/npm/photoswipe@5.4.2/dist/photoswipe.umd.min.js', array(), '5.4.2', true);
-    wp_enqueue_script('photoswipe-lightbox', 'https://cdn.jsdelivr.net/npm/photoswipe@5.4.2/dist/photoswipe-lightbox.umd.min.js', array('photoswipe'), '5.4.2', true);
+    wp_enqueue_script('bootstrap', BRAVE_URI . '/assets/vendor/bootstrap/bootstrap.bundle.min.js', array(), BRAVE_BOOTSTRAP_VERSION, true);
     
     // 主题脚本
     wp_enqueue_script('brave-script', BRAVE_URI . '/assets/js/brave.js', array('jquery'), BRAVE_VERSION, true);
@@ -96,7 +93,10 @@ function brave_scripts() {
     
     // 甜蜜相册页面样式和脚本
     if (is_page_template('page-templates/page-memories.php')) {
-        wp_enqueue_style('brave-memory', BRAVE_URI . '/assets/css/memory.css', array(), BRAVE_VERSION);
+        wp_enqueue_style('photoswipe', BRAVE_URI . '/assets/vendor/photoswipe/photoswipe.css', array(), BRAVE_PHOTOSWIPE_VERSION);
+        wp_enqueue_style('brave-memory', BRAVE_URI . '/assets/css/memory.css', array('brave-extra', 'photoswipe'), BRAVE_VERSION);
+        wp_enqueue_script('photoswipe', BRAVE_URI . '/assets/vendor/photoswipe/photoswipe.umd.min.js', array(), BRAVE_PHOTOSWIPE_VERSION, true);
+        wp_enqueue_script('photoswipe-lightbox', BRAVE_URI . '/assets/vendor/photoswipe/photoswipe-lightbox.umd.min.js', array('photoswipe'), BRAVE_PHOTOSWIPE_VERSION, true);
         wp_enqueue_script('brave-memory', BRAVE_URI . '/assets/js/memory.js', array('photoswipe', 'photoswipe-lightbox'), BRAVE_VERSION, true);
     }
 }
@@ -230,9 +230,10 @@ add_filter('comment_form_defaults', 'brave_comment_form_defaults');
  */
 function brave_comment_callback($comment, $args, $depth) {
     $GLOBALS['comment'] = $comment;
+    $avatar_url = brave_get_comment_avatar_url($comment, 40);
     ?>
     <div id="comment-<?php comment_ID(); ?>" <?php comment_class('comment-item'); ?>>
-        <?php echo get_avatar($comment, 40, '', '', array('class' => 'comment-avatar')); ?>
+        <img src="<?php echo brave_esc_avatar_url($avatar_url); ?>" alt="" class="comment-avatar" width="40" height="40">
         <div class="comment-body">
             <div class="comment-header">
                 <span class="comment-author"><?php comment_author(); ?></span>
@@ -291,16 +292,24 @@ function brave_get_anniversaries() {
 }
 
 /**
- * 获取头像 URL（支持 QQ 邮箱）
+ * 获取头像 URL。
+ *
+ * 优先使用站点内头像，缺失时回退到主题内联 SVG 占位头像，
+ * 避免页面头像依赖外部头像服务。
  */
-function brave_get_avatar_url($email) {
-    if (strpos($email, '@qq.com') !== false) {
-        $qq = str_replace('@qq.com', '', $email);
-        if (is_numeric($qq)) {
-            return 'https://q1.qlogo.cn/g?b=qq&nk=' . $qq . '&s=100';
-        }
+function brave_get_avatar_url($email, $name = '', $size = 100, $background = 'ff5162') {
+    $avatar_url = brave_get_safe_wp_avatar_url($email, $size);
+
+    if ($avatar_url) {
+        return $avatar_url;
     }
-    return get_avatar_url($email, array('size' => 100));
+
+    if (empty($name) && is_string($email)) {
+        $email_parts = explode('@', $email);
+        $name = $email_parts[0];
+    }
+
+    return brave_get_placeholder_avatar_url($name, $size, $background);
 }
 
 /**

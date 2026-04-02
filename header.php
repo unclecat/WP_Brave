@@ -2,16 +2,11 @@
 <html <?php language_attributes(); ?>>
 <head>
     <meta charset="<?php bloginfo('charset'); ?>">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#ff5162">
     <link rel="profile" href="https://gmpg.org/xfn/11">
     
     <?php wp_head(); ?>
-    
-    <!-- 预加载字体 -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body <?php body_class(); ?>>
@@ -24,6 +19,9 @@ $boy_name = brave_get_couple_name('boy');
 $girl_avatar = brave_get_couple_avatar('girl', 200);
 $girl_name = brave_get_couple_name('girl');
 $nav_text = get_theme_mod('brave_nav_text', '世间最动情之事，莫过于两人相依');
+$hero_bg_style = $hero_bg
+    ? "background-image: url('" . esc_url($hero_bg) . "');"
+    : 'background-image: radial-gradient(circle at top, rgba(255, 255, 255, 0.22), transparent 36%), linear-gradient(135deg, #ff9a9e 0%, #fad0c4 42%, #ffd1ff 100%);';
 ?>
 
 <!-- 导航栏 -->
@@ -50,13 +48,13 @@ $nav_text = get_theme_mod('brave_nav_text', '世间最动情之事，莫过于�
 <?php if (is_page_template('page-templates/page-home.php') || is_front_page()) : ?>
 <!-- Hero 区域 -->
 <section class="hero-section">
-    <div class="hero-bg" style="background-image: url('<?php echo $hero_bg ? esc_url($hero_bg) : 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=1920'; ?>');"></div>
+    <div class="hero-bg" style="<?php echo esc_attr($hero_bg_style); ?>"></div>
     
     <div class="lover-container">
         <div class="lover-item">
             <div class="avatar-wrapper">
                 <?php if ($boy_avatar) : ?>
-                    <img src="<?php echo esc_url($boy_avatar); ?>" alt="<?php echo esc_attr($boy_name); ?>" class="lover-avatar">
+                    <img src="<?php echo brave_esc_avatar_url($boy_avatar); ?>" alt="<?php echo esc_attr($boy_name); ?>" class="lover-avatar">
                 <?php else : ?>
                     <div class="lover-avatar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
                 <?php endif; ?>
@@ -80,7 +78,7 @@ $nav_text = get_theme_mod('brave_nav_text', '世间最动情之事，莫过于�
         <div class="lover-item">
             <div class="avatar-wrapper">
                 <?php if ($girl_avatar) : ?>
-                    <img src="<?php echo esc_url($girl_avatar); ?>" alt="<?php echo esc_attr($girl_name); ?>" class="lover-avatar">
+                    <img src="<?php echo brave_esc_avatar_url($girl_avatar); ?>" alt="<?php echo esc_attr($girl_name); ?>" class="lover-avatar">
                 <?php else : ?>
                     <div class="lover-avatar" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
                 <?php endif; ?>

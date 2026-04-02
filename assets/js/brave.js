@@ -523,91 +523,11 @@
         });
     }
 
-    // 点点滴滴年份导航
-    function initYearNav() {
-        var $yearNav = $('#yearNav');
-        if (!$yearNav.length) return;
-
-        var $yearItems = $yearNav.find('.year-nav-item');
-        var $yearGroups = $('.year-group');
-
-        // 点击年份导航 - 仅处理导航点击，不阻止其他链接
-        $yearNav.on('click', '.year-nav-item', function(e) {
-            e.preventDefault();
-            var target = $(this).attr('href');
-            
-            // 更新激活状态
-            $yearItems.removeClass('active');
-            $(this).addClass('active');
-
-            if (target === '#all') {
-                // 滚动到顶部
-                $('html, body').animate({ scrollTop: 0 }, 300);
-            } else {
-                // 滚动到对应年份
-                var $target = $(target);
-                if ($target.length) {
-                    var offset = $target.offset().top - 120; // 留出导航空间
-                    $('html, body').animate({ scrollTop: offset }, 300);
-                }
-            }
-        });
-
-        // 滚动时高亮当前年份
-        function highlightYearOnScroll() {
-            var scrollTop = $(window).scrollTop();
-            var windowHeight = $(window).height();
-            var currentYear = 'all';
-
-            $yearGroups.each(function() {
-                var $group = $(this);
-                var offsetTop = $group.offset().top;
-                var height = $group.outerHeight();
-
-                // 判断年份组是否在视口内
-                if (offsetTop <= scrollTop + windowHeight / 2 && offsetTop + height > scrollTop + 100) {
-                    currentYear = $group.data('year');
-                }
-            });
-
-            // 更新导航激活状态
-            $yearItems.removeClass('active');
-            $yearNav.find('[data-year="' + currentYear + '"]').addClass('active');
-        }
-
-        // 使用 IntersectionObserver 更精确地检测可见年份
-        if ('IntersectionObserver' in window) {
-            var observerOptions = {
-                root: null,
-                rootMargin: '-20% 0px -60% 0px',
-                threshold: 0
-            };
-
-            var yearObserver = new IntersectionObserver(function(entries) {
-                entries.forEach(function(entry) {
-                    if (entry.isIntersecting) {
-                        var year = $(entry.target).data('year');
-                        $yearItems.removeClass('active');
-                        $yearNav.find('[data-year="' + year + '"]').addClass('active');
-                    }
-                });
-            }, observerOptions);
-
-            $yearGroups.each(function() {
-                yearObserver.observe(this);
-            });
-        } else {
-            // 回退到 scroll 事件
-            $(window).on('scroll', highlightYearOnScroll);
-        }
-    }
-
     // 初始化
     $(document).ready(function() {
         initLoveTimer();
         initAnniversaryCountdown();
         initWeather();
-        initYearNav();
         initNavbar();
         initBackToTop();
         initPhotoSwipe();

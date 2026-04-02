@@ -14,11 +14,20 @@ $hero_bg = get_theme_mod('brave_hero_bg');
 <!-- Hero区域已移除 -->
 
 <?php
+// 获取筛选参数
+$current_year = isset($_GET['filter_year']) ? absint($_GET['filter_year']) : 0;
+
 // 获取当前页码
 $paged = get_query_var('paged') ? get_query_var('paged') : 1;
 
 // 获取每页文章数设置
 $per_page = get_theme_mod('brave_moments_per_page', 7);
+
+// 获取所有年份（用于导航）
+$all_years = brave_get_moment_years();
+
+// 年份筛选链接基准地址
+$moments_base_url = get_permalink();
 
 // 构建查询
 $args = array(
@@ -31,11 +40,16 @@ $args = array(
     'paged' => $paged,
 );
 
+// 使用真正的年份筛选，而不是当前页锚点跳转
+if ($current_year > 0) {
+    $filtered_ids = brave_get_moment_ids_by_year($current_year);
+    $args['post__in'] = !empty($filtered_ids) ? $filtered_ids : array(0);
+    $args['orderby'] = 'post__in';
+    unset($args['meta_key']);
+}
+
 // 使用 WP_Query 支持分页
 $query = new WP_Query($args);
-
-// 获取所有年份（用于导航）
-$all_years = brave_get_moment_years();
 
 // 当前页的文章按年份分组
 $grouped_moments = array();
@@ -72,20 +86,26 @@ rsort($years);
         <p class="section-desc">记录我们的每一次见面，每一个瞬间</p>
     </div>
 
-    <?php if (!empty($years)) : ?>
-    <!-- 年份导航（显示所有年份，不仅当前页） -->
+    <?php if (!empty($all_years)) : ?>
+    <!-- 年份筛选导航 -->
     <nav class="year-nav" id="yearNav">
-        <a href="#all" class="year-nav-item active" data-year="all" onclick="return false;">全部</a>
+        <a href="<?php echo esc_url($moments_base_url); ?>" class="year-nav-item <?php echo $current_year === 0 ? 'active' : ''; ?>" data-year="all">全部</a>
         <?php foreach ($all_years as $year) : ?>
-            <a href="#year-<?php echo esc_attr($year); ?>" class="year-nav-item" data-year="<?php echo esc_attr($year); ?>" onclick="return false;">
+            <a href="<?php echo esc_url(add_query_arg('filter_year', $year, $moments_base_url)); ?>" class="year-nav-item <?php echo $current_year === intval($year) ? 'active' : ''; ?>" data-year="<?php echo esc_attr($year); ?>">
                 <?php echo esc_html($year); ?>
             </a>
         <?php endforeach; ?>
     </nav>
+    <?php endif; ?>
 
+    <?php if (!empty($years)) : ?>
     <!-- 分页信息 -->
     <div class="pagination-info" style="text-align: center; margin-bottom: 1rem; color: var(--text-muted); font-size: 0.9rem;">
-        共 <?php echo esc_html($query->found_posts); ?> 篇 / 第 <?php echo esc_html($paged); ?> 页
+        <?php if ($current_year > 0) : ?>
+            <?php echo esc_html($current_year); ?> 年共 <?php echo esc_html($query->found_posts); ?> 篇 / 第 <?php echo esc_html($paged); ?> 页
+        <?php else : ?>
+            共 <?php echo esc_html($query->found_posts); ?> 篇 / 第 <?php echo esc_html($paged); ?> 页
+        <?php endif; ?>
     </div>
 
     <!-- 时间轴 -->
@@ -124,8 +144,8 @@ rsort($years);
                             // 作者是女生
                             $author_avatar = brave_get_couple_avatar('girl', 40);
                         } else {
-                            // 其他用户，使用默认头像
-                            $author_avatar = 'https://ui-avatars.com/api/?name=' . urlencode($author_name) . '&size=40&background=ff5162&color=fff';
+                            // 其他用户，优先使用站点内头像，否则回退到主题占位头像
+                            $author_avatar = brave_get_person_avatar_url($author_id, $author_name, 40, 'ff5162');
                         }
                     ?>
                         <article class="timeline-card" data-moment-id="<?php echo esc_attr($moment->ID); ?>">
@@ -140,7 +160,7 @@ rsort($years);
                                             <h4 class="timeline-card-title"><?php echo esc_html($moment->post_title); ?></h4>
                                         </div>
                                         <div class="timeline-card-author">
-                                            <img src="<?php echo esc_url($author_avatar); ?>" alt="" class="author-avatar">
+                                            <img src="<?php echo brave_esc_avatar_url($author_avatar); ?>" alt="" class="author-avatar">
                                             <span class="author-name"><?php echo esc_html($author_name); ?></span>
                                         </div>
                                     </div>
@@ -198,26 +218,26 @@ rsort($years);
     <!-- 分页导航 -->
     <?php if ($query->max_num_pages > 1) : 
         global $wp_rewrite;
-        $format = '';
-        $base = trailingslashit(get_permalink()) . '%_%';
+        $base = trailingslashit($moments_base_url) . 'page/%#%/';
         
-        if ($wp_rewrite->using_permalinks()) {
-            $format = 'page/%#%/';
-        } else {
-            $format = '?paged=%#%';
+        if (!$wp_rewrite->using_permalinks()) {
+            $base = add_query_arg('paged', '%#%', $moments_base_url);
         }
     ?>
         <nav class="pagination" style="margin-top: 2rem; text-align: center;">
             <?php
             echo paginate_links(array(
                 'base' => $base,
-                'format' => $format,
+                'format' => '',
                 'current' => max(1, $paged),
                 'total' => $query->max_num_pages,
                 'prev_text' => '← 上一页',
                 'next_text' => '下一页 →',
                 'mid_size' => 2,
                 'end_size' => 1,
+                'add_args' => array_filter(array(
+                    'filter_year' => $current_year ?: false,
+                )),
             ));
             ?>
         </nav>
@@ -226,7 +246,12 @@ rsort($years);
     <?php else : ?>
         <div class="timeline-empty">
             <div class="timeline-empty-icon">📝</div>
-            <p class="timeline-empty-text"><?php _e('还没有记录任何点滴，快去添加吧！', 'brave-love'); ?></p>
+            <?php if ($current_year > 0) : ?>
+                <p class="timeline-empty-text"><?php echo esc_html($current_year); ?> 年还没有记录任何点滴</p>
+                <p class="timeline-empty-hint"><a href="<?php echo esc_url($moments_base_url); ?>">查看全部点滴</a></p>
+            <?php else : ?>
+                <p class="timeline-empty-text"><?php _e('还没有记录任何点滴，快去添加吧！', 'brave-love'); ?></p>
+            <?php endif; ?>
         </div>
     <?php endif; ?>
 </section>

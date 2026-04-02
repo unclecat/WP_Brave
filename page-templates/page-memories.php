@@ -19,6 +19,7 @@ $hero_bg = get_theme_mod('brave_hero_bg');
 // 获取设置
 $per_page = get_theme_mod('brave_gallery_per_page', 12);
 $show_info = get_theme_mod('brave_gallery_show_info', true);
+$gallery_base_url = get_permalink();
 
 // 获取筛选参数 - 使用 filter_year 避免与 WordPress 保留参数 year 冲突
 $current_year = isset($_GET['filter_year']) ? intval($_GET['filter_year']) : 0;
@@ -37,14 +38,6 @@ $max_num_pages = $photo_data['max_num_pages'];
 
 // 获取可用年份
 $years = brave_get_gallery_years();
-
-// 将照片数据传递给 JS - 在 footer 中内嵌
-add_action('wp_footer', function() use ($photos, $show_info) {
-    echo '<script>window.braveGalleryData = ' . json_encode(array(
-        'photos' => $photos,
-        'showInfo' => $show_info,
-    )) . ';</script>';
-}, 5);
 ?>
 
 <section class="content-section">
@@ -54,14 +47,14 @@ add_action('wp_footer', function() use ($photos, $show_info) {
     </div>
 
     <?php if (!empty($years)) : ?>
-    <!-- 年份筛选 - 使用锚点方式避免URL冲突 -->
+    <!-- 年份筛选 -->
     <nav class="gallery-year-nav">
-        <a href="<?php echo esc_url(remove_query_arg(array('filter_year', 'paged'))); ?>" class="gallery-year-item <?php echo $current_year === 0 ? 'active' : ''; ?>">
+        <a href="<?php echo esc_url($gallery_base_url); ?>" class="gallery-year-item <?php echo $current_year === 0 ? 'active' : ''; ?>">
             <?php _e('全部', 'brave-love'); ?>
         </a>
         <?php foreach ($years as $year) : 
-            // 构建年份筛选URL，确保与分页兼容
-            $year_url = add_query_arg(array('filter_year' => $year, 'paged' => false));
+            // 切换年份时始终回到第一页，避免沿用上一页的分页路径
+            $year_url = add_query_arg('filter_year', $year, $gallery_base_url);
         ?>
             <a href="<?php echo esc_url($year_url); ?>" class="gallery-year-item <?php echo $current_year === $year ? 'active' : ''; ?>">
                 <?php echo esc_html($year); ?>
@@ -127,16 +120,13 @@ add_action('wp_footer', function() use ($photos, $show_info) {
 
         <!-- 分页/加载更多 -->
         <?php if ($photo_data['max_num_pages'] > 1) : 
-            // 获取当前页面URL（不带查询参数）
-            $current_url = get_permalink();
-            
             // 构建分页基础URL
             if ($wp_rewrite->using_permalinks()) {
                 // 固定链接格式: /memories/page/2/?year=2025
-                $base = trailingslashit($current_url) . 'page/%#%/';
+                $base = trailingslashit($gallery_base_url) . 'page/%#%/';
             } else {
                 // 默认格式: /?page_id=123&paged=2&year=2025
-                $base = add_query_arg('paged', '%#%', $current_url);
+                $base = add_query_arg('paged', '%#%', $gallery_base_url);
             }
             
             // 年份参数通过 add_args 传递
@@ -163,13 +153,19 @@ add_action('wp_footer', function() use ($photos, $show_info) {
         <!-- 空状态 -->
         <div class="gallery-empty">
             <div class="gallery-empty-icon">📷</div>
-            <h3 class="gallery-empty-title"><?php _e('还没有照片', 'brave-love'); ?></h3>
-            <p class="gallery-empty-desc">
-                <?php _e('在「点点滴滴」中添加文章并上传照片，它们会自动显示在这里。', 'brave-love'); ?>
-            </p>
-            <a href="<?php echo esc_url(admin_url('post-new.php?post_type=moment')); ?>" class="gallery-empty-btn">
-                <?php _e('添加第一篇点滴', 'brave-love'); ?>
-            </a>
+            <?php if ($current_year > 0) : ?>
+                <h3 class="gallery-empty-title"><?php echo esc_html($current_year); ?> 年还没有照片</h3>
+                <p class="gallery-empty-desc">试试查看其他年份，或返回全部相册。</p>
+                <a href="<?php echo esc_url($gallery_base_url); ?>" class="gallery-empty-btn">查看全部照片</a>
+            <?php else : ?>
+                <h3 class="gallery-empty-title"><?php _e('还没有照片', 'brave-love'); ?></h3>
+                <p class="gallery-empty-desc">
+                    <?php _e('在「点点滴滴」中添加文章并上传照片，它们会自动显示在这里。', 'brave-love'); ?>
+                </p>
+                <a href="<?php echo esc_url(admin_url('post-new.php?post_type=moment')); ?>" class="gallery-empty-btn">
+                    <?php _e('添加第一篇点滴', 'brave-love'); ?>
+                </a>
+            <?php endif; ?>
         </div>
     <?php endif; ?>
 </section>
