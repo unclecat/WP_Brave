@@ -49,3 +49,4 @@ package-lock.json
 tmp/
 temp/
 *.tmp
+SECURITY-REPORT.md

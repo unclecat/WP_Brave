@@ -1,4 +1,8 @@
 <?php
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 /**
  * Template Name: 随笔说说
  *
@@ -7,18 +11,19 @@
  */
 
 get_header();
+get_template_part(
+    'template-parts/page-hero',
+    null,
+    array(
+        'title' => '📝 随笔说说',
+        'subtitle' => '记录生活的点滴心情与思念',
+    )
+);
 
-// 获取Hero背景图
-$hero_bg = get_theme_mod('brave_hero_bg');
-
-?>
-<!-- Hero区域已移除 -->
-
-<?php
 // 获取筛选参数
-$filter_year = isset($_GET['filter_year']) ? intval($_GET['filter_year']) : 0;
-$filter_month = isset($_GET['filter_month']) ? intval($_GET['filter_month']) : 0;
-$filter_day = isset($_GET['filter_day']) ? intval($_GET['filter_day']) : 0;
+$filter_year = isset($_GET['filter_year']) ? intval(wp_unslash($_GET['filter_year'])) : 0;
+$filter_month = isset($_GET['filter_month']) ? intval(wp_unslash($_GET['filter_month'])) : 0;
+$filter_day = isset($_GET['filter_day']) ? intval(wp_unslash($_GET['filter_day'])) : 0;
 
 $paged = get_query_var('paged') ? get_query_var('paged') : 1;
 
@@ -68,85 +73,102 @@ if ($filter_year && $filter_month) {
 // 当前用户是否已登录
 $is_logged_in = is_user_logged_in();
 $current_user = wp_get_current_user();
+
+$notes_filter_label = '共 ' . intval($query->found_posts) . ' 条记录，按时间回看每次心情波动';
+
+if ($filter_year) {
+    $notes_filter_label = $filter_year . '年';
+
+    if ($filter_month) {
+        $notes_filter_label .= ' ' . $filter_month . '月';
+
+        if ($filter_day) {
+            $notes_filter_label .= ' ' . $filter_day . '日';
+        }
+    }
+
+    $notes_filter_label .= ' · 共 ' . intval($query->found_posts) . ' 条';
+}
 ?>
 
 <section class="content-section">
-    <div class="section-header">
-        <h1 class="section-title">📝 随笔说说</h1>
-        <p class="section-desc">记录生活的点滴心情与思念</p>
-    </div>
+    <div class="page-shell page-shell-narrow">
+        <div class="content-filter-shell notes-filter-shell">
+            <div class="content-filter-heading">
+                <p class="content-filter-meta"><?php echo esc_html($notes_filter_label); ?></p>
+            </div>
 
-    <!-- 级联筛选器 -->
-    <div class="notes-filter-bar">
-        <!-- 全部按钮 -->
-        <div class="filter-group">
-            <a href="<?php echo esc_url(remove_query_arg(array('filter_year', 'filter_month', 'filter_day'))); ?>" 
-               class="filter-btn <?php echo !$filter_year ? 'active' : ''; ?>">
-                全部
-            </a>
-        </div>
-        
-        <!-- 年份筛选 - 始终显示 -->
-        <div class="filter-group">
-            <button class="filter-dropdown-toggle <?php echo $filter_year ? 'has-value' : ''; ?>" data-toggle="year">
-                <?php echo $filter_year ? $filter_year . '年' : '年份'; ?>
-            </button>
-            <div class="filter-dropdown" id="year-dropdown">
-                <?php if (!empty($years)) : ?>
-                    <?php foreach ($years as $year) : ?>
-                        <a href="<?php echo esc_url(add_query_arg(array('filter_year' => $year, 'filter_month' => false, 'filter_day' => false))); ?>" 
-                           class="filter-option <?php echo $filter_year == $year ? 'active' : ''; ?>">
-                            <?php echo $year; ?>年
-                        </a>
-                    <?php endforeach; ?>
-                <?php else : ?>
-                    <span class="filter-option disabled">暂无数据</span>
+            <div class="notes-filter-bar content-filter-actions">
+                <!-- 全部按钮 -->
+                <div class="filter-group">
+                    <a href="<?php echo esc_url(remove_query_arg(array('filter_year', 'filter_month', 'filter_day'))); ?>" 
+                       class="filter-btn <?php echo !$filter_year ? 'active' : ''; ?>">
+                        全部
+                    </a>
+                </div>
+
+                <!-- 年份筛选 - 始终显示 -->
+                <div class="filter-group">
+                    <button class="filter-dropdown-toggle <?php echo $filter_year ? 'has-value' : ''; ?>" data-toggle="year">
+                        <?php echo $filter_year ? $filter_year . '年' : '年份'; ?>
+                    </button>
+                    <div class="filter-dropdown" id="year-dropdown">
+                        <?php if (!empty($years)) : ?>
+                            <?php foreach ($years as $year) : ?>
+                                <a href="<?php echo esc_url(add_query_arg(array('filter_year' => $year, 'filter_month' => false, 'filter_day' => false))); ?>" 
+                                   class="filter-option <?php echo $filter_year == $year ? 'active' : ''; ?>">
+                                    <?php echo $year; ?>年
+                                </a>
+                            <?php endforeach; ?>
+                        <?php else : ?>
+                            <span class="filter-option disabled">暂无数据</span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <!-- 月份筛选 - 选择年份后才显示 -->
+                <?php if ($filter_year) : ?>
+                <div class="filter-group">
+                    <button class="filter-dropdown-toggle <?php echo $filter_month ? 'has-value' : ''; ?>" data-toggle="month">
+                        <?php echo $filter_month ? $filter_month . '月' : '月份'; ?>
+                    </button>
+                    <div class="filter-dropdown" id="month-dropdown">
+                        <?php if (!empty($months)) : ?>
+                            <?php foreach ($months as $month) : ?>
+                                <a href="<?php echo esc_url(add_query_arg(array('filter_month' => $month, 'filter_day' => false))); ?>" 
+                                   class="filter-option <?php echo $filter_month == $month ? 'active' : ''; ?>">
+                                    <?php echo $month; ?>月
+                                </a>
+                            <?php endforeach; ?>
+                        <?php else : ?>
+                            <span class="filter-option disabled">暂无数据</span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <!-- 日期筛选 - 选择月份后才显示 -->
+                <?php if ($filter_year && $filter_month) : ?>
+                <div class="filter-group">
+                    <button class="filter-dropdown-toggle <?php echo $filter_day ? 'has-value' : ''; ?>" data-toggle="day">
+                        <?php echo $filter_day ? $filter_day . '日' : '日期'; ?>
+                    </button>
+                    <div class="filter-dropdown" id="day-dropdown">
+                        <?php if (!empty($days)) : ?>
+                            <?php foreach ($days as $day) : ?>
+                                <a href="<?php echo esc_url(add_query_arg('filter_day', $day)); ?>" 
+                                   class="filter-option <?php echo $filter_day == $day ? 'active' : ''; ?>">
+                                    <?php echo $day; ?>日
+                                </a>
+                            <?php endforeach; ?>
+                        <?php else : ?>
+                            <span class="filter-option disabled">暂无数据</span>
+                        <?php endif; ?>
+                    </div>
+                </div>
                 <?php endif; ?>
             </div>
         </div>
-        
-        <!-- 月份筛选 - 选择年份后才显示 -->
-        <?php if ($filter_year) : ?>
-        <div class="filter-group">
-            <button class="filter-dropdown-toggle <?php echo $filter_month ? 'has-value' : ''; ?>" data-toggle="month">
-                <?php echo $filter_month ? $filter_month . '月' : '月份'; ?>
-            </button>
-            <div class="filter-dropdown" id="month-dropdown">
-                <?php if (!empty($months)) : ?>
-                    <?php foreach ($months as $month) : ?>
-                        <a href="<?php echo esc_url(add_query_arg(array('filter_month' => $month, 'filter_day' => false))); ?>" 
-                           class="filter-option <?php echo $filter_month == $month ? 'active' : ''; ?>">
-                            <?php echo $month; ?>月
-                        </a>
-                    <?php endforeach; ?>
-                <?php else : ?>
-                    <span class="filter-option disabled">暂无数据</span>
-                <?php endif; ?>
-            </div>
-        </div>
-        <?php endif; ?>
-        
-        <!-- 日期筛选 - 选择月份后才显示 -->
-        <?php if ($filter_year && $filter_month) : ?>
-        <div class="filter-group">
-            <button class="filter-dropdown-toggle <?php echo $filter_day ? 'has-value' : ''; ?>" data-toggle="day">
-                <?php echo $filter_day ? $filter_day . '日' : '日期'; ?>
-            </button>
-            <div class="filter-dropdown" id="day-dropdown">
-                <?php if (!empty($days)) : ?>
-                    <?php foreach ($days as $day) : ?>
-                        <a href="<?php echo esc_url(add_query_arg('filter_day', $day)); ?>" 
-                           class="filter-option <?php echo $filter_day == $day ? 'active' : ''; ?>">
-                            <?php echo $day; ?>日
-                        </a>
-                    <?php endforeach; ?>
-                <?php else : ?>
-                    <span class="filter-option disabled">暂无数据</span>
-                <?php endif; ?>
-            </div>
-        </div>
-        <?php endif; ?>
-    </div>
 
     <!-- 瀑布流说说列表 -->
     <?php if ($query->have_posts()) : ?>
@@ -300,34 +322,46 @@ $current_user = wp_get_current_user();
         </form>
     </div>
     <?php endif; ?>
+    </div>
 </section>
 
 <script>
 // 级联筛选下拉菜单
 document.addEventListener('DOMContentLoaded', function() {
     const toggles = document.querySelectorAll('.filter-dropdown-toggle');
+
+    function closeDropdowns(exceptId) {
+        document.querySelectorAll('.filter-dropdown').forEach(function(dropdown) {
+            if (dropdown.id !== exceptId) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        toggles.forEach(function(toggle) {
+            if ((toggle.getAttribute('data-toggle') + '-dropdown') !== exceptId) {
+                toggle.classList.remove('is-open');
+            }
+        });
+    }
     
     toggles.forEach(function(toggle) {
         toggle.addEventListener('click', function(e) {
             e.stopPropagation();
             const target = this.getAttribute('data-toggle');
             const dropdown = document.getElementById(target + '-dropdown');
-            
-            // 关闭其他下拉菜单
-            document.querySelectorAll('.filter-dropdown').forEach(function(d) {
-                if (d !== dropdown) d.classList.remove('show');
-            });
-            
-            // 切换当前下拉菜单
-            dropdown.classList.toggle('show');
+            const dropdownId = target + '-dropdown';
+            const isOpen = dropdown.classList.contains('show');
+
+            closeDropdowns();
+
+            dropdown.classList.toggle('show', !isOpen);
+            this.classList.toggle('is-open', !isOpen);
         });
     });
     
     // 点击外部关闭下拉菜单
     document.addEventListener('click', function() {
-        document.querySelectorAll('.filter-dropdown').forEach(function(d) {
-            d.classList.remove('show');
-        });
+        closeDropdowns();
     });
     
     // 心情选择

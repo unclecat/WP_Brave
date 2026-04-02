@@ -1,69 +1,92 @@
 # Brave Love Test Report
 
-Generated: 2026-04-01
+Generated: 2026-04-02
 Project: `brave-love`
 Tester: Codex CLI
+Environment: local WordPress Docker runtime + local PHP CLI
 
 ## Scope
 
 This run covered:
 
-- bundled test asset repair
-- repository structure and metadata checks
-- execution of bundled local shell tests where possible
-- static security and i18n spot checks
-- environment readiness for PHP and Docker based integration tests
+- full PHP syntax linting for theme source
+- bundled theme structure and metadata checks
+- bundled security scan
+- local WordPress HTTP smoke tests for the main templates
+- love-list filter / canonical / redirect verification
+- release artifact documentation refresh
 
 This run did not cover:
 
-- live WordPress installation
-- browser UI verification
-- containerized end-to-end flows
-- PHP syntax linting, because `php` is not installed in the current environment
+- real browser-driven visual regression
+- authenticated end-to-end publishing flows in a browser
+- external weather API correctness in live network conditions
 
 ## Environment
 
-- `php`: not installed
-- `docker`: not installed
-- `docker-compose`: not installed
-- `zip`: available at `/usr/bin/zip`
-- `gh`: not installed
+- `php`: available
+- `docker`: available
+- local WordPress: available at `http://localhost:8080`
+- local phpMyAdmin: available at `http://localhost:8081`
+- theme runtime version: `0.7.7`
 
-## Test Asset Fixes Applied
+## Review Findings And Fixes
 
-The repository test tooling was repaired before rerunning checks:
+### 1. Direct access hardening
 
-1. [tests/check-theme-simple.sh](/Users/shawn/Desktop/Kimi%20Code/WordPress/brave-wp/tests/check-theme-simple.sh)
-   - fixed theme root detection
-   - fixed next-step command examples
-   - fixed zip file detection
-   - excluded `tests/` from dangerous-function false positives
+Risk:
 
-2. [tests/check-theme.php](/Users/shawn/Desktop/Kimi%20Code/WordPress/brave-wp/tests/check-theme.php)
-   - fixed theme root path
-   - excluded `.git` and `tests/` from recursive scanning
+- multiple template files and `inc/` modules lacked direct-access guards
+- direct requests to theme PHP files could expose partial internals or trigger avoidable execution paths
 
-3. [tests/test-theme.sh](/Users/shawn/Desktop/Kimi%20Code/WordPress/brave-wp/tests/test-theme.sh)
-   - fixed theme root detection
-   - fixed `docker-compose` file targeting
-   - fixed command examples in script output
+Fix:
 
-4. [tests/docker-compose.yml](/Users/shawn/Desktop/Kimi%20Code/WordPress/brave-wp/tests/docker-compose.yml)
-   - fixed theme mount path from `./brave-wp` to the repository root
+- added `ABSPATH` guards to theme templates, template parts, and `inc/` core modules
 
-5. [tests/setup-test-data.sh](/Users/shawn/Desktop/Kimi%20Code/WordPress/brave-wp/tests/setup-test-data.sh)
-   - fixed theme mount path
-   - removed reference to missing `page-templates/page-list.php`
+### 2. Input normalization consistency
 
-6. [tests/README-TEST.md](/Users/shawn/Desktop/Kimi%20Code/WordPress/brave-wp/tests/README-TEST.md)
-   - updated commands to match the repaired test layout
+Risk:
 
-7. [tests/security-scan.php](/Users/shawn/Desktop/Kimi%20Code/WordPress/brave-wp/tests/security-scan.php)
-   - excluded `.git` and `tests/` from source scanning
+- several front-end and admin handlers read `$_GET` / `$_POST` values without `wp_unslash`
+- this could store slash-escaped content or create inconsistent behavior under WordPress request handling
+
+Fix:
+
+- normalized key request reads with `wp_unslash` + sanitization in front-end note publishing, page filters, meta box saves, weather admin, gallery admin, and anniversary admin
+
+### 3. Runtime notice hardening
+
+Risk:
+
+- `brave_is_mobile()` assumed `$_SERVER['HTTP_USER_AGENT']` always exists
+- CLI or proxy/headless requests could trigger PHP notices
+
+Fix:
+
+- added safe fallback handling for missing user agent values
 
 ## Executed Tests
 
-### 1. Bundled shell smoke test
+### 1. PHP syntax lint
+
+Command:
+
+```bash
+find . -name '*.php' -not -path './tests/*' -print0 | xargs -0 -n1 php -l
+```
+
+Result: passed.
+
+Coverage:
+
+- `functions.php`
+- theme templates and template parts
+- `inc/` helper and admin modules
+- archive and single templates
+
+Status: passed.
+
+### 2. Bundled shell smoke check
 
 Command:
 
@@ -73,114 +96,97 @@ bash tests/check-theme-simple.sh
 
 Result: passed.
 
-Observed checks:
-
-- required theme files
-- `style.css` headers
-- file counts and line counts
-- package size discovery
-- template inventory
-- dangerous function scan excluding `tests/`
-- text domain usage
-
 Observed summary:
 
-- Theme name: `Brave Love`
-- Version: `0.7.0`
-- PHP files: 24
-- CSS files: 6
-- JS files: 3
-- Total lines across PHP/CSS/JS: 10,924
-- Repository size: 6.1M
-- Existing zip discovered: 92K
-- Dangerous runtime functions: none found
+- required theme files: complete
+- theme name: `Brave Love`
+- version: `0.7.7`
+- dangerous runtime functions: none found
+- text domain usage: detected and consistent
 
 Status: passed.
 
-### 2. Docker workflow entrypoint validation
+### 3. Bundled PHP check
 
 Command:
 
 ```bash
-bash tests/test-theme.sh
+php tests/check-theme.php
 ```
 
-Result: failed early for the correct reason.
+Result: passed.
 
-Observed output:
+Observed summary:
 
-```text
-❌ Docker 未安装
-请访问 https://docs.docker.com/get-docker/ 安装 Docker
-```
+- all required files present
+- all scanned PHP files linted successfully
+- no dangerous runtime function warnings
 
-Interpretation:
+Status: passed.
 
-- the previous path/layout defects are no longer the first failure
-- the script now reaches environment validation as intended
+### 4. Security scan
 
-Status: blocked by missing local dependency, not by test asset defects.
-
-### 3. Environment readiness checks
-
-Commands:
+Command:
 
 ```bash
-command -v php
-command -v docker
-command -v docker-compose
-command -v zip
-command -v gh
+php tests/security-scan.php
 ```
 
-Result:
+Result: passed.
 
-- `php`: missing
-- `docker`: missing
-- `docker-compose`: missing
-- `zip`: available
-- `gh`: missing
+Observed summary:
 
-Status: partial tooling available; integration tests and GitHub release automation remain blocked locally.
+- direct access protection: passed
+- SQL injection scan: passed
+- XSS scan: passed
+- nonce presence: passed
+- dangerous function scan: passed
+- warnings: `0`
+- errors: `0`
 
-### 4. Static security and i18n spot checks
+Status: passed.
 
-Checks performed with repository search:
+### 5. Local WordPress runtime smoke tests
 
-- dangerous function scan
-- nonce presence scan
-- sanitization and escaping presence scan
-- i18n usage scan
+Checks executed against `http://localhost:8080`:
 
-Results:
+- home page entry cards render and link to all major sections
+- moments page renders hero, dropdown filter, year badges, and timeline cards
+- memories page renders dropdown filter, gallery waterfall, and PhotoSwipe info shell
+- notes page renders dropdown filter and note card structure
+- blessing page renders blessing card grid and submission form structure
+- love-list page renders canonical tag, status filter links, and all 11 cards on one page
 
-- no dangerous runtime functions found in theme source
-- nonce usage exists in front-end and admin flows
-- escaping and sanitization calls are widely present
-- translation helpers are widely used and the declared text domain matches runtime usage
+Status: passed.
 
-Status: passed as a basic static check.
+### 6. Love-list behavior verification
+
+Verified via local HTTP:
+
+- `filter_status=done` only returns completed cards and emits canonical `.../lists/?filter_status=done`
+- `filter_status=pending` only returns pending cards and emits canonical `.../lists/?filter_status=pending`
+- legacy pagination URL `/lists/page/2/` returns `302` to `/lists/`
+- invalid query URL `/lists/?filter_status=bad&foo=1` returns `302` to `/lists/`
+
+Status: passed.
 
 ## Outcome Summary
 
-- Test asset repair: completed
-- Bundled shell smoke test: passed
-- Docker test bootstrap: blocked only by missing Docker
-- PHP lint: not executed, `php` unavailable
-- Browser and feature verification: not executed, no live WordPress environment available
-- GitHub CLI based release flow: not available locally, `gh` missing
+- Static PHP validation: passed
+- Theme structure check: passed
+- Security scan: passed
+- Runtime page smoke tests: passed
+- Love-list filtering and canonical cleanup: passed
+- Release docs refresh: completed
 
-## Risks Remaining
+## Remaining Risks
 
-- No runtime confirmation that templates render without PHP notices or fatal errors
-- No verification of custom post type registration inside a live WordPress instance
-- No verification of front-end behaviors such as gallery lightbox, countdown timers, weather widget, pagination, or comment flows
-- No PHP syntax linting in the current machine state
+- no screenshot-based or browser automation regression coverage yet
+- weather data still depends on external runtime API responses
+- visual polish still relies on manual browser review across actual devices
 
-## Recommended Next Steps
+## Recommended Release State
 
-1. Install `php` locally and run the PHP-based test utilities.
-2. Install Docker and Docker Compose, then rerun `bash tests/test-theme.sh`.
-3. After WordPress is up, run `bash tests/setup-test-data.sh`.
-4. Perform browser validation for home, moments, love list, memories, notes, and blessing pages.
-5. Use Git push or a GitHub release workflow from a machine with network access and authentication.
+Current state is suitable for a patch release.
+
+Recommended release version: `v0.7.7`

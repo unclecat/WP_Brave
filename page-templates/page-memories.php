@@ -1,4 +1,8 @@
 <?php
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 /**
  * Template Name: 甜蜜相册
  *
@@ -8,21 +12,22 @@
 global $wp_rewrite;
 
 get_header();
+get_template_part(
+    'template-parts/page-hero',
+    null,
+    array(
+        'title' => '📷 甜蜜相册',
+        'subtitle' => '记录我们在一起的每个瞬间',
+    )
+);
 
-// 获取Hero背景图
-$hero_bg = get_theme_mod('brave_hero_bg');
-
-?>
-<!-- Hero区域已移除 -->
-
-<?php
 // 获取设置
 $per_page = get_theme_mod('brave_gallery_per_page', 12);
 $show_info = get_theme_mod('brave_gallery_show_info', true);
 $gallery_base_url = get_permalink();
 
 // 获取筛选参数 - 使用 filter_year 避免与 WordPress 保留参数 year 冲突
-$current_year = isset($_GET['filter_year']) ? intval($_GET['filter_year']) : 0;
+$current_year = isset($_GET['filter_year']) ? intval(wp_unslash($_GET['filter_year'])) : 0;
 $paged = get_query_var('paged') ? get_query_var('paged') : 1;
 
 // 获取照片数据
@@ -41,29 +46,34 @@ $years = brave_get_gallery_years();
 ?>
 
 <section class="content-section">
-    <div class="section-header">
-        <h1 class="section-title">📷 甜蜜相册</h1>
-        <p class="section-desc">记录我们在一起的每个瞬间</p>
-    </div>
+    <div class="page-shell page-shell-narrow">
+        <?php if (!empty($years)) : ?>
+        <div class="content-filter-shell gallery-filter-shell">
+            <div class="moments-filter-controls content-filter-actions">
+                <a href="<?php echo esc_url($gallery_base_url); ?>" class="filter-btn <?php echo $current_year === 0 ? 'active' : ''; ?>">
+                    <?php _e('全部', 'brave-love'); ?>
+                </a>
 
-    <?php if (!empty($years)) : ?>
-    <!-- 年份筛选 -->
-    <nav class="gallery-year-nav">
-        <a href="<?php echo esc_url($gallery_base_url); ?>" class="gallery-year-item <?php echo $current_year === 0 ? 'active' : ''; ?>">
-            <?php _e('全部', 'brave-love'); ?>
-        </a>
-        <?php foreach ($years as $year) : 
-            // 切换年份时始终回到第一页，避免沿用上一页的分页路径
-            $year_url = add_query_arg('filter_year', $year, $gallery_base_url);
-        ?>
-            <a href="<?php echo esc_url($year_url); ?>" class="gallery-year-item <?php echo $current_year === $year ? 'active' : ''; ?>">
-                <?php echo esc_html($year); ?>
-            </a>
-        <?php endforeach; ?>
-    </nav>
-    <?php endif; ?>
+                <div class="filter-group">
+                    <button class="filter-dropdown-toggle <?php echo $current_year > 0 ? 'has-value' : ''; ?>" data-toggle="gallery-year">
+                        <?php echo $current_year > 0 ? esc_html($current_year . '年') : '年份'; ?>
+                    </button>
+                    <div class="filter-dropdown" id="gallery-year-dropdown">
+                        <?php foreach ($years as $year) : 
+                            // 切换年份时始终回到第一页，避免沿用上一页的分页路径
+                            $year_url = add_query_arg('filter_year', $year, $gallery_base_url);
+                        ?>
+                            <a href="<?php echo esc_url($year_url); ?>" class="filter-option <?php echo $current_year === $year ? 'active' : ''; ?>">
+                                <?php echo esc_html($year); ?>年
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
 
-    <?php if (!empty($photos)) : ?>
+        <?php if (!empty($photos)) : ?>
         <!-- 瀑布流容器 -->
         <div class="gallery-waterfall" id="galleryWaterfall">
             <?php foreach ($photos as $index => $photo) : 
@@ -149,7 +159,7 @@ $years = brave_get_gallery_years();
             </nav>
         <?php endif; ?>
 
-    <?php else : ?>
+        <?php else : ?>
         <!-- 空状态 -->
         <div class="gallery-empty">
             <div class="gallery-empty-icon">📷</div>
@@ -167,7 +177,8 @@ $years = brave_get_gallery_years();
                 </a>
             <?php endif; ?>
         </div>
-    <?php endif; ?>
+        <?php endif; ?>
+    </div>
 </section>
 
 <!-- PhotoSwipe 模板 -->
@@ -219,4 +230,53 @@ $years = brave_get_gallery_years();
 </div>
 
 <?php
+if (!empty($years)) :
+?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggles = document.querySelectorAll('.gallery-filter-shell .filter-dropdown-toggle');
+
+    function closeDropdowns(exceptId) {
+        document.querySelectorAll('.gallery-filter-shell .filter-dropdown').forEach(function(dropdown) {
+            if (dropdown.id !== exceptId) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        toggles.forEach(function(toggle) {
+            if ((toggle.getAttribute('data-toggle') + '-dropdown') !== exceptId) {
+                toggle.classList.remove('is-open');
+            }
+        });
+    }
+
+    toggles.forEach(function(toggle) {
+        toggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+
+            const target = this.getAttribute('data-toggle');
+            const dropdown = document.getElementById(target + '-dropdown');
+
+            if (!dropdown) {
+                return;
+            }
+
+            const dropdownId = target + '-dropdown';
+            const isOpen = dropdown.classList.contains('show');
+
+            closeDropdowns();
+
+            dropdown.classList.toggle('show', !isOpen);
+            this.classList.toggle('is-open', !isOpen);
+        });
+    });
+
+    document.addEventListener('click', function() {
+        closeDropdowns();
+    });
+});
+</script>
+<?php
+endif;
+
 get_footer();

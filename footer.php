@@ -1,3 +1,8 @@
+<?php
+if (!defined('ABSPATH')) {
+    exit;
+}
+?>
 </main><!-- #main -->
 
 <!-- 页脚 -->

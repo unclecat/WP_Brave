@@ -1,4 +1,8 @@
 <?php
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 /**
  * 工具函数
  *
@@ -13,6 +17,98 @@
  */
 function brave_esc_avatar_url($url) {
     return esc_url($url, array('http', 'https', 'data'));
+}
+
+/**
+ * 获取主题 Hero 背景样式。
+ *
+ * 优先使用后台配置的 Hero 图，缺失时回退到主题内渐变背景，
+ * 供首页 Hero 和其他页面的通用 Hero 复用。
+ *
+ * @param string $background_url 指定背景图 URL，留空时回退到全局 Hero 图
+ * @return string
+ */
+function brave_get_hero_background_style($background_url = '') {
+    $hero_bg = $background_url ? $background_url : get_theme_mod('brave_hero_bg');
+
+    if (!empty($hero_bg)) {
+        return "background-image: url('" . esc_url_raw($hero_bg) . "');";
+    }
+
+    return 'background-image: radial-gradient(circle at top, rgba(255, 255, 255, 0.22), transparent 36%), linear-gradient(135deg, #ff9a9e 0%, #fad0c4 42%, #ffd1ff 100%);';
+}
+
+/**
+ * 获取页面 Hero 自定义字段。
+ *
+ * @param int $post_id 页面 ID
+ * @return array
+ */
+function brave_get_page_hero_meta($post_id) {
+    $post_id = absint($post_id);
+
+    if ($post_id <= 0) {
+        return array(
+            'title' => '',
+            'subtitle' => '',
+            'background' => '',
+        );
+    }
+
+    return array(
+        'title' => get_post_meta($post_id, '_brave_page_hero_title', true),
+        'subtitle' => get_post_meta($post_id, '_brave_page_hero_subtitle', true),
+        'background' => get_post_meta($post_id, '_brave_page_hero_bg', true),
+    );
+}
+
+/**
+ * 解析当前页面 Hero 最终配置。
+ *
+ * 页面模板优先读取当前页面的 Hero 自定义字段；
+ * 恋爱清单归档则读取主题设置中的归档 Hero 配置；
+ * 其余字段回退到模板传入的默认值。
+ *
+ * @param array $args 默认配置
+ * @return array
+ */
+function brave_resolve_page_hero_args($args = array()) {
+    $resolved = wp_parse_args(
+        $args,
+        array(
+            'context' => '',
+            'post_id' => 0,
+            'eyebrow' => __('Brave Love', 'brave-love'),
+            'title' => get_the_title(),
+            'subtitle' => '',
+            'background' => '',
+        )
+    );
+
+    if ('love_list_archive' === $resolved['context']) {
+        $resolved['title'] = get_theme_mod('brave_love_list_hero_title', $resolved['title']);
+        $resolved['subtitle'] = get_theme_mod('brave_love_list_hero_subtitle', $resolved['subtitle']);
+        $resolved['background'] = get_theme_mod('brave_love_list_hero_bg', $resolved['background']);
+    } else {
+        $post_id = $resolved['post_id'] ? absint($resolved['post_id']) : get_the_ID();
+        $meta = brave_get_page_hero_meta($post_id);
+
+        if (!empty($meta['title'])) {
+            $resolved['title'] = $meta['title'];
+        }
+
+        if (!empty($meta['subtitle'])) {
+            $resolved['subtitle'] = $meta['subtitle'];
+        }
+
+        if (!empty($meta['background'])) {
+            $resolved['background'] = $meta['background'];
+        }
+    }
+
+    $resolved['background_style'] = brave_get_hero_background_style($resolved['background']);
+
+    return $resolved;
 }
 
 /**
@@ -359,25 +455,43 @@ function brave_get_mood_text($mood) {
 }
 
 /**
- * 获取恋爱清单完成进度
+ * 获取恋爱清单完成进度。
+ *
+ * @param int $term_id 可选的分类 ID，用于分类页统计。
  */
-function brave_get_list_progress() {
-    $total = wp_count_posts('love_list')->publish;
-    
-    $done_args = array(
+function brave_get_list_progress($term_id = 0) {
+    $term_id = absint($term_id);
+
+    $base_args = array(
         'post_type' => 'love_list',
+        'post_status' => 'publish',
         'posts_per_page' => -1,
-        'meta_query' => array(
-            array(
-                'key' => '_is_done',
-                'value' => '1',
-                'compare' => '=',
-            ),
-        ),
         'fields' => 'ids',
+        'no_found_rows' => true,
+    );
+
+    if ($term_id > 0) {
+        $base_args['tax_query'] = array(
+            array(
+                'taxonomy' => 'list_category',
+                'field' => 'term_id',
+                'terms' => $term_id,
+            ),
+        );
+    }
+
+    $total = count(get_posts($base_args));
+
+    $done_args = $base_args;
+    $done_args['meta_query'] = array(
+        array(
+            'key' => '_is_done',
+            'value' => '1',
+            'compare' => '=',
+        ),
     );
     $done = count(get_posts($done_args));
-    
+
     return array(
         'total' => $total,
         'done' => $done,
@@ -730,10 +844,10 @@ function brave_is_mobile() {
     if (function_exists('wp_is_mobile')) {
         return wp_is_mobile();
     }
-    
-    $user_agent = $_SERVER['HTTP_USER_AGENT'];
+
+    $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? wp_unslash($_SERVER['HTTP_USER_AGENT']) : '';
     $mobile_agents = array('Mobile', 'Android', 'Silk/', 'Kindle', 'BlackBerry', 'Opera Mini', 'Opera Mobi');
-    
+
     foreach ($mobile_agents as $agent) {
         if (strpos($user_agent, $agent) !== false) {
             return true;

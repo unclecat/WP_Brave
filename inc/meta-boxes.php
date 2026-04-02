@@ -1,4 +1,8 @@
 <?php
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 /**
  * 自定义字段（Meta Boxes）
  *
@@ -9,6 +13,16 @@
  * 添加 Meta Boxes
  */
 function brave_add_meta_boxes() {
+    // 页面 Hero 字段
+    add_meta_box(
+        'page_hero_settings',
+        __('页面 Hero 设置', 'brave-love'),
+        'brave_page_hero_meta_box',
+        'page',
+        'side',
+        'default'
+    );
+
     // 点点滴滴字段
     add_meta_box(
         'moment_details',
@@ -40,6 +54,46 @@ function brave_add_meta_boxes() {
     );
 }
 add_action('add_meta_boxes', 'brave_add_meta_boxes');
+
+/**
+ * 页面 Hero Meta Box
+ */
+function brave_page_hero_meta_box($post) {
+    wp_nonce_field('brave_page_hero_meta', 'brave_page_hero_nonce');
+
+    $hero_title = get_post_meta($post->ID, '_brave_page_hero_title', true);
+    $hero_subtitle = get_post_meta($post->ID, '_brave_page_hero_subtitle', true);
+    $hero_bg = get_post_meta($post->ID, '_brave_page_hero_bg', true);
+    ?>
+    <p>
+        <label for="brave_page_hero_title"><strong><?php _e('Hero 标题', 'brave-love'); ?></strong></label>
+        <input type="text" id="brave_page_hero_title" name="brave_page_hero_title" value="<?php echo esc_attr($hero_title); ?>" class="widefat" placeholder="<?php esc_attr_e('留空则使用模板默认标题', 'brave-love'); ?>">
+    </p>
+
+    <p>
+        <label for="brave_page_hero_subtitle"><strong><?php _e('Hero 副标题', 'brave-love'); ?></strong></label>
+        <textarea id="brave_page_hero_subtitle" name="brave_page_hero_subtitle" class="widefat" rows="3" placeholder="<?php esc_attr_e('留空则使用模板默认副标题', 'brave-love'); ?>"><?php echo esc_textarea($hero_subtitle); ?></textarea>
+    </p>
+
+    <div class="brave-media-field">
+        <label for="brave_page_hero_bg"><strong><?php _e('Hero 背景图', 'brave-love'); ?></strong></label>
+        <input type="url" id="brave_page_hero_bg" name="brave_page_hero_bg" value="<?php echo esc_attr($hero_bg); ?>" class="widefat brave-media-url" placeholder="<?php esc_attr_e('留空则回退到全局 Hero 背景', 'brave-love'); ?>">
+
+        <p class="brave-media-actions">
+            <button type="button" class="button button-secondary brave-media-select"><?php _e('选择图片', 'brave-love'); ?></button>
+            <button type="button" class="button-link-delete brave-media-clear"><?php _e('清空', 'brave-love'); ?></button>
+        </p>
+
+        <div class="brave-media-preview <?php echo $hero_bg ? 'has-image' : ''; ?>">
+            <img src="<?php echo $hero_bg ? esc_url($hero_bg) : ''; ?>" alt="" <?php echo $hero_bg ? '' : 'style="display:none;"'; ?>>
+        </div>
+    </div>
+
+    <p class="description">
+        <?php _e('适用于点点滴滴、甜蜜相册、随笔说说、祝福留言等页面模板。恋爱清单归档页请在「自定义 > Hero 区域」中设置。', 'brave-love'); ?>
+    </p>
+    <?php
+}
 
 /**
  * 点点滴滴 Meta Box
@@ -153,39 +207,52 @@ function brave_save_meta_boxes($post_id) {
         return;
     }
 
+    // 页面 Hero
+    if (isset($_POST['brave_page_hero_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['brave_page_hero_nonce'])), 'brave_page_hero_meta')) {
+        if (isset($_POST['brave_page_hero_title'])) {
+            update_post_meta($post_id, '_brave_page_hero_title', sanitize_text_field(wp_unslash($_POST['brave_page_hero_title'])));
+        }
+        if (isset($_POST['brave_page_hero_subtitle'])) {
+            update_post_meta($post_id, '_brave_page_hero_subtitle', sanitize_textarea_field(wp_unslash($_POST['brave_page_hero_subtitle'])));
+        }
+        if (isset($_POST['brave_page_hero_bg'])) {
+            update_post_meta($post_id, '_brave_page_hero_bg', esc_url_raw(wp_unslash($_POST['brave_page_hero_bg'])));
+        }
+    }
+
     // 点点滴滴
-    if (isset($_POST['brave_moment_nonce']) && wp_verify_nonce($_POST['brave_moment_nonce'], 'brave_moment_meta')) {
+    if (isset($_POST['brave_moment_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['brave_moment_nonce'])), 'brave_moment_meta')) {
         if (isset($_POST['meet_date'])) {
-            update_post_meta($post_id, '_meet_date', sanitize_text_field($_POST['meet_date']));
+            update_post_meta($post_id, '_meet_date', sanitize_text_field(wp_unslash($_POST['meet_date'])));
         }
         if (isset($_POST['meet_location'])) {
-            update_post_meta($post_id, '_meet_location', sanitize_text_field($_POST['meet_location']));
+            update_post_meta($post_id, '_meet_location', sanitize_text_field(wp_unslash($_POST['meet_location'])));
         }
         if (isset($_POST['mood'])) {
-            update_post_meta($post_id, '_mood', sanitize_text_field($_POST['mood']));
+            update_post_meta($post_id, '_mood', sanitize_text_field(wp_unslash($_POST['mood'])));
         }
         if (isset($_POST['moment_summary'])) {
-            update_post_meta($post_id, '_moment_summary', wp_kses_post($_POST['moment_summary']));
+            update_post_meta($post_id, '_moment_summary', wp_kses_post(wp_unslash($_POST['moment_summary'])));
         }
     }
 
     // 恋爱清单
-    if (isset($_POST['brave_list_nonce']) && wp_verify_nonce($_POST['brave_list_nonce'], 'brave_list_meta')) {
+    if (isset($_POST['brave_list_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['brave_list_nonce'])), 'brave_list_meta')) {
         $is_done = isset($_POST['is_done']) ? 1 : 0;
         update_post_meta($post_id, '_is_done', $is_done);
         
         if (isset($_POST['done_date'])) {
-            update_post_meta($post_id, '_done_date', sanitize_text_field($_POST['done_date']));
+            update_post_meta($post_id, '_done_date', sanitize_text_field(wp_unslash($_POST['done_date'])));
         }
     }
 
     // 随笔说说
-    if (isset($_POST['brave_note_nonce']) && wp_verify_nonce($_POST['brave_note_nonce'], 'brave_note_meta')) {
+    if (isset($_POST['brave_note_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['brave_note_nonce'])), 'brave_note_meta')) {
         if (isset($_POST['note_mood'])) {
-            update_post_meta($post_id, '_note_mood', sanitize_text_field($_POST['note_mood']));
+            update_post_meta($post_id, '_note_mood', sanitize_text_field(wp_unslash($_POST['note_mood'])));
         }
         if (isset($_POST['note_miss_level'])) {
-            update_post_meta($post_id, '_note_miss_level', max(1, min(5, intval($_POST['note_miss_level']))));
+            update_post_meta($post_id, '_note_miss_level', max(1, min(5, intval(wp_unslash($_POST['note_miss_level'])))));
         }
     }
 }

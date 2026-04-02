@@ -1,4 +1,8 @@
 <?php
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 /**
  * Customizer 设置
  *
@@ -267,6 +271,43 @@ function brave_customize_register($wp_customize) {
         'section' => 'brave_hero',
         'type' => 'text',
     ));
+
+    // 恋爱清单归档 Hero 标题
+    $wp_customize->add_setting('brave_love_list_hero_title', array(
+        'default' => '💕 恋爱清单',
+        'sanitize_callback' => 'sanitize_text_field',
+        'transport' => 'refresh',
+    ));
+    $wp_customize->add_control('brave_love_list_hero_title', array(
+        'label' => __('恋爱清单 Hero 标题', 'brave-love'),
+        'description' => __('恋爱清单是文章类型归档页，单独在这里设置 Hero 文案。其他页面请到各自页面编辑页右侧的「页面 Hero 设置」中配置。', 'brave-love'),
+        'section' => 'brave_hero',
+        'type' => 'text',
+    ));
+
+    // 恋爱清单归档 Hero 副标题
+    $wp_customize->add_setting('brave_love_list_hero_subtitle', array(
+        'default' => '记录我们想一起做的每一件事',
+        'sanitize_callback' => 'sanitize_textarea_field',
+        'transport' => 'refresh',
+    ));
+    $wp_customize->add_control('brave_love_list_hero_subtitle', array(
+        'label' => __('恋爱清单 Hero 副标题', 'brave-love'),
+        'section' => 'brave_hero',
+        'type' => 'textarea',
+    ));
+
+    // 恋爱清单归档 Hero 背景图
+    $wp_customize->add_setting('brave_love_list_hero_bg', array(
+        'default' => '',
+        'sanitize_callback' => 'esc_url_raw',
+        'transport' => 'refresh',
+    ));
+    $wp_customize->add_control(new WP_Customize_Image_Control($wp_customize, 'brave_love_list_hero_bg', array(
+        'label' => __('恋爱清单 Hero 背景图', 'brave-love'),
+        'description' => __('留空则回退到全局 Hero 背景图。', 'brave-love'),
+        'section' => 'brave_hero',
+    )));
 
     // ==================== 入口图标 ====================
     $wp_customize->add_section('brave_icons', array(
@@ -630,8 +671,13 @@ function brave_anniversary_page() {
     if (isset($_POST['brave_save_anniversaries']) && check_admin_referer('brave_anniversary_nonce')) {
         $anniversaries = array();
         if (isset($_POST['anniversary_name']) && is_array($_POST['anniversary_name'])) {
-            foreach ($_POST['anniversary_name'] as $key => $name) {
-                $date = sanitize_text_field($_POST['anniversary_date'][$key] ?? '');
+            $anniversary_names = wp_unslash($_POST['anniversary_name']);
+            $anniversary_dates = isset($_POST['anniversary_date']) && is_array($_POST['anniversary_date'])
+                ? wp_unslash($_POST['anniversary_date'])
+                : array();
+
+            foreach ($anniversary_names as $key => $name) {
+                $date = sanitize_text_field($anniversary_dates[$key] ?? '');
                 $name = sanitize_text_field($name);
                 if (!empty($name) && !empty($date)) {
                     $anniversaries[] = array(

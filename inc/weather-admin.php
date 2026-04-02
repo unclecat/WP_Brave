@@ -1,4 +1,8 @@
 <?php
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 /**
  * 天气城市管理
  *
@@ -27,13 +31,17 @@ function brave_weather_page() {
     if (isset($_POST['brave_save_weather']) && check_admin_referer('brave_weather_nonce')) {
         $enabled = isset($_POST['brave_weather_enabled']) ? true : false;
         update_option('brave_weather_enabled', $enabled);
-        
+
         $cities = array();
         if (isset($_POST['city_name']) && is_array($_POST['city_name'])) {
-            foreach ($_POST['city_name'] as $key => $name) {
+            $city_names = wp_unslash($_POST['city_name']);
+            $city_lats = isset($_POST['city_lat']) && is_array($_POST['city_lat']) ? wp_unslash($_POST['city_lat']) : array();
+            $city_lons = isset($_POST['city_lon']) && is_array($_POST['city_lon']) ? wp_unslash($_POST['city_lon']) : array();
+
+            foreach ($city_names as $key => $name) {
                 $name = sanitize_text_field($name);
-                $lat = sanitize_text_field($_POST['city_lat'][$key] ?? '');
-                $lon = sanitize_text_field($_POST['city_lon'][$key] ?? '');
+                $lat = sanitize_text_field($city_lats[$key] ?? '');
+                $lon = sanitize_text_field($city_lons[$key] ?? '');
                 if (!empty($name) && !empty($lat) && !empty($lon)) {
                     $cities[] = array(
                         'name' => $name,

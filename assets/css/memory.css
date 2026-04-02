@@ -11,68 +11,70 @@
     flex-wrap: wrap;
     justify-content: center;
     gap: 0.5rem;
-    margin-bottom: 2rem;
-    padding: 0 1rem;
+    margin-bottom: var(--page-stack-gap);
+    padding: 0;
 }
 
 .gallery-year-item {
     display: inline-flex;
     align-items: center;
-    padding: 0.5rem 1rem;
-    background: var(--card-bg);
-    border-radius: 20px;
-    color: var(--text-color);
-    font-size: 0.875rem;
+    justify-content: center;
+    min-height: var(--page-chip-min-height);
+    padding: 0.55rem 1rem;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(255, 81, 98, 0.12);
+    border-radius: 999px;
+    color: var(--text-muted);
+    font-size: var(--page-chip-font-size);
+    font-weight: 500;
     text-decoration: none;
-    box-shadow: var(--shadow);
-    transition: var(--transition);
+    box-shadow: 0 8px 18px rgba(255, 81, 98, 0.06);
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .gallery-year-item:hover {
-    background: var(--primary-color);
-    color: #fff;
-    transform: translateY(-2px);
+    background: rgba(255, 81, 98, 0.06);
+    border-color: rgba(255, 81, 98, 0.26);
+    color: var(--primary-color);
+    box-shadow: 0 8px 18px rgba(255, 81, 98, 0.08);
+    transform: translateY(-1px);
 }
 
 .gallery-year-item.active {
-    background: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color), #ff6b7a);
+    border-color: transparent;
     color: #fff;
+    box-shadow: 0 10px 22px rgba(255, 81, 98, 0.2);
 }
 
 /* ==================== 瀑布流布局 ==================== */
 .gallery-waterfall {
-    column-count: 3;
+    column-count: 1;
     column-gap: 1rem;
-    padding: 0 1rem;
+    padding: 0;
 }
 
-@media (max-width: 991px) {
+@media (min-width: 640px) {
     .gallery-waterfall {
         column-count: 2;
-    }
-}
-
-@media (max-width: 576px) {
-    .gallery-waterfall {
-        column-count: 1;
     }
 }
 
 /* ==================== 照片卡片 ==================== */
 .gallery-item {
     break-inside: avoid;
-    margin-bottom: 1rem;
+    margin-bottom: var(--page-stack-gap-tight);
     position: relative;
-    border-radius: 12px;
+    border-radius: var(--page-card-radius);
     overflow: hidden;
-    box-shadow: var(--shadow);
+    box-shadow: var(--page-card-shadow);
     background: var(--card-bg);
-    transition: var(--transition);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .gallery-item:hover {
     transform: translateY(-4px);
-    box-shadow: var(--shadow-hover);
+    box-shadow: var(--page-card-shadow-hover);
 }
 
 .gallery-item-link {
@@ -145,6 +147,10 @@
 .gallery-empty {
     text-align: center;
     padding: 4rem 2rem;
+    border: 1px solid rgba(255, 81, 98, 0.08);
+    border-radius: var(--page-card-radius);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: var(--page-card-shadow);
 }
 
 .gallery-empty-icon {
@@ -154,13 +160,16 @@
 }
 
 .gallery-empty-title {
-    font-size: 1.5rem;
+    font-size: 1.12rem;
+    font-weight: 600;
     color: var(--text-color);
     margin-bottom: 0.5rem;
 }
 
 .gallery-empty-desc {
     color: var(--text-muted);
+    font-size: 0.92rem;
+    line-height: 1.7;
     margin-bottom: 1.5rem;
     max-width: 400px;
     margin-left: auto;
@@ -190,8 +199,8 @@
     display: flex;
     justify-content: center;
     gap: 0.5rem;
-    margin-top: 3rem;
-    padding: 0 1rem;
+    margin-top: var(--page-stack-gap);
+    padding: 0;
 }
 
 .gallery-pagination a,
@@ -299,6 +308,38 @@
 
 /* 暗黑模式适配 */
 @media (prefers-color-scheme: dark) {
+    .gallery-year-item {
+        background: rgba(36, 32, 41, 0.92);
+        border-color: rgba(255, 255, 255, 0.08);
+        color: #c1bac6;
+        box-shadow: 0 10px 22px rgba(0, 0, 0, 0.2);
+    }
+
+    .gallery-year-item:hover {
+        background: rgba(255, 81, 98, 0.12);
+        border-color: rgba(255, 81, 98, 0.32);
+        color: #ff8f9b;
+    }
+
+    .gallery-year-item.active {
+        color: #fff;
+        box-shadow: 0 10px 22px rgba(255, 81, 98, 0.24);
+    }
+
+    .gallery-empty {
+        background: #1e1e1e;
+        border-color: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
+    }
+
+    .gallery-empty-title {
+        color: #f3f3f3;
+    }
+
+    .gallery-empty-desc {
+        color: #a8a1ad;
+    }
+
     .pswp__custom-info {
         background: rgba(40, 40, 40, 0.95);
     }

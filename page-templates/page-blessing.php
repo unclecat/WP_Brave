@@ -1,4 +1,8 @@
 <?php
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 /**
  * Template Name: 祝福留言
  *
@@ -6,17 +10,18 @@
  */
 
 get_header();
+get_template_part(
+    'template-parts/page-hero',
+    null,
+    array(
+        'title' => '💌 祝福留言',
+        'subtitle' => '收到你们的祝福是我们最大的幸福',
+    )
+);
 
-// 获取Hero背景图
-$hero_bg = get_theme_mod('brave_hero_bg');
-
-?>
-<!-- Hero区域已移除 -->
-
-<?php
 // 当前页的祝福留言分页
 $comments_per_page = 50;
-$blessing_page = isset($_GET['blessing_page']) ? max(1, intval($_GET['blessing_page'])) : 1;
+$blessing_page = isset($_GET['blessing_page']) ? max(1, intval(wp_unslash($_GET['blessing_page']))) : 1;
 $comment_offset = ($blessing_page - 1) * $comments_per_page;
 $current_page_id = get_the_ID();
 
@@ -40,13 +45,9 @@ $max_comment_pages = $total_comments > 0 ? (int) ceil($total_comments / $comment
 ?>
 
 <section class="content-section">
-    <div class="section-header">
-        <h1 class="section-title">💌 祝福留言</h1>
-        <p class="section-desc">收到你们的祝福是我们最大的幸福</p>
-    </div>
-
-    <!-- 祝福瀑布流 -->
-    <?php if (!empty($comments)) : ?>
+    <div class="page-shell page-shell-narrow">
+        <!-- 祝福瀑布流 -->
+        <?php if (!empty($comments)) : ?>
         <div class="blessing-waterfall" id="blessingWaterfall">
             <?php foreach ($comments as $comment) : 
                 $avatar = brave_get_blessing_avatar_url($comment);
@@ -81,15 +82,15 @@ $max_comment_pages = $total_comments > 0 ? (int) ceil($total_comments / $comment
                 ?>
             </nav>
         <?php endif; ?>
-    <?php else : ?>
+        <?php else : ?>
         <div class="blessing-empty">
             <div class="empty-icon">💌</div>
             <p class="empty-text">还没有收到祝福，快来写下第一条吧！</p>
         </div>
-    <?php endif; ?>
+        <?php endif; ?>
 
-    <!-- 发送祝福表单 - 固定在底部 -->
-    <?php if (comments_open()) : ?>
+        <!-- 发送祝福表单 - 固定在底部 -->
+        <?php if (comments_open()) : ?>
         <div class="blessing-form-section">
             <div class="blessing-form-header">
                 <span class="form-icon">✨</span>
@@ -128,11 +129,12 @@ $max_comment_pages = $total_comments > 0 ? (int) ceil($total_comments / $comment
                 </form>
             </div>
         </div>
-    <?php else : ?>
+        <?php else : ?>
         <div class="blessing-closed">
             <p>留言板已关闭</p>
         </div>
-    <?php endif; ?>
+        <?php endif; ?>
+    </div>
 </section>
 
 <?php

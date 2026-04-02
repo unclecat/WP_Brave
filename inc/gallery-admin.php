@@ -1,4 +1,8 @@
 <?php
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 /**
  * 相册数据管理页面
  *
@@ -26,9 +30,10 @@ add_action('admin_menu', 'brave_gallery_admin_menu');
 function brave_gallery_admin_page() {
     // 处理删除请求
     if (isset($_POST['action']) && check_admin_referer('brave_gallery_admin_nonce')) {
+        $action = sanitize_key(wp_unslash($_POST['action']));
         $deleted = 0;
-        
-        if ($_POST['action'] === 'delete_all') {
+
+        if ($action === 'delete_all') {
             // 删除所有旧相册
             $memories = get_posts(array(
                 'post_type' => 'memory',
@@ -40,13 +45,13 @@ function brave_gallery_admin_page() {
                 wp_delete_post($memory_id, true);
                 $deleted++;
             }
-        } elseif ($_POST['action'] === 'delete_selected' && !empty($_POST['memory_ids'])) {
+        } elseif ($action === 'delete_selected' && !empty($_POST['memory_ids']) && is_array($_POST['memory_ids'])) {
             // 删除选中的相册
-            foreach ($_POST['memory_ids'] as $memory_id) {
+            foreach (wp_unslash($_POST['memory_ids']) as $memory_id) {
                 wp_delete_post(intval($memory_id), true);
                 $deleted++;
             }
-        } elseif ($_POST['action'] === 'convert_all') {
+        } elseif ($action === 'convert_all') {
             // 转换所有旧相册为点滴
             $memories = get_posts(array(
                 'post_type' => 'memory',
@@ -189,14 +194,19 @@ function brave_gallery_admin_page() {
  * 处理单个删除请求
  */
 function brave_handle_single_delete() {
-    if (!isset($_GET['page']) || $_GET['page'] !== 'brave-gallery-admin') {
+    $page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
+
+    if ($page !== 'brave-gallery-admin') {
         return;
     }
-    
-    if (isset($_GET['action']) && $_GET['action'] === 'delete_single' && isset($_GET['memory_id'])) {
-        $memory_id = intval($_GET['memory_id']);
-        
-        if (!wp_verify_nonce($_GET['_wpnonce'], 'delete_memory_' . $memory_id)) {
+
+    $action = isset($_GET['action']) ? sanitize_key(wp_unslash($_GET['action'])) : '';
+
+    if ($action === 'delete_single' && isset($_GET['memory_id'])) {
+        $memory_id = intval(wp_unslash($_GET['memory_id']));
+        $nonce = isset($_GET['_wpnonce']) ? sanitize_text_field(wp_unslash($_GET['_wpnonce'])) : '';
+
+        if (!wp_verify_nonce($nonce, 'delete_memory_' . $memory_id)) {
             wp_die(__('安全验证失败', 'brave-love'));
         }
         

@@ -17,3 +17,32 @@
     content: '📝';
     font-family: inherit;
 }
+
+.brave-media-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0 12px;
+}
+
+.brave-media-preview {
+    border: 1px dashed #d0d7de;
+    border-radius: 10px;
+    background: #fafbfc;
+    min-height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.brave-media-preview.has-image {
+    padding: 8px;
+}
+
+.brave-media-preview img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}

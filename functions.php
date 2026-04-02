@@ -6,7 +6,7 @@
  */
 
 // 定义常量
-define('BRAVE_VERSION', '0.7.6');
+define('BRAVE_VERSION', '0.7.7');
 define('BRAVE_BOOTSTRAP_VERSION', '5.3.2');
 define('BRAVE_PHOTOSWIPE_VERSION', '5.4.2');
 define('BRAVE_DIR', get_template_directory());
@@ -82,8 +82,8 @@ function brave_scripts() {
     }
     
     // 恋爱清单存档页面样式
-    if (is_post_type_archive('love_list')) {
-        wp_enqueue_style('brave-love-list', BRAVE_URI . '/assets/css/love-list.css', array(), BRAVE_VERSION);
+    if (is_post_type_archive('love_list') || is_tax('list_category')) {
+        wp_enqueue_style('brave-love-list', BRAVE_URI . '/assets/css/love-list.css', array('brave-extra'), BRAVE_VERSION);
     }
     
     // 随笔说说页面样式
@@ -103,6 +103,139 @@ function brave_scripts() {
 add_action('wp_enqueue_scripts', 'brave_scripts');
 
 /**
+ * 为恋爱清单前台列表添加状态筛选。
+ */
+function brave_filter_love_list_archive_query($query) {
+    if (is_admin() || !$query->is_main_query()) {
+        return;
+    }
+
+    if (!($query->is_post_type_archive('love_list') || $query->is_tax('list_category'))) {
+        return;
+    }
+
+    // 恋爱清单前台始终展示全部条目，不再分页。
+    $query->set('posts_per_page', -1);
+    $query->set('nopaging', true);
+    $query->set('ignore_sticky_posts', true);
+
+    $status = isset($_GET['filter_status']) ? sanitize_key(wp_unslash($_GET['filter_status'])) : '';
+
+    if (!in_array($status, array('done', 'pending'), true)) {
+        return;
+    }
+
+    $meta_query = $query->get('meta_query');
+    $meta_query = is_array($meta_query) ? $meta_query : array();
+
+    if ('done' === $status) {
+        $meta_query[] = array(
+            'key' => '_is_done',
+            'value' => '1',
+            'compare' => '=',
+        );
+    } else {
+        $meta_query[] = array(
+            'relation' => 'OR',
+            array(
+                'key' => '_is_done',
+                'compare' => 'NOT EXISTS',
+            ),
+            array(
+                'key' => '_is_done',
+                'value' => '1',
+                'compare' => '!=',
+            ),
+        );
+    }
+
+    $query->set('meta_query', $meta_query);
+}
+add_action('pre_get_posts', 'brave_filter_love_list_archive_query');
+
+/**
+ * 获取恋爱清单归档页的规范 URL。
+ */
+function brave_get_love_list_archive_canonical_url() {
+    if (!(is_post_type_archive('love_list') || is_tax('list_category'))) {
+        return '';
+    }
+
+    $base_url = is_tax('list_category')
+        ? get_term_link(get_queried_object())
+        : get_post_type_archive_link('love_list');
+
+    if (is_wp_error($base_url) || empty($base_url)) {
+        return '';
+    }
+
+    $status = isset($_GET['filter_status']) ? sanitize_key(wp_unslash($_GET['filter_status'])) : '';
+
+    if (!in_array($status, array('done', 'pending'), true)) {
+        $status = '';
+    }
+
+    return $status ? add_query_arg('filter_status', $status, $base_url) : $base_url;
+}
+
+/**
+ * 恋爱清单已取消分页，统一清理旧分页和无效参数。
+ */
+function brave_redirect_love_list_pagination() {
+    if (is_admin()) {
+        return;
+    }
+
+    if (!(is_post_type_archive('love_list') || is_tax('list_category'))) {
+        return;
+    }
+
+    if (is_customize_preview() || is_preview() || is_feed()) {
+        return;
+    }
+
+    $request_method = isset($_SERVER['REQUEST_METHOD']) ? strtoupper(wp_unslash($_SERVER['REQUEST_METHOD'])) : 'GET';
+
+    if (!in_array($request_method, array('GET', 'HEAD'), true)) {
+        return;
+    }
+
+    $has_legacy_pagination = (int) get_query_var('paged') > 1;
+    $status = isset($_GET['filter_status']) ? sanitize_key(wp_unslash($_GET['filter_status'])) : '';
+    $has_invalid_status = isset($_GET['filter_status']) && !in_array($status, array('done', 'pending'), true);
+    $allowed_query_args = array('filter_status');
+    $unexpected_query_args = array_diff(array_keys($_GET), $allowed_query_args);
+
+    if (!$has_legacy_pagination && !$has_invalid_status && empty($unexpected_query_args)) {
+        return;
+    }
+
+    $target_url = brave_get_love_list_archive_canonical_url();
+
+    if (empty($target_url)) {
+        return;
+    }
+
+    wp_safe_redirect($target_url, 302);
+    exit;
+}
+add_action('template_redirect', 'brave_redirect_love_list_pagination');
+
+/**
+ * 为恋爱清单归档页输出 canonical，统一 SEO 收口。
+ */
+function brave_output_love_list_canonical() {
+    $canonical_url = brave_get_love_list_archive_canonical_url();
+
+    if (empty($canonical_url)) {
+        return;
+    }
+
+    echo '<link rel="canonical" href="' . esc_url($canonical_url) . '">' . "\n";
+}
+add_action('wp_head', 'brave_output_love_list_canonical', 1);
+
+/**
  * 加载后台样式和脚本
  */
 function brave_admin_scripts($hook) {
@@ -111,6 +244,11 @@ function brave_admin_scripts($hook) {
     
     // 在所有后台页面加载样式
     wp_enqueue_style('brave-admin', $theme_uri . '/assets/css/admin.css', array(), $version);
+
+    if (in_array($hook, array('post.php', 'post-new.php'), true)) {
+        wp_enqueue_media();
+        wp_enqueue_script('brave-admin', $theme_uri . '/assets/js/admin.js', array('jquery'), $version, true);
+    }
 }
 add_action('admin_enqueue_scripts', 'brave_admin_scripts');
 
@@ -345,12 +483,14 @@ function brave_handle_frontend_note_publish() {
     if (!isset($_POST['publish_note']) || !isset($_POST['publish_note_nonce'])) {
         return;
     }
-    
+
+    $publish_note_nonce = sanitize_text_field(wp_unslash($_POST['publish_note_nonce']));
+
     // 验证 nonce
-    if (!wp_verify_nonce($_POST['publish_note_nonce'], 'publish_note_action')) {
+    if (!wp_verify_nonce($publish_note_nonce, 'publish_note_action')) {
         wp_die('安全验证失败');
     }
-    
+
     // 检查用户是否登录
     if (!is_user_logged_in()) {
         wp_die('请先登录');
@@ -363,16 +503,16 @@ function brave_handle_frontend_note_publish() {
     }
     
     // 获取内容
-    $content = isset($_POST['note_content']) ? sanitize_textarea_field($_POST['note_content']) : '';
-    
+    $content = isset($_POST['note_content']) ? sanitize_textarea_field(wp_unslash($_POST['note_content'])) : '';
+
     if (empty($content)) {
         wp_die('请输入说说内容');
     }
-    
+
     // 获取心情和思念度
-    $mood = isset($_POST['note_mood']) ? sanitize_text_field($_POST['note_mood']) : '😊';
-    $miss_level = isset($_POST['note_miss_level']) ? max(1, min(5, intval($_POST['note_miss_level']))) : 3;
-    
+    $mood = isset($_POST['note_mood']) ? sanitize_text_field(wp_unslash($_POST['note_mood'])) : '😊';
+    $miss_level = isset($_POST['note_miss_level']) ? max(1, min(5, intval(wp_unslash($_POST['note_miss_level'])))) : 3;
+
     // 创建文章
     $post_data = array(
         'post_title'   => wp_trim_words($content, 20),

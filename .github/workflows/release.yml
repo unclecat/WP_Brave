@@ -30,6 +30,7 @@ jobs:
         rm -f /tmp/brave-love/RELEASE.md
         rm -f /tmp/brave-love/RELEASE-CHECKLIST.md
         rm -f /tmp/brave-love/TEST-REPORT.md
+        rm -f /tmp/brave-love/SECURITY-REPORT.md
         find /tmp/brave-love -name '.DS_Store' -delete
         # 创建 ZIP，使用固定文件名 brave-love.zip
         cd /tmp
