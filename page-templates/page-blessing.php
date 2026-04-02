@@ -49,12 +49,12 @@ $max_comment_pages = $total_comments > 0 ? (int) ceil($total_comments / $comment
     <?php if (!empty($comments)) : ?>
         <div class="blessing-waterfall" id="blessingWaterfall">
             <?php foreach ($comments as $comment) : 
-                $avatar = brave_get_comment_avatar_url($comment, 100);
+                $avatar = brave_get_blessing_avatar_url($comment);
                 $time = human_time_diff(strtotime($comment->comment_date), current_time('timestamp')) . '前';
             ?>
                 <article class="blessing-card">
                     <div class="blessing-card-header">
-                        <img src="<?php echo brave_esc_avatar_url($avatar); ?>" alt="" class="blessing-avatar">
+                        <img src="<?php echo brave_esc_avatar_url($avatar); ?>" alt="<?php echo esc_attr($comment->comment_author); ?>" class="blessing-avatar" loading="lazy">
                         <div class="blessing-author-info">
                             <span class="blessing-author"><?php echo esc_html($comment->comment_author); ?></span>
                             <span class="blessing-time"><?php echo esc_html($time); ?></span>

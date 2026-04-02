@@ -208,6 +208,52 @@ function brave_get_comment_avatar_url($comment, $size = 100, $background = 'ff51
 }
 
 /**
+ * 获取祝福留言页的卡通头像池。
+ *
+ * @return array
+ */
+function brave_get_blessing_avatar_pool() {
+    return array(
+        'avatar-01.svg',
+        'avatar-02.svg',
+        'avatar-03.svg',
+        'avatar-04.svg',
+        'avatar-05.svg',
+        'avatar-06.svg',
+        'avatar-07.svg',
+        'avatar-08.svg',
+    );
+}
+
+/**
+ * 为祝福留言评论分配稳定的本地卡通头像。
+ *
+ * 这里使用“稳定随机”策略：同一个昵称/邮箱组合始终映射到同一张
+ * 本地卡通头像，避免每次刷新页面头像都变化。
+ *
+ * @param WP_Comment|int $comment 评论对象或评论 ID
+ * @return string
+ */
+function brave_get_blessing_avatar_url($comment) {
+    $comment = get_comment($comment);
+
+    if (!$comment) {
+        return esc_url_raw(BRAVE_URI . '/assets/images/blessing-avatars/avatar-01.svg');
+    }
+
+    $pool = brave_get_blessing_avatar_pool();
+    $seed = strtolower(trim($comment->comment_author_email . '|' . $comment->comment_author));
+
+    if (empty($seed) || $seed === '|') {
+        $seed = 'comment-' . $comment->comment_ID;
+    }
+
+    $index = absint(crc32($seed)) % count($pool);
+
+    return esc_url_raw(BRAVE_URI . '/assets/images/blessing-avatars/' . $pool[$index]);
+}
+
+/**
  * 获取情侣头像
  * 优先使用主题设置的头像，如果没有则使用站点内头像，再回退到本地占位头像
  *

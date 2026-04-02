@@ -1,27 +1,29 @@
-# Brave Love v0.7.5
+# Brave Love v0.7.6
 
-本次是一个补丁版本，主要补齐主题预览图，并清理本地 Docker 测试环境的兼容性警告。
+本次是一个补丁版本，重点优化祝福留言页的头像视觉表现。
 
 ## 本次更新
 
-- 新增正式的 `screenshot.png`，WordPress 主题列表中可以正常显示 `brave-love` 预览图
-- 移除 `tests/docker-compose.yml` 中已废弃的 `version` 字段，避免 Docker Compose v2 输出兼容性警告
-- 延续上一补丁版本已经完成的年份筛选修复、相册缓存、本地字体与静态资源本地化方案
+- 祝福留言页改用主题内置的卡通头像池，不再显示基于昵称生成的文字头像
+- 新增 8 张本地 SVG 卡通头像，整体风格更统一，也更适合恋爱主题的页面氛围
+- 头像分配采用稳定随机策略：同一昵称/邮箱组合会固定落在同一张头像上，避免刷新后头像频繁变化
+- 同步优化祝福卡片头像尺寸、描边和阴影，提升浅色/深色模式下的观感
 
 ## 关键文件
 
-- `screenshot.png`
-- `tests/docker-compose.yml`
-- `functions.php`
+- `assets/images/blessing-avatars/*`
+- `inc/helpers.php`
+- `page-templates/page-blessing.php`
 - `style.css`
+- `functions.php`
 - `CHANGELOG.md`
 
 ## 验证结果
 
-- `php -l` 已通过全部 24 个 PHP 文件语法检查
-- `node --check` 已通过 `assets/js/brave.js` 与 `assets/js/memory.js`
-- `bash tests/check-theme-simple.sh` 已通过
-- `docker compose -f tests/docker-compose.yml config` 已验证不再输出 `version` 废弃警告
+- `php -l inc/helpers.php` 已通过
+- `php -l page-templates/page-blessing.php` 已通过
+- 本地 Docker WordPress 环境已验证祝福留言页输出本地卡通头像资源
+- 祝福留言页测试评论已成功命中 `assets/images/blessing-avatars/avatar-02.svg`
 
 ## 已知限制
 
@@ -35,6 +37,6 @@
 3. 覆盖原主题文件
 4. 清除站点与浏览器缓存
 
-**版本**: 0.7.5  
+**版本**: 0.7.6  
 **发布日期**: 2026-04-02  
 **更新日志**: [CHANGELOG.md](./CHANGELOG.md)
