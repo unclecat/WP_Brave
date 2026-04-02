@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # WordPress 数据库
   db:
