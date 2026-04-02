@@ -2111,13 +2111,37 @@ textarea.form-control {
 
 /* 祝福卡片 */
 .blessing-card {
+    position: relative;
+    overflow: hidden;
     break-inside: avoid;
     margin-bottom: 1rem;
-    background: var(--card-bg);
+    background: linear-gradient(180deg, rgba(255, 249, 251, 0.96) 0%, rgba(255, 255, 255, 0.98) 26%, var(--card-bg) 100%);
+    border: 1px solid rgba(255, 81, 98, 0.08);
     border-radius: var(--radius-lg);
     padding: 1.25rem;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     transition: all 0.3s ease;
+}
+
+.blessing-card::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 96px;
+    background:
+        radial-gradient(circle at top right, rgba(255, 143, 171, 0.18), transparent 58%),
+        linear-gradient(135deg, rgba(255, 221, 232, 0.9), rgba(255, 246, 250, 0));
+    pointer-events: none;
+}
+
+.blessing-card::after {
+    content: '❤';
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 0.95rem;
+    color: rgba(255, 111, 155, 0.28);
+    pointer-events: none;
 }
 
 .blessing-card:hover {
@@ -2126,22 +2150,28 @@ textarea.form-control {
 }
 
 .blessing-card-header {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    margin-bottom: 0.75rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px dashed var(--border-color);
+    margin: -0.1rem -0.1rem 0.95rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid rgba(255, 143, 171, 0.18);
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(255, 248, 251, 0.95), rgba(255, 238, 245, 0.88));
 }
 
 .blessing-avatar {
-    width: 48px;
-    height: 48px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
     object-fit: cover;
     flex-shrink: 0;
-    border: 2px solid rgba(255, 255, 255, 0.9);
-    box-shadow: 0 8px 18px rgba(255, 81, 98, 0.18);
+    border: 3px solid rgba(255, 255, 255, 0.96);
+    box-shadow:
+        0 10px 22px rgba(255, 81, 98, 0.18),
+        0 0 0 6px rgba(255, 255, 255, 0.36);
     background: linear-gradient(135deg, #fff8fb 0%, #ffe7ef 100%);
 }
 
@@ -2152,21 +2182,40 @@ textarea.form-control {
 }
 
 .blessing-author {
-    font-size: 0.95rem;
+    font-size: 1rem;
     font-weight: 600;
     color: var(--text-color);
 }
 
 .blessing-time {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    padding: 0.18rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(255, 81, 98, 0.08);
     font-size: 0.75rem;
     color: var(--text-muted);
 }
 
 .blessing-content {
+    position: relative;
+    z-index: 1;
+    padding: 0 0.15rem 0.1rem 1.2rem;
     font-size: 0.95rem;
     line-height: 1.7;
     color: var(--text-color);
     word-wrap: break-word;
+}
+
+.blessing-content::before {
+    content: '“';
+    position: absolute;
+    left: 0;
+    top: -0.35rem;
+    font-size: 2.2rem;
+    line-height: 1;
+    color: rgba(255, 81, 98, 0.2);
 }
 
 .blessing-content p {
@@ -2391,8 +2440,19 @@ textarea.form-control {
    ================================ */
 @media (prefers-color-scheme: dark) {
     .blessing-card {
-        background: #1e1e1e;
+        background: linear-gradient(180deg, rgba(45, 37, 41, 0.95) 0%, rgba(30, 30, 30, 0.98) 26%, #1e1e1e 100%);
+        border-color: rgba(255, 255, 255, 0.08);
         box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .blessing-card::before {
+        background:
+            radial-gradient(circle at top right, rgba(255, 111, 155, 0.2), transparent 58%),
+            linear-gradient(135deg, rgba(92, 48, 64, 0.65), rgba(30, 30, 30, 0));
+    }
+
+    .blessing-card::after {
+        color: rgba(255, 143, 171, 0.2);
     }
     
     .blessing-card:hover {
@@ -2400,12 +2460,15 @@ textarea.form-control {
     }
     
     .blessing-card-header {
-        border-bottom-color: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.08);
+        background: linear-gradient(135deg, rgba(48, 45, 47, 0.96), rgba(37, 37, 37, 0.92));
     }
 
     .blessing-avatar {
-        border-color: rgba(255, 255, 255, 0.14);
-        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+        border-color: rgba(255, 255, 255, 0.16);
+        box-shadow:
+            0 10px 22px rgba(0, 0, 0, 0.35),
+            0 0 0 6px rgba(255, 255, 255, 0.04);
         background: linear-gradient(135deg, #2b2b2b 0%, #353535 100%);
     }
     
@@ -2414,11 +2477,16 @@ textarea.form-control {
     }
     
     .blessing-time {
-        color: #888;
+        color: #f2b1c2;
+        background: rgba(255, 111, 155, 0.14);
     }
     
     .blessing-content {
         color: #ccc;
+    }
+
+    .blessing-content::before {
+        color: rgba(255, 143, 171, 0.16);
     }
     
     .blessing-form-box {

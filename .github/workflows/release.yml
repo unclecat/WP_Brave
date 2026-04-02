@@ -19,12 +19,18 @@ jobs:
         # 创建临时目录并复制文件
         mkdir -p /tmp/brave-love
         cp -r . /tmp/brave-love/
-        # 删除不需要的文件
+        # 删除不需要进入安装包的仓库文件
         rm -rf /tmp/brave-love/.git
         rm -rf /tmp/brave-love/.github
         rm -rf /tmp/brave-love/tests
         rm -f /tmp/brave-love/.gitignore
+        rm -f /tmp/brave-love/.DS_Store
+        rm -f /tmp/brave-love/README.md
+        rm -f /tmp/brave-love/CHANGELOG.md
+        rm -f /tmp/brave-love/RELEASE.md
+        rm -f /tmp/brave-love/RELEASE-CHECKLIST.md
         rm -f /tmp/brave-love/TEST-REPORT.md
+        find /tmp/brave-love -name '.DS_Store' -delete
         # 创建 ZIP，使用固定文件名 brave-love.zip
         cd /tmp
         zip -r brave-love.zip brave-love/
