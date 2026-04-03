@@ -52,6 +52,16 @@ function brave_add_meta_boxes() {
         'normal',
         'high'
     );
+
+    // 关于我们故事节点字段
+    add_meta_box(
+        'story_milestone_details',
+        __('故事节点详情', 'brave-love'),
+        'brave_story_milestone_meta_box',
+        'story_milestone',
+        'normal',
+        'high'
+    );
 }
 add_action('add_meta_boxes', 'brave_add_meta_boxes');
 
@@ -192,6 +202,61 @@ function brave_note_meta_box($post) {
 }
 
 /**
+ * 关于我们故事节点 Meta Box
+ */
+function brave_story_milestone_meta_box($post) {
+    wp_nonce_field('brave_story_milestone_meta', 'brave_story_milestone_nonce');
+
+    $story_date = get_post_meta($post->ID, '_story_date', true);
+    $story_phase = get_post_meta($post->ID, '_story_phase', true);
+    $story_summary = get_post_meta($post->ID, '_story_summary', true);
+    $related_moment_id = (int) get_post_meta($post->ID, '_related_moment_id', true);
+
+    $moment_posts = get_posts(array(
+        'post_type' => 'moment',
+        'post_status' => 'publish',
+        'posts_per_page' => -1,
+        'orderby' => 'meta_value',
+        'meta_key' => '_meet_date',
+        'order' => 'DESC',
+    ));
+    ?>
+    <p>
+        <label for="story_date"><strong><?php _e('节点日期', 'brave-love'); ?></strong></label><br>
+        <input type="date" id="story_date" name="story_date" value="<?php echo esc_attr($story_date); ?>" class="widefat">
+    </p>
+    <p>
+        <label for="story_phase"><strong><?php _e('阶段标题', 'brave-love'); ?></strong></label><br>
+        <input type="text" id="story_phase" name="story_phase" value="<?php echo esc_attr($story_phase); ?>" class="widefat" placeholder="<?php esc_attr_e('例如：相遇、靠近、稳定、未来', 'brave-love'); ?>">
+    </p>
+    <p>
+        <label for="story_summary"><strong><?php _e('一句话摘要', 'brave-love'); ?></strong></label><br>
+        <textarea id="story_summary" name="story_summary" class="widefat" rows="3" placeholder="<?php esc_attr_e('用于关于我们页面卡片中的简短描述', 'brave-love'); ?>"><?php echo esc_textarea($story_summary); ?></textarea>
+    </p>
+    <p>
+        <label for="related_moment_id"><strong><?php _e('关联点点滴滴（可选）', 'brave-love'); ?></strong></label><br>
+        <select id="related_moment_id" name="related_moment_id" class="widefat">
+            <option value="0"><?php _e('不关联点点滴滴', 'brave-love'); ?></option>
+            <?php foreach ($moment_posts as $moment_post) : ?>
+                <?php
+                $moment_date = get_post_meta($moment_post->ID, '_meet_date', true);
+                $moment_label = $moment_date
+                    ? sprintf('%s · %s', $moment_date, $moment_post->post_title)
+                    : $moment_post->post_title;
+                ?>
+                <option value="<?php echo esc_attr($moment_post->ID); ?>" <?php selected($related_moment_id, $moment_post->ID); ?>>
+                    <?php echo esc_html($moment_label); ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+    </p>
+    <p class="description">
+        <?php _e('正文区域可填写更完整的故事内容；如选择关联点滴，前台会显示跳转入口。', 'brave-love'); ?>
+    </p>
+    <?php
+}
+
+/**
  * 保存 Meta Box 数据
  */
 function brave_save_meta_boxes($post_id) {
@@ -254,6 +319,22 @@ function brave_save_meta_boxes($post_id) {
         if (isset($_POST['note_miss_level'])) {
             update_post_meta($post_id, '_note_miss_level', max(1, min(5, intval(wp_unslash($_POST['note_miss_level'])))));
         }
+    }
+
+    // 关于我们故事节点
+    if (isset($_POST['brave_story_milestone_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['brave_story_milestone_nonce'])), 'brave_story_milestone_meta')) {
+        if (isset($_POST['story_date'])) {
+            update_post_meta($post_id, '_story_date', sanitize_text_field(wp_unslash($_POST['story_date'])));
+        }
+        if (isset($_POST['story_phase'])) {
+            update_post_meta($post_id, '_story_phase', sanitize_text_field(wp_unslash($_POST['story_phase'])));
+        }
+        if (isset($_POST['story_summary'])) {
+            update_post_meta($post_id, '_story_summary', sanitize_textarea_field(wp_unslash($_POST['story_summary'])));
+        }
+
+        $related_moment_id = isset($_POST['related_moment_id']) ? absint(wp_unslash($_POST['related_moment_id'])) : 0;
+        update_post_meta($post_id, '_related_moment_id', $related_moment_id);
     }
 }
 add_action('save_post', 'brave_save_meta_boxes');

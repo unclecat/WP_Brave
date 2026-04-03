@@ -287,7 +287,7 @@ function brave_customize_register($wp_customize) {
 
     // 恋爱清单归档 Hero 副标题
     $wp_customize->add_setting('brave_love_list_hero_subtitle', array(
-        'default' => '记录我们想一起做的每一件事',
+        'default' => '不必惊天动地，只需岁岁相依，这便是我们最好的经历。',
         'sanitize_callback' => 'sanitize_textarea_field',
         'transport' => 'refresh',
     ));
@@ -375,6 +375,18 @@ function brave_customize_register($wp_customize) {
         'type' => 'text',
     ));
 
+    // 关于我们图标
+    $wp_customize->add_setting('brave_icon_about', array(
+        'default' => '💞',
+        'sanitize_callback' => 'sanitize_text_field',
+        'transport' => 'refresh',
+    ));
+    $wp_customize->add_control('brave_icon_about', array(
+        'label' => __('关于我们图标', 'brave-love'),
+        'section' => 'brave_icons',
+        'type' => 'text',
+    ));
+
     // ==================== 页面链接 ====================
     $wp_customize->add_section('brave_pages', array(
         'title' => __('页面链接', 'brave-love'),
@@ -425,6 +437,18 @@ function brave_customize_register($wp_customize) {
     ));
     $wp_customize->add_control('brave_page_blessing', array(
         'label' => __('祝福留言页面', 'brave-love'),
+        'section' => 'brave_pages',
+        'type' => 'dropdown-pages',
+    ));
+
+    // 关于我们页面
+    $wp_customize->add_setting('brave_page_about', array(
+        'default' => '',
+        'sanitize_callback' => 'absint',
+        'transport' => 'refresh',
+    ));
+    $wp_customize->add_control('brave_page_about', array(
+        'label' => __('关于我们页面', 'brave-love'),
         'section' => 'brave_pages',
         'type' => 'dropdown-pages',
     ));

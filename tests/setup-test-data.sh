@@ -50,6 +50,15 @@ if ! docker ps | grep -q wp_cli; then
             
             # 祝福留言
             wp post create --post_type=page --post_title='祝福留言' --post_status=publish --page_template='page-templates/page-blessing.php' --allow-root 2>/dev/null || echo '祝福留言页面已存在'
+
+            # 关于我们
+            wp post create --post_type=page --post_title='关于我们' --post_status=publish --page_template='page-templates/page-about.php' --post_name='about-us' --allow-root 2>/dev/null || echo '关于我们页面已存在'
+
+            about_page_id=$(wp post list --post_type=page --title='关于我们' --field=ID --allow-root | head -1)
+            if [ -n "$about_page_id" ]; then
+                wp post meta update "$about_page_id" _brave_page_hero_title '💞 关于我们' --allow-root >/dev/null 2>&1 || true
+                wp post meta update "$about_page_id" _brave_page_hero_subtitle '从初见走到相守，从陌生走到熟悉，这一路，皆是我们。' --allow-root >/dev/null 2>&1 || true
+            fi
             
             echo '✅ 测试页面创建完成'
             echo ''

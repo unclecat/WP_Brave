@@ -298,19 +298,15 @@
 
 /* 瀑布流布局 */
 .notes-waterfall {
-    column-count: 1;
-    column-gap: 1.5rem;
-}
-
-@media (min-width: 640px) {
-    .notes-waterfall {
-        column-count: 2;
-    }
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(var(--page-notes-card-min-width), 100%), 1fr));
+    gap: var(--page-waterfall-gap);
+    align-items: start;
 }
 
 .note-waterfall-card {
-    break-inside: avoid;
-    margin-bottom: var(--page-stack-gap-tight);
+    min-width: 0;
+    margin-bottom: 0;
     background: #fff;
     border-radius: var(--page-card-radius);
     padding: 1.25rem;

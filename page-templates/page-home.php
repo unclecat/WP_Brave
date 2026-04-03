@@ -61,37 +61,69 @@ $weather_cities = brave_get_weather_cities();
 if ($weather_enabled && !empty($weather_cities)) : 
 ?>
 <section class="weather-section">
-    <h3 class="weather-section-title">🌤️ 今日天气</h3>
-    <div class="weather-scroll" id="weather-scroll">
-        <?php foreach ($weather_cities as $index => $city) : ?>
-        <div class="weather-card" 
-             data-index="<?php echo $index; ?>"
-             data-name="<?php echo esc_attr($city['name']); ?>"
-             data-lat="<?php echo esc_attr($city['lat']); ?>"
-             data-lon="<?php echo esc_attr($city['lon']); ?>"
-             data-weather="sunny">
-            <div class="weather-city-name"><?php echo esc_html($city['name']); ?></div>
-            <div class="weather-icon">☀️</div>
-            <div class="weather-temp">--°</div>
-            <div class="weather-desc">加载中</div>
+    <div class="weather-shell page-shell">
+        <div class="weather-section-header">
+            <div class="weather-section-copy">
+                <span class="weather-section-kicker">实时天气</span>
+                <h3 class="weather-section-title">🌤️ 今日天气</h3>
+                <p class="weather-section-subtitle">轻点卡片，查看更完整的天气趋势、日照信息和今日穿搭建议。</p>
+            </div>
         </div>
-        <?php endforeach; ?>
+
+        <div class="weather-scroll" id="weather-scroll">
+            <?php foreach ($weather_cities as $index => $city) : ?>
+            <button type="button"
+                    class="weather-card is-loading"
+                    data-index="<?php echo $index; ?>"
+                    data-name="<?php echo esc_attr($city['name']); ?>"
+                    data-lat="<?php echo esc_attr($city['lat']); ?>"
+                    data-lon="<?php echo esc_attr($city['lon']); ?>"
+                    data-weather="sunny"
+                    aria-haspopup="dialog">
+                <div class="weather-card-top">
+                    <span class="weather-city-name"><?php echo esc_html($city['name']); ?></span>
+                    <span class="weather-card-status">同步中</span>
+                </div>
+
+                <div class="weather-card-main">
+                    <div class="weather-icon">☀️</div>
+                    <div class="weather-card-main-copy">
+                        <div class="weather-temp">--°</div>
+                        <div class="weather-desc">加载中</div>
+                    </div>
+                </div>
+
+                <div class="weather-card-footer">
+                    <span class="weather-range">--° ~ --°</span>
+                    <span class="weather-precip">降水 --%</span>
+                </div>
+            </button>
+            <?php endforeach; ?>
+        </div>
     </div>
 </section>
 
 <!-- 天气详情模态框 -->
-<div class="weather-modal" id="weather-modal">
-    <div class="weather-modal-content">
-        <button class="weather-modal-close" id="weather-modal-close">&times;</button>
+<div class="weather-modal" id="weather-modal" aria-hidden="true">
+    <div class="weather-modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-city" data-weather="sunny">
         <div class="weather-modal-header">
-            <h3 class="weather-modal-city" id="modal-city">城市</h3>
-            <span class="weather-modal-time" id="modal-time">--:-- 更新</span>
+            <div class="weather-modal-header-copy">
+                <span class="weather-modal-kicker">实时天气</span>
+                <h3 class="weather-modal-city" id="modal-city">城市</h3>
+                <span class="weather-modal-time" id="modal-time">-- 更新</span>
+            </div>
+            <button type="button" class="weather-modal-close" id="weather-modal-close" aria-label="关闭天气详情">&times;</button>
         </div>
+
         <div class="weather-modal-main">
             <div class="weather-modal-icon" id="modal-icon">☀️</div>
-            <div class="weather-modal-temp" id="modal-temp">--°</div>
-            <div class="weather-modal-desc" id="modal-desc">--</div>
+            <div class="weather-modal-main-copy">
+                <div class="weather-modal-temp" id="modal-temp">--°</div>
+                <div class="weather-modal-desc" id="modal-desc">--</div>
+                <div class="weather-modal-range" id="modal-range">今日 --° ~ --°</div>
+            </div>
         </div>
+
         <div class="weather-modal-details">
             <div class="weather-modal-item">
                 <span class="weather-modal-label">体感温度</span>
@@ -105,9 +137,29 @@ if ($weather_enabled && !empty($weather_cities)) :
                 <span class="weather-modal-label">风速</span>
                 <span class="weather-modal-value" id="modal-wind">-- km/h</span>
             </div>
+            <div class="weather-modal-item">
+                <span class="weather-modal-label">降水概率</span>
+                <span class="weather-modal-value" id="modal-precip">--%</span>
+            </div>
+            <div class="weather-modal-item">
+                <span class="weather-modal-label">紫外线</span>
+                <span class="weather-modal-value" id="modal-uv">--</span>
+            </div>
+            <div class="weather-modal-item">
+                <span class="weather-modal-label">日照时间</span>
+                <span class="weather-modal-value" id="modal-daylight">-- / --</span>
+            </div>
         </div>
+
+        <div class="weather-modal-trend">
+            <div class="weather-modal-section-title">接下来 6 小时</div>
+            <div class="weather-hourly-list" id="modal-hourly">
+                <div class="weather-hourly-empty">正在整理趋势...</div>
+            </div>
+        </div>
+
         <div class="weather-modal-clothing">
-            <div class="clothing-title">👔 穿衣指南</div>
+            <div class="clothing-title">👔 今日穿搭</div>
             <div class="clothing-text" id="modal-clothing">正在分析...</div>
         </div>
     </div>
@@ -140,30 +192,29 @@ if (!empty($anniversaries)) :
 <!-- 入口卡片 -->
 <section class="entry-section">
     <div class="entry-grid">
+        <a href="<?php echo esc_url(brave_get_page_link('about')); ?>" class="entry-card">
+            <div class="entry-icon"><?php echo brave_get_option('icon_about', '💞'); ?></div>
+            <div class="entry-title"><?php _e('关于我们', 'brave-love'); ?></div>
+        </a>
         <a href="<?php echo esc_url(brave_get_page_link('moments')); ?>" class="entry-card">
             <div class="entry-icon"><?php echo brave_get_option('icon_moments', '💖'); ?></div>
             <div class="entry-title"><?php _e('点点滴滴', 'brave-love'); ?></div>
-            <div class="entry-desc"><?php _e('记录生活', 'brave-love'); ?></div>
         </a>
         <a href="<?php echo esc_url(brave_get_page_link('lists')); ?>" class="entry-card">
             <div class="entry-icon"><?php echo brave_get_option('icon_list', '📜'); ?></div>
             <div class="entry-title"><?php _e('恋爱清单', 'brave-love'); ?></div>
-            <div class="entry-desc"><?php _e('一起做的事', 'brave-love'); ?></div>
         </a>
         <a href="<?php echo esc_url(brave_get_page_link('memories')); ?>" class="entry-card">
             <div class="entry-icon"><?php echo brave_get_option('icon_memory', '📷'); ?></div>
             <div class="entry-title"><?php _e('甜蜜相册', 'brave-love'); ?></div>
-            <div class="entry-desc"><?php _e('美好回忆', 'brave-love'); ?></div>
         </a>
         <a href="<?php echo esc_url(brave_get_page_link('notes')); ?>" class="entry-card">
             <div class="entry-icon"><?php echo brave_get_option('icon_notes', '📝'); ?></div>
             <div class="entry-title"><?php _e('随笔说说', 'brave-love'); ?></div>
-            <div class="entry-desc"><?php _e('心情碎片', 'brave-love'); ?></div>
         </a>
         <a href="<?php echo esc_url(brave_get_page_link('blessing')); ?>" class="entry-card">
             <div class="entry-icon"><?php echo brave_get_option('icon_blessing', '💌'); ?></div>
             <div class="entry-title"><?php _e('祝福留言', 'brave-love'); ?></div>
-            <div class="entry-desc"><?php _e('收到祝福', 'brave-love'); ?></div>
         </a>
     </div>
 </section>

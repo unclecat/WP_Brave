@@ -15,7 +15,7 @@ get_template_part(
     null,
     array(
         'title' => '💌 祝福留言',
-        'subtitle' => '收到你们的祝福是我们最大的幸福',
+        'subtitle' => '我们的故事，不长不短，刚好是一生。',
     )
 );
 

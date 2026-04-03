@@ -17,7 +17,7 @@ get_template_part(
     null,
     array(
         'title' => '📷 甜蜜相册',
-        'subtitle' => '记录我们在一起的每个瞬间',
+        'subtitle' => '人间烟火，山河远阔，无一不是你我同行的见证。',
     )
 );
 
@@ -230,53 +230,4 @@ $years = brave_get_gallery_years();
 </div>
 
 <?php
-if (!empty($years)) :
-?>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const toggles = document.querySelectorAll('.gallery-filter-shell .filter-dropdown-toggle');
-
-    function closeDropdowns(exceptId) {
-        document.querySelectorAll('.gallery-filter-shell .filter-dropdown').forEach(function(dropdown) {
-            if (dropdown.id !== exceptId) {
-                dropdown.classList.remove('show');
-            }
-        });
-
-        toggles.forEach(function(toggle) {
-            if ((toggle.getAttribute('data-toggle') + '-dropdown') !== exceptId) {
-                toggle.classList.remove('is-open');
-            }
-        });
-    }
-
-    toggles.forEach(function(toggle) {
-        toggle.addEventListener('click', function(e) {
-            e.stopPropagation();
-
-            const target = this.getAttribute('data-toggle');
-            const dropdown = document.getElementById(target + '-dropdown');
-
-            if (!dropdown) {
-                return;
-            }
-
-            const dropdownId = target + '-dropdown';
-            const isOpen = dropdown.classList.contains('show');
-
-            closeDropdowns();
-
-            dropdown.classList.toggle('show', !isOpen);
-            this.classList.toggle('is-open', !isOpen);
-        });
-    });
-
-    document.addEventListener('click', function() {
-        closeDropdowns();
-    });
-});
-</script>
-<?php
-endif;
-
 get_footer();

@@ -6,7 +6,7 @@
  */
 
 // 定义常量
-define('BRAVE_VERSION', '0.7.7');
+define('BRAVE_VERSION', '0.7.8');
 define('BRAVE_BOOTSTRAP_VERSION', '5.3.2');
 define('BRAVE_PHOTOSWIPE_VERSION', '5.4.2');
 define('BRAVE_DIR', get_template_directory());
@@ -90,7 +90,12 @@ function brave_scripts() {
     if (is_page_template('page-templates/page-notes.php')) {
         wp_enqueue_style('brave-notes', BRAVE_URI . '/assets/css/notes.css', array(), BRAVE_VERSION);
     }
-    
+
+    // 关于我们页面样式
+    if (is_page_template('page-templates/page-about.php')) {
+        wp_enqueue_style('brave-about', BRAVE_URI . '/assets/css/about.css', array('brave-extra'), BRAVE_VERSION);
+    }
+
     // 甜蜜相册页面样式和脚本
     if (is_page_template('page-templates/page-memories.php')) {
         wp_enqueue_style('photoswipe', BRAVE_URI . '/assets/vendor/photoswipe/photoswipe.css', array(), BRAVE_PHOTOSWIPE_VERSION);

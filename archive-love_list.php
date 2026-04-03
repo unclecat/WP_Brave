@@ -17,7 +17,7 @@ get_template_part(
     array(
         'context' => 'love_list_archive',
         'title' => '💕 恋爱清单',
-        'subtitle' => '记录我们想一起做的每一件事',
+        'subtitle' => '不必惊天动地，只需岁岁相依，这便是我们最好的经历。',
     )
 );
 
@@ -167,7 +167,6 @@ $result_label = implode(' · ', $result_parts);
                                 <?php else : ?>
                                     <div class="card-date card-date-placeholder">
                                         <span>⏳</span>
-                                        <span>等你们把它变成回忆</span>
                                     </div>
                                 <?php endif; ?>
                             </div>

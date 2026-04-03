@@ -144,6 +144,46 @@ function brave_register_note_post_type() {
 add_action('init', 'brave_register_note_post_type');
 
 /**
+ * 注册关于我们故事节点 CPT
+ */
+function brave_register_story_post_type() {
+    $labels = array(
+        'name'                  => __('关于我们', 'brave-love'),
+        'singular_name'         => __('故事节点', 'brave-love'),
+        'menu_name'             => __('关于我们', 'brave-love'),
+        'add_new'               => __('添加节点', 'brave-love'),
+        'add_new_item'          => __('添加故事节点', 'brave-love'),
+        'edit_item'             => __('编辑故事节点', 'brave-love'),
+        'new_item'              => __('新故事节点', 'brave-love'),
+        'view_item'             => __('查看故事节点', 'brave-love'),
+        'search_items'          => __('搜索故事节点', 'brave-love'),
+        'not_found'             => __('暂无故事节点', 'brave-love'),
+        'not_found_in_trash'    => __('回收站中没有故事节点', 'brave-love'),
+    );
+
+    $args = array(
+        'labels'                => $labels,
+        'public'                => true,
+        'publicly_queryable'    => false,
+        'exclude_from_search'   => true,
+        'show_ui'               => true,
+        'show_in_menu'          => true,
+        'menu_position'         => 8,
+        'menu_icon'             => 'dashicons-book-alt',
+        'query_var'             => false,
+        'rewrite'               => false,
+        'capability_type'       => 'post',
+        'has_archive'           => false,
+        'hierarchical'          => false,
+        'supports'              => array('title', 'editor', 'thumbnail'),
+        'show_in_rest'          => true,
+    );
+
+    register_post_type('story_milestone', $args);
+}
+add_action('init', 'brave_register_story_post_type');
+
+/**
  * 修改 CPT 列表显示列
  */
 function brave_moment_columns($columns) {
@@ -201,6 +241,42 @@ function brave_love_list_custom_column($column, $post_id) {
     }
 }
 add_action('manage_love_list_posts_custom_column', 'brave_love_list_custom_column', 10, 2);
+
+function brave_story_milestone_columns($columns) {
+    $new_columns = array();
+    foreach ($columns as $key => $value) {
+        $new_columns[$key] = $value;
+        if ($key === 'title') {
+            $new_columns['story_date'] = __('节点日期', 'brave-love');
+            $new_columns['story_phase'] = __('阶段', 'brave-love');
+            $new_columns['related_moment'] = __('关联点滴', 'brave-love');
+        }
+    }
+    return $new_columns;
+}
+add_filter('manage_story_milestone_posts_columns', 'brave_story_milestone_columns');
+
+function brave_story_milestone_custom_column($column, $post_id) {
+    switch ($column) {
+        case 'story_date':
+            $date = get_post_meta($post_id, '_story_date', true);
+            echo $date ? esc_html($date) : '—';
+            break;
+        case 'story_phase':
+            $phase = get_post_meta($post_id, '_story_phase', true);
+            echo $phase ? esc_html($phase) : '—';
+            break;
+        case 'related_moment':
+            $related_moment_id = (int) get_post_meta($post_id, '_related_moment_id', true);
+            if ($related_moment_id > 0) {
+                echo esc_html(get_the_title($related_moment_id));
+            } else {
+                echo '—';
+            }
+            break;
+    }
+}
+add_action('manage_story_milestone_posts_custom_column', 'brave_story_milestone_custom_column', 10, 2);
 
 /**
  * 使相册支持按日期排序

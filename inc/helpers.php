@@ -858,6 +858,40 @@ function brave_is_mobile() {
 }
 
 /**
+ * 根据页面模板查找页面 ID。
+ *
+ * @param string $template 页面模板路径
+ * @return int
+ */
+function brave_get_page_id_by_template($template) {
+    static $cache = array();
+
+    $template = (string) $template;
+
+    if (isset($cache[$template])) {
+        return $cache[$template];
+    }
+
+    $posts = get_posts(
+        array(
+            'post_type' => 'page',
+            'post_status' => 'publish',
+            'posts_per_page' => 1,
+            'fields' => 'ids',
+            'orderby' => 'menu_order title',
+            'order' => 'ASC',
+            'meta_key' => '_wp_page_template',
+            'meta_value' => $template,
+            'no_found_rows' => true,
+        )
+    );
+
+    $cache[$template] = !empty($posts) ? (int) $posts[0] : 0;
+
+    return $cache[$template];
+}
+
+/**
  * 获取主题页面链接
  */
 function brave_get_page_link($type) {
@@ -865,14 +899,36 @@ function brave_get_page_link($type) {
     if ($type === 'lists') {
         return get_post_type_archive_link('love_list');
     }
-    
+
     // 其他页面使用设置的页面或默认链接
     $page_id = get_theme_mod("brave_page_{$type}");
     if ($page_id) {
         return get_permalink($page_id);
     }
-    
-    return home_url("/{$type}/");
+
+    $template_map = array(
+        'moments' => 'page-templates/page-moments.php',
+        'memories' => 'page-templates/page-memories.php',
+        'notes' => 'page-templates/page-notes.php',
+        'blessing' => 'page-templates/page-blessing.php',
+        'about' => 'page-templates/page-about.php',
+    );
+
+    if (isset($template_map[$type])) {
+        $page_id = brave_get_page_id_by_template($template_map[$type]);
+
+        if ($page_id) {
+            return get_permalink($page_id);
+        }
+    }
+
+    $fallback_path_map = array(
+        'about' => 'about-us',
+    );
+
+    $path = isset($fallback_path_map[$type]) ? $fallback_path_map[$type] : $type;
+
+    return home_url("/{$path}/");
 }
 
 /**

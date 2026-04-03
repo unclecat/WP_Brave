@@ -15,7 +15,7 @@ get_template_part(
     null,
     array(
         'title' => '💖 点点滴滴',
-        'subtitle' => '记录我们的每一次见面，每一个瞬间',
+        'subtitle' => '岁月为笔，你我为墨，写下一段独属于我们的故事。',
     )
 );
 
@@ -261,53 +261,6 @@ rsort($years);
         <?php endif; ?>
     </div>
 </section>
-
-<?php if (!empty($all_years)) : ?>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const toggles = document.querySelectorAll('.moments-filter-shell .filter-dropdown-toggle');
-
-    function closeDropdowns(exceptId) {
-        document.querySelectorAll('.moments-filter-shell .filter-dropdown').forEach(function(dropdown) {
-            if (dropdown.id !== exceptId) {
-                dropdown.classList.remove('show');
-            }
-        });
-
-        toggles.forEach(function(toggle) {
-            if ((toggle.getAttribute('data-toggle') + '-dropdown') !== exceptId) {
-                toggle.classList.remove('is-open');
-            }
-        });
-    }
-
-    toggles.forEach(function(toggle) {
-        toggle.addEventListener('click', function(e) {
-            e.stopPropagation();
-
-            const target = this.getAttribute('data-toggle');
-            const dropdown = document.getElementById(target + '-dropdown');
-
-            if (!dropdown) {
-                return;
-            }
-
-            const dropdownId = target + '-dropdown';
-            const isOpen = dropdown.classList.contains('show');
-
-            closeDropdowns();
-
-            dropdown.classList.toggle('show', !isOpen);
-            this.classList.toggle('is-open', !isOpen);
-        });
-    });
-
-    document.addEventListener('click', function() {
-        closeDropdowns();
-    });
-});
-</script>
-<?php endif; ?>
 
 <?php
 get_footer();

@@ -96,7 +96,7 @@
         setInterval(updateCountdown, 1000); // 每秒更新一次，实现实时跳动
     }
 
-    // 天气小组件 - 多城市卡片式
+    // 天气小组件 - 实时总览 + 详情面板
     function initWeather() {
         var $weatherSection = $('.weather-section');
         if (!$weatherSection.length) return;
@@ -105,173 +105,410 @@
         if (!$weatherCards.length) return;
 
         var $modal = $('#weather-modal');
+        var $modalContent = $('.weather-modal-content');
         var $modalClose = $('#weather-modal-close');
+        var weatherCache = {};
+        var activeIndex = null;
 
         // WMO 天气代码映射
         var weatherCodes = {
             0: { icon: '☀️', desc: '晴朗' },
-            1: { icon: '🌤️', desc: '多云' },
-            2: { icon: '⛅', desc: '多云' },
+            1: { icon: '🌤️', desc: '大致晴朗' },
+            2: { icon: '⛅', desc: '局部多云' },
             3: { icon: '☁️', desc: '阴天' },
             45: { icon: '🌫️', desc: '雾' },
             48: { icon: '🌫️', desc: '雾凇' },
             51: { icon: '🌦️', desc: '毛毛雨' },
             53: { icon: '🌦️', desc: '小雨' },
             55: { icon: '🌧️', desc: '中雨' },
-            61: { icon: '🌧️', desc: '小雨' },
+            56: { icon: '🌧️', desc: '冻雨' },
+            57: { icon: '🌧️', desc: '强冻雨' },
+            61: { icon: '🌧️', desc: '阵雨' },
             63: { icon: '🌧️', desc: '中雨' },
             65: { icon: '⛈️', desc: '大雨' },
+            66: { icon: '🌧️', desc: '冻雨' },
+            67: { icon: '⛈️', desc: '强冻雨' },
             71: { icon: '🌨️', desc: '小雪' },
             73: { icon: '🌨️', desc: '中雪' },
             75: { icon: '❄️', desc: '大雪' },
+            77: { icon: '❄️', desc: '冰粒' },
+            80: { icon: '🌦️', desc: '阵雨' },
+            81: { icon: '🌧️', desc: '较强阵雨' },
+            82: { icon: '⛈️', desc: '强阵雨' },
+            85: { icon: '🌨️', desc: '阵雪' },
+            86: { icon: '❄️', desc: '强阵雪' },
             95: { icon: '⛈️', desc: '雷雨' },
+            96: { icon: '⛈️', desc: '雷雨伴冰雹' },
+            99: { icon: '⛈️', desc: '强雷雨伴冰雹' }
         };
 
-        // 缓存天气数据
-        var weatherCache = {};
+        function getWeatherInfo(code, isDay) {
+            var info = weatherCodes[code] || { icon: '🌡️', desc: '天气未知' };
 
-        // 获取穿衣建议
-        function getClothingAdvice(temp, weatherCode) {
-            var advice = '';
-            
-            if (temp >= 30) {
-                advice = '天气炎热，建议穿短袖、短裤、裙子等清凉透气的衣物，注意防晒。';
-            } else if (temp >= 25) {
-                advice = '天气较热，建议穿短袖、薄T恤，可搭配薄外套。';
-            } else if (temp >= 20) {
-                advice = '天气舒适，建议穿T恤、薄衬衫搭配长裤或裙子。';
-            } else if (temp >= 15) {
-                advice = '天气微凉，建议穿长袖、薄外套或针织衫。';
-            } else if (temp >= 10) {
-                advice = '天气较凉，建议穿夹克、风衣或薄毛衣。';
-            } else if (temp >= 5) {
-                advice = '天气冷，建议穿厚外套、毛衣、长裤，注意保暖。';
-            } else if (temp >= 0) {
-                advice = '天气寒冷，建议穿羽绒服、厚毛衣、保暖裤，戴围巾手套。';
-            } else {
-                advice = '天气严寒，建议穿厚羽绒服、加绒衣物，做好防寒措施。';
+            if (!isDay && code === 0) {
+                return { icon: '🌙', desc: '晴夜' };
             }
 
-            if (weatherCode >= 51 && weatherCode <= 65) {
-                advice += ' 记得带伞哦！☂️';
-            } else if (weatherCode >= 71 && weatherCode <= 75) {
-                advice += ' 路滑小心！❄️';
-            } else if (weatherCode === 95) {
-                advice += ' 雷雨天气减少外出！⚡';
+            if (!isDay && code === 1) {
+                return { icon: '🌙', desc: '夜间少云' };
             }
 
-            return advice;
+            return info;
         }
 
-        // 获取单个城市天气
+        function getWeatherType(code) {
+            if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) {
+                return 'rainy';
+            }
+
+            if ((code >= 71 && code <= 77) || code === 85 || code === 86) {
+                return 'snowy';
+            }
+
+            if (code >= 95) {
+                return 'stormy';
+            }
+
+            if ((code >= 1 && code <= 3) || code === 45 || code === 48) {
+                return 'cloudy';
+            }
+
+            return 'sunny';
+        }
+
+        function roundNumber(value, fallback) {
+            return typeof value === 'number' && !isNaN(value) ? Math.round(value) : fallback;
+        }
+
+        function getArrayValue(list, index, fallback) {
+            return list && typeof list[index] !== 'undefined' ? list[index] : fallback;
+        }
+
+        function formatClock(value) {
+            if (!value || value.indexOf('T') === -1) {
+                return '--:--';
+            }
+
+            return value.split('T')[1].slice(0, 5);
+        }
+
+        function formatUpdateText(value) {
+            if (!value || value.indexOf('T') === -1) {
+                return '更新时间暂不可用';
+            }
+
+            return formatClock(value) + ' 更新';
+        }
+
+        function formatUvIndex(value) {
+            if (typeof value !== 'number' || isNaN(value)) {
+                return '--';
+            }
+
+            var rounded = Math.round(value * 10) / 10;
+            return rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(1);
+        }
+
+        function buildHourlyTrend(hourlyData, currentTime) {
+            var items = [];
+
+            if (!hourlyData || !hourlyData.time || !hourlyData.time.length) {
+                return items;
+            }
+
+            var currentHour = currentTime && currentTime.indexOf('T') !== -1 ? currentTime.slice(0, 13) + ':00' : hourlyData.time[0];
+            var startIndex = 0;
+
+            for (var i = 0; i < hourlyData.time.length; i++) {
+                if (hourlyData.time[i] >= currentHour) {
+                    startIndex = i;
+                    break;
+                }
+            }
+
+            for (var j = startIndex; j < hourlyData.time.length && items.length < 6; j++) {
+                var hourlyCode = getArrayValue(hourlyData.weather_code, j, 0);
+                var hourlyInfo = getWeatherInfo(hourlyCode, true);
+
+                items.push({
+                    time: formatClock(hourlyData.time[j]),
+                    icon: hourlyInfo.icon,
+                    temp: roundNumber(getArrayValue(hourlyData.temperature_2m, j, null), '--'),
+                    precip: roundNumber(getArrayValue(hourlyData.precipitation_probability, j, 0), 0)
+                });
+            }
+
+            return items;
+        }
+
+        function renderHourlyTrend(items) {
+            var $hourly = $('#modal-hourly');
+
+            if (!$hourly.length) {
+                return;
+            }
+
+            if (!items.length) {
+                $hourly.html('<div class="weather-hourly-empty">暂时没有更多短时趋势数据</div>');
+                return;
+            }
+
+            var html = items.map(function(item) {
+                return [
+                    '<div class="weather-hourly-item">',
+                    '<span class="weather-hourly-time">', item.time, '</span>',
+                    '<span class="weather-hourly-icon">', item.icon, '</span>',
+                    '<span class="weather-hourly-temp">', item.temp, '°</span>',
+                    '<span class="weather-hourly-precip">降水 ', item.precip, '%</span>',
+                    '</div>'
+                ].join('');
+            }).join('');
+
+            $hourly.html(html);
+        }
+
+        function getClothingAdvice(temp, weatherCode, precipitation, windSpeed) {
+            var baseAdvice = '';
+            var extraTips = [];
+
+            if (temp >= 30) {
+                baseAdvice = '短袖或轻薄裙装就够了，尽量选透气面料。';
+                extraTips.push('记得防晒和补水');
+            } else if (temp >= 24) {
+                baseAdvice = '短袖加一件薄外套，室内外切换会更舒服。';
+            } else if (temp >= 18) {
+                baseAdvice = '衬衫、薄针织或卫衣都很合适。';
+            } else if (temp >= 12) {
+                baseAdvice = '外套最好带上，早晚会明显偏凉。';
+            } else if (temp >= 5) {
+                baseAdvice = '厚外套或毛衣更稳妥，别只顾好看。';
+            } else {
+                baseAdvice = '羽绒或加绒衣物更合适，保暖优先。';
+            }
+
+            if (precipitation >= 45 || (weatherCode >= 51 && weatherCode <= 82) || weatherCode >= 95) {
+                extraTips.push('出门带伞');
+            }
+
+            if (windSpeed >= 25) {
+                extraTips.push('风偏大，注意防风');
+            }
+
+            return baseAdvice + (extraTips.length ? ' ' + extraTips.join('，') + '。' : '');
+        }
+
+        function setCardError($card) {
+            $card
+                .removeClass('is-loading')
+                .addClass('is-error')
+                .attr('data-weather', 'cloudy');
+
+            $card.find('.weather-card-status').text('暂缺');
+            $card.find('.weather-icon').text('🌫️');
+            $card.find('.weather-temp').text('--°');
+            $card.find('.weather-desc').text('天气暂不可用');
+            $card.find('.weather-range').text('--° ~ --°');
+            $card.find('.weather-precip').text('降水 --%');
+        }
+
+        function updateCard($card, data) {
+            $card
+                .removeClass('is-loading is-error')
+                .attr('data-weather', data.weatherType);
+
+            $card.find('.weather-card-status').text(data.isDay ? '白天' : '夜间');
+            $card.find('.weather-icon').text(data.icon);
+            $card.find('.weather-temp').text(data.temp + '°');
+            $card.find('.weather-desc').text(data.desc);
+            $card.find('.weather-range').text(data.tempMin + '° ~ ' + data.tempMax + '°');
+            $card.find('.weather-precip').text('降水 ' + data.precipitationMax + '%');
+        }
+
         function fetchCityWeather($card) {
             var lat = $card.data('lat');
             var lon = $card.data('lon');
-            var index = $card.data('index');
+            var index = String($card.data('index'));
             var cityName = $card.data('name');
-
-            var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=auto';
+            var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon +
+                '&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,is_day' +
+                '&hourly=temperature_2m,weather_code,precipitation_probability' +
+                '&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_probability_max' +
+                '&forecast_days=2&timezone=auto';
 
             $.ajax({
                 url: url,
                 method: 'GET',
                 dataType: 'json',
+                timeout: 10000,
                 success: function(data) {
-                    if (data && data.current) {
-                        var current = data.current;
-                        var temp = Math.round(current.temperature_2m);
-                        var feels = Math.round(current.apparent_temperature);
-                        var humidity = current.relative_humidity_2m;
-                        var wind = current.wind_speed_10m;
-                        var code = current.weather_code;
+                    if (!data || !data.current || !data.daily) {
+                        setCardError($card);
+                        return;
+                    }
 
-                        var weatherInfo = weatherCodes[code] || { icon: '🌡️', desc: '未知' };
+                    var current = data.current;
+                    var daily = data.daily;
+                    var code = roundNumber(current.weather_code, 0);
+                    var isDay = Number(current.is_day) === 1;
+                    var weatherInfo = getWeatherInfo(code, isDay);
+                    var weatherType = getWeatherType(code);
+                    var temp = roundNumber(current.temperature_2m, '--');
+                    var feels = roundNumber(current.apparent_temperature, '--');
+                    var humidity = roundNumber(current.relative_humidity_2m, '--');
+                    var wind = roundNumber(current.wind_speed_10m, '--');
+                    var tempMax = roundNumber(getArrayValue(daily.temperature_2m_max, 0, null), '--');
+                    var tempMin = roundNumber(getArrayValue(daily.temperature_2m_min, 0, null), '--');
+                    var precipitationMax = roundNumber(getArrayValue(daily.precipitation_probability_max, 0, 0), 0);
+                    var uvMax = getArrayValue(daily.uv_index_max, 0, null);
+                    var sunrise = getArrayValue(daily.sunrise, 0, '');
+                    var sunset = getArrayValue(daily.sunset, 0, '');
 
-                        // 判断天气类型
-                        var weatherType = 'sunny';
-                        if (code >= 51 && code <= 65) weatherType = 'rainy';
-                        else if (code >= 71 && code <= 75) weatherType = 'snowy';
-                        else if (code >= 1 && code <= 3) weatherType = 'cloudy';
-                        else if (code >= 45) weatherType = 'cloudy';
+                    weatherCache[index] = {
+                        name: cityName,
+                        temp: temp,
+                        feels: feels,
+                        humidity: humidity,
+                        wind: wind,
+                        code: code,
+                        icon: weatherInfo.icon,
+                        desc: weatherInfo.desc,
+                        weatherType: weatherType,
+                        isDay: isDay,
+                        updatedAt: current.time,
+                        tempMax: tempMax,
+                        tempMin: tempMin,
+                        precipitationMax: precipitationMax,
+                        uvMax: formatUvIndex(uvMax),
+                        sunrise: sunrise,
+                        sunset: sunset,
+                        daylight: formatClock(sunrise) + ' / ' + formatClock(sunset),
+                        hourlyTrend: buildHourlyTrend(data.hourly, current.time),
+                        advice: getClothingAdvice(temp, code, precipitationMax, wind)
+                    };
 
-                        // 缓存数据
-                        weatherCache[index] = {
-                            name: cityName,
-                            temp: temp,
-                            feels: feels,
-                            humidity: humidity,
-                            wind: wind,
-                            code: code,
-                            icon: weatherInfo.icon,
-                            desc: weatherInfo.desc,
-                            advice: getClothingAdvice(temp, code),
-                            weatherType: weatherType
-                        };
+                    updateCard($card, weatherCache[index]);
 
-                        // 更新卡片
-                        $card.attr('data-weather', weatherType);
-                        $card.find('.weather-icon').text(weatherInfo.icon);
-                        $card.find('.weather-temp').text(temp + '°');
-                        $card.find('.weather-desc').text(weatherInfo.desc);
+                    if (activeIndex === index) {
+                        openModal(index);
                     }
                 },
                 error: function() {
-                    $card.find('.weather-desc').text('获取失败');
+                    setCardError($card);
                 }
             });
         }
 
-        // 打开模态框
         function openModal(index) {
-            var data = weatherCache[index];
-            if (!data) return;
+            var data = weatherCache[String(index)];
+
+            if (!data) {
+                return;
+            }
+
+            activeIndex = String(index);
 
             $('#modal-city').text(data.name);
+            $('#modal-time').text(formatUpdateText(data.updatedAt));
             $('#modal-icon').text(data.icon);
             $('#modal-temp').text(data.temp + '°');
             $('#modal-desc').text(data.desc);
+            $('#modal-range').text('今日 ' + data.tempMin + '° ~ ' + data.tempMax + '°');
             $('#modal-feels').text(data.feels + '°');
             $('#modal-humidity').text(data.humidity + '%');
             $('#modal-wind').text(data.wind + ' km/h');
+            $('#modal-precip').text(data.precipitationMax + '%');
+            $('#modal-uv').text(data.uvMax);
+            $('#modal-daylight').text(data.daylight);
             $('#modal-clothing').text(data.advice);
+            renderHourlyTrend(data.hourlyTrend);
 
-            var now = new Date();
-            var timeStr = now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
-            $('#modal-time').text(timeStr + ' 更新');
-
-            $modal.addClass('active');
+            $modalContent.attr('data-weather', data.weatherType);
+            $modal.addClass('active').attr('aria-hidden', 'false');
             $('body').css('overflow', 'hidden');
         }
 
-        // 关闭模态框
         function closeModal() {
-            $modal.removeClass('active');
+            activeIndex = null;
+            $modal.removeClass('active').attr('aria-hidden', 'true');
             $('body').css('overflow', '');
         }
 
-        // 加载所有城市天气
         $weatherCards.each(function() {
             fetchCityWeather($(this));
         });
 
-        // 点击卡片打开详情
         $weatherCards.on('click', function() {
-            var index = $(this).data('index');
-            openModal(index);
+            if ($(this).hasClass('is-error')) {
+                return;
+            }
+
+            openModal($(this).data('index'));
         });
 
-        // 关闭模态框
         $modalClose.on('click', closeModal);
+
         $modal.on('click', function(e) {
-            if (e.target === this) closeModal();
+            if (e.target === this) {
+                closeModal();
+            }
         });
 
-        // 每30分钟更新一次
+        $(document).on('keydown.weatherModal', function(e) {
+            if (e.key === 'Escape' && $modal.hasClass('active')) {
+                closeModal();
+            }
+        });
+
         setInterval(function() {
             $weatherCards.each(function() {
                 fetchCityWeather($(this));
             });
         }, 30 * 60 * 1000);
+    }
+
+    // 通用筛选下拉交互
+    function initFilterDropdowns() {
+        var toggles = document.querySelectorAll('.filter-dropdown-toggle');
+
+        if (!toggles.length) return;
+
+        function closeDropdowns(exceptId) {
+            document.querySelectorAll('.filter-dropdown').forEach(function(dropdown) {
+                if (dropdown.id !== exceptId) {
+                    dropdown.classList.remove('show');
+                }
+            });
+
+            toggles.forEach(function(toggle) {
+                if ((toggle.getAttribute('data-toggle') + '-dropdown') !== exceptId) {
+                    toggle.classList.remove('is-open');
+                }
+            });
+        }
+
+        toggles.forEach(function(toggle) {
+            toggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+
+                var target = this.getAttribute('data-toggle');
+                var dropdownId = target ? target + '-dropdown' : '';
+                var dropdown = dropdownId ? document.getElementById(dropdownId) : null;
+
+                if (!dropdown) {
+                    return;
+                }
+
+                var isOpen = dropdown.classList.contains('show');
+
+                closeDropdowns();
+                dropdown.classList.toggle('show', !isOpen);
+                this.classList.toggle('is-open', !isOpen);
+            });
+        });
+
+        document.addEventListener('click', function() {
+            closeDropdowns();
+        });
     }
 
     // 导航栏滚动效果
@@ -308,9 +545,10 @@
 
     // PhotoSwipe 5 初始化 - 修复移动端支持
     function initPhotoSwipe() {
+        if (!$('.memory-card').length) return;
+
         // 检查 PhotoSwipe 是否加载
         if (typeof PhotoSwipe === 'undefined' || typeof PhotoSwipeLightbox === 'undefined') {
-            console.log('PhotoSwipe not loaded');
             return;
         }
 
@@ -326,7 +564,6 @@
             var title = $this.data('title');
             
             if (!photosData || !photosData.length) {
-                console.log('No photos in album');
                 return;
             }
 
@@ -528,6 +765,7 @@
         initLoveTimer();
         initAnniversaryCountdown();
         initWeather();
+        initFilterDropdowns();
         initNavbar();
         initBackToTop();
         initPhotoSwipe();

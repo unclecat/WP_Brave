@@ -16,7 +16,7 @@ get_template_part(
     null,
     array(
         'title' => '📝 随笔说说',
-        'subtitle' => '记录生活的点滴心情与思念',
+        'subtitle' => '朝暮与年岁并往，我们一同走过寻常与漫长。',
     )
 );
 
@@ -326,44 +326,7 @@ if ($filter_year) {
 </section>
 
 <script>
-// 级联筛选下拉菜单
 document.addEventListener('DOMContentLoaded', function() {
-    const toggles = document.querySelectorAll('.filter-dropdown-toggle');
-
-    function closeDropdowns(exceptId) {
-        document.querySelectorAll('.filter-dropdown').forEach(function(dropdown) {
-            if (dropdown.id !== exceptId) {
-                dropdown.classList.remove('show');
-            }
-        });
-
-        toggles.forEach(function(toggle) {
-            if ((toggle.getAttribute('data-toggle') + '-dropdown') !== exceptId) {
-                toggle.classList.remove('is-open');
-            }
-        });
-    }
-    
-    toggles.forEach(function(toggle) {
-        toggle.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const target = this.getAttribute('data-toggle');
-            const dropdown = document.getElementById(target + '-dropdown');
-            const dropdownId = target + '-dropdown';
-            const isOpen = dropdown.classList.contains('show');
-
-            closeDropdowns();
-
-            dropdown.classList.toggle('show', !isOpen);
-            this.classList.toggle('is-open', !isOpen);
-        });
-    });
-    
-    // 点击外部关闭下拉菜单
-    document.addEventListener('click', function() {
-        closeDropdowns();
-    });
-    
     // 心情选择
     const moodBtns = document.querySelectorAll('.mood-btn');
     const moodInput = document.getElementById('selected-mood');
