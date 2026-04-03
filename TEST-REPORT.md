@@ -13,7 +13,7 @@ This run covered:
 - bundled theme structure and metadata checks
 - bundled security scan
 - local WordPress HTTP smoke tests for the main templates
-- homepage weather / about page / main inner-page regression verification
+- metadata consistency verification for theme header and README
 - release artifact documentation refresh
 
 This run did not cover:
@@ -28,45 +28,45 @@ This run did not cover:
 - `docker`: available
 - local WordPress: available at `http://localhost:8080`
 - local phpMyAdmin: available at `http://localhost:8081`
-- theme runtime version: `0.7.8`
+- theme runtime version: `0.7.9`
 
 ## Review Findings And Fixes
 
-### 1. Duplicated filter dropdown logic
+### 1. Theme header author metadata mismatch
 
 Risk:
 
-- dropdown behavior for moments, memories, and notes was implemented separately inside templates
-- this raised maintenance cost and made future interaction fixes easy to miss on one page
+- WordPress 后台读取的主题头信息仍指向旧作者与占位仓库地址
+- 安装用户在主题后台看到的作者和实际 GitHub 发布源不一致，容易引发信任与维护混淆
 
 Fix:
 
-- extracted shared filter dropdown behavior into `assets/js/brave.js`
-- removed duplicated inline dropdown scripts from the affected templates while keeping page-specific note form logic local
+- updated `style.css` header metadata to the live repository URL and current author website
+- kept version metadata aligned with the new patch release
 
-### 2. Non-gallery PhotoSwipe initialization noise
+### 2. README release metadata drift
 
 Risk:
 
-- non-gallery pages still executed the PhotoSwipe bootstrap path
-- this created unnecessary work and produced avoidable console noise when gallery dependencies were absent
+- README still showed an old version badge and outdated capability notes
+- public documentation no longer matched the released theme package
 
 Fix:
 
-- PhotoSwipe now initializes only when `.memory-card` exists
-- removed no-op console output for missing gallery assets or empty album data
+- refreshed README version badge and current release section
+- synced feature descriptions for the about page, weather module, and project ownership
 
-### 3. Release cache refresh and regression closure
+### 3. Release document alignment
 
 Risk:
 
-- front-end CSS/JS changes for the weather module and page interactions are easy to hide behind browser cache
-- release notes and test metadata can drift from the actual shipped version if not refreshed together
+- release notes, changelog, and test report can drift from the actual patch contents
+- this makes future maintenance and release auditing harder
 
 Fix:
 
-- bumped theme version to `0.7.8`
-- refreshed release notes and reran static checks plus local HTTP smoke tests against the current runtime
+- bumped theme version to `0.7.9`
+- refreshed release notes, changelog, and test report for this metadata patch
 
 ## Executed Tests
 
@@ -103,7 +103,7 @@ Observed summary:
 
 - required theme files: complete
 - theme name: `Brave Love`
-- version: `0.7.8`
+- version: `0.7.9`
 - dangerous runtime functions: none found
 - text domain usage: detected and consistent
 
@@ -149,17 +149,14 @@ Observed summary:
 
 Status: passed.
 
-### 5. Local WordPress runtime smoke tests
+### 5. Metadata consistency check
 
-Checks executed against `http://localhost:8080`:
+Checks executed:
 
-- home page weather module renders and home entry cards include the about page
-- about page renders hero copy and story timeline nodes
-- moments page renders hero, dropdown filter, year badges, and timeline cards
-- memories page renders dropdown filter, gallery waterfall, and PhotoSwipe info shell
-- notes page renders dropdown filter and note card structure
-- blessing page renders blessing card grid and submission form structure
-- love-list page renders status filter links and card grid structure
+- theme header `Theme URI` matches the current GitHub repository
+- theme header `Author` and `Author URI` match the requested release identity
+- README no longer contains stale version badge `0.3.5`
+- README no longer contains old author references
 
 Status: passed.
 
@@ -168,18 +165,16 @@ Status: passed.
 - Static PHP validation: passed
 - Theme structure check: passed
 - Security scan: passed
-- Runtime page smoke tests: passed
-- Shared filter script refactor: passed
+- Metadata consistency verification: passed
 - Release docs refresh: completed
 
 ## Remaining Risks
 
 - no screenshot-based or browser automation regression coverage yet
-- weather data still depends on external runtime API responses
-- visual polish still relies on manual browser review across actual devices
+- this run focuses on metadata, documentation, and packaging consistency rather than UI behavior changes
 
 ## Recommended Release State
 
 Current state is suitable for a patch release.
 
-Recommended release version: `v0.7.8`
+Recommended release version: `v0.7.9`
