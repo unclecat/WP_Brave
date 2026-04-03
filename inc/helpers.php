@@ -10,6 +10,72 @@ if (!defined('ABSPATH')) {
  */
 
 /**
+ * 校验 ISO 日期字符串。
+ *
+ * @param string $value 日期字符串
+ * @return bool
+ */
+function brave_is_valid_iso_date($value) {
+    $value = trim((string) $value);
+
+    if ('' === $value) {
+        return false;
+    }
+
+    $date = DateTime::createFromFormat('!Y-m-d', $value);
+
+    return $date instanceof DateTime && $date->format('Y-m-d') === $value;
+}
+
+/**
+ * 清理 ISO 日期字符串，非法值返回空字符串。
+ *
+ * @param string $value 日期字符串
+ * @return string
+ */
+function brave_sanitize_iso_date($value) {
+    $value = trim((string) $value);
+
+    return brave_is_valid_iso_date($value) ? $value : '';
+}
+
+/**
+ * 清理经纬度。
+ *
+ * @param string $value     原始值
+ * @param float  $min       最小值
+ * @param float  $max       最大值
+ * @param int    $precision 保留小数位
+ * @return string
+ */
+function brave_sanitize_coordinate($value, $min, $max, $precision = 4) {
+    $value = trim((string) $value);
+
+    if ('' === $value || !is_numeric($value)) {
+        return '';
+    }
+
+    $number = (float) $value;
+
+    if ($number < $min || $number > $max) {
+        return '';
+    }
+
+    return number_format($number, max(0, absint($precision)), '.', '');
+}
+
+/**
+ * 读取布尔型主题设置。
+ *
+ * @param string $key     设置键名
+ * @param bool   $default 默认值
+ * @return bool
+ */
+function brave_theme_mod_enabled($key, $default = false) {
+    return wp_validate_boolean(get_theme_mod($key, $default ? '1' : '0'));
+}
+
+/**
  * 允许 data URI 作为主题内联头像输出。
  *
  * @param string $url 头像 URL
@@ -78,7 +144,7 @@ function brave_resolve_page_hero_args($args = array()) {
         array(
             'context' => '',
             'post_id' => 0,
-            'eyebrow' => __('Brave Love', 'brave-love'),
+            'eyebrow' => '',
             'title' => get_the_title(),
             'subtitle' => '',
             'background' => '',
@@ -364,7 +430,7 @@ function brave_get_couple_avatar($gender = 'boy', $size = 100) {
     }
 
     $user_id = get_theme_mod('brave_' . $gender . '_user_id');
-    $user_id = intval($user_id);
+    $user_id = absint($user_id);
     if ($user_id > 0) {
         $wp_avatar = brave_get_safe_wp_avatar_url($user_id, $size);
         if ($wp_avatar) {
@@ -388,16 +454,16 @@ function brave_get_couple_avatar($gender = 'boy', $size = 100) {
 function brave_get_couple_name($gender = 'boy') {
     $name = get_theme_mod('brave_' . $gender . '_name');
     if (!empty($name)) {
-        return esc_html($name);
+        return sanitize_text_field($name);
     }
     
     // 尝试获取 WordPress 用户昵称
     $user_id = get_theme_mod('brave_' . $gender . '_user_id');
-    $user_id = intval($user_id);
+    $user_id = absint($user_id);
     if ($user_id > 0) {
         $user = get_userdata($user_id);
         if ($user) {
-            return esc_html($user->display_name);
+            return sanitize_text_field($user->display_name);
         }
     }
     
@@ -932,6 +998,73 @@ function brave_get_page_link($type) {
 }
 
 /**
+ * 获取页脚导航默认配置。
+ *
+ * @return array
+ */
+function brave_get_footer_nav_defaults() {
+    return array(
+        'home' => array(
+            'label' => __('首页', 'brave-love'),
+            'url' => home_url('/'),
+        ),
+        'about' => array(
+            'label' => __('关于我们', 'brave-love'),
+            'url' => brave_get_page_link('about'),
+        ),
+        'moments' => array(
+            'label' => __('点点滴滴', 'brave-love'),
+            'url' => brave_get_page_link('moments'),
+        ),
+        'lists' => array(
+            'label' => __('恋爱清单', 'brave-love'),
+            'url' => brave_get_page_link('lists'),
+        ),
+        'memories' => array(
+            'label' => __('甜蜜相册', 'brave-love'),
+            'url' => brave_get_page_link('memories'),
+        ),
+        'notes' => array(
+            'label' => __('随笔说说', 'brave-love'),
+            'url' => brave_get_page_link('notes'),
+        ),
+        'blessing' => array(
+            'label' => __('祝福留言', 'brave-love'),
+            'url' => brave_get_page_link('blessing'),
+        ),
+    );
+}
+
+/**
+ * 获取页脚导航项。
+ *
+ * @return array
+ */
+function brave_get_footer_nav_items() {
+    $defaults = brave_get_footer_nav_defaults();
+    $items = array();
+
+    foreach ($defaults as $key => $default) {
+        $custom_label = trim((string) get_theme_mod("brave_footer_nav_{$key}_label", ''));
+        $custom_url = trim((string) get_theme_mod("brave_footer_nav_{$key}_url", ''));
+        $label = '' !== $custom_label ? $custom_label : $default['label'];
+        $url = '' !== $custom_url ? $custom_url : $default['url'];
+
+        if ('' === $label || '' === $url) {
+            continue;
+        }
+
+        $items[] = array(
+            'key' => $key,
+            'label' => $label,
+            'url' => $url,
+        );
+    }
+
+    return $items;
+}
+
+/**
  * 获取恋爱起始日期时间
  *
  * 兼容旧版本仅保存日期的配置项。
@@ -1087,13 +1220,16 @@ function brave_extract_photos_from_moment($moment_id) {
     if (function_exists('parse_blocks')) {
         $blocks = parse_blocks($content);
         foreach ($blocks as $block) {
+            $block_name = $block['blockName'] ?? '';
+            $block_attrs = isset($block['attrs']) && is_array($block['attrs']) ? $block['attrs'] : array();
+
             // 单张图片块
-            if ($block['blockName'] === 'core/image' && !empty($block['attrs']['id'])) {
-                $image_ids[] = $block['attrs']['id'];
+            if ('core/image' === $block_name && !empty($block_attrs['id'])) {
+                $image_ids[] = $block_attrs['id'];
             }
             // 画廊块
-            if ($block['blockName'] === 'core/gallery' && !empty($block['attrs']['ids'])) {
-                $image_ids = array_merge($image_ids, $block['attrs']['ids']);
+            if ('core/gallery' === $block_name && !empty($block_attrs['ids']) && is_array($block_attrs['ids'])) {
+                $image_ids = array_merge($image_ids, $block_attrs['ids']);
             }
         }
     }

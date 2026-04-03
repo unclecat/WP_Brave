@@ -27,6 +27,10 @@ add_action('admin_menu', 'brave_add_weather_menu');
  * 天气管理页面
  */
 function brave_weather_page() {
+    if (!current_user_can('manage_options')) {
+        wp_die(__('权限不足', 'brave-love'));
+    }
+
     // 保存数据
     if (isset($_POST['brave_save_weather']) && check_admin_referer('brave_weather_nonce')) {
         $enabled = isset($_POST['brave_weather_enabled']) ? true : false;
@@ -40,14 +44,18 @@ function brave_weather_page() {
 
             foreach ($city_names as $key => $name) {
                 $name = sanitize_text_field($name);
-                $lat = sanitize_text_field($city_lats[$key] ?? '');
-                $lon = sanitize_text_field($city_lons[$key] ?? '');
+                $lat = brave_sanitize_coordinate($city_lats[$key] ?? '', -90, 90, 4);
+                $lon = brave_sanitize_coordinate($city_lons[$key] ?? '', -180, 180, 4);
                 if (!empty($name) && !empty($lat) && !empty($lon)) {
                     $cities[] = array(
                         'name' => $name,
                         'lat' => $lat,
                         'lon' => $lon,
                     );
+
+                    if (count($cities) >= 4) {
+                        break;
+                    }
                 }
             }
         }
@@ -85,7 +93,7 @@ function brave_weather_page() {
             <h2><?php _e('城市列表', 'brave-love'); ?></h2>
             <p class="description">
                 <?php _e('经纬度可从 ', 'brave-love'); ?>
-                <a href="https://open-meteo.com/en/docs" target="_blank">Open-Meteo</a>
+                <a href="https://open-meteo.com/en/docs" target="_blank" rel="noopener noreferrer">Open-Meteo</a>
                 <?php _e(' 查询，或搜索 "城市名 latitude longitude"', 'brave-love'); ?>
             </p>
             
@@ -181,7 +189,38 @@ function brave_weather_page() {
  * 获取天气城市列表
  */
 function brave_get_weather_cities() {
-    return get_option('brave_weather_cities', array());
+    $cities = get_option('brave_weather_cities', array());
+    $sanitized_cities = array();
+
+    if (!is_array($cities)) {
+        return $sanitized_cities;
+    }
+
+    foreach ($cities as $city) {
+        if (!is_array($city)) {
+            continue;
+        }
+
+        $name = sanitize_text_field($city['name'] ?? '');
+        $lat = brave_sanitize_coordinate($city['lat'] ?? '', -90, 90, 4);
+        $lon = brave_sanitize_coordinate($city['lon'] ?? '', -180, 180, 4);
+
+        if ('' === $name || '' === $lat || '' === $lon) {
+            continue;
+        }
+
+        $sanitized_cities[] = array(
+            'name' => $name,
+            'lat' => $lat,
+            'lon' => $lon,
+        );
+
+        if (count($sanitized_cities) >= 4) {
+            break;
+        }
+    }
+
+    return $sanitized_cities;
 }
 
 /**

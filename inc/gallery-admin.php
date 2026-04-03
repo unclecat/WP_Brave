@@ -25,9 +25,25 @@ function brave_gallery_admin_menu() {
 add_action('admin_menu', 'brave_gallery_admin_menu');
 
 /**
+ * 判断是否为旧版 memory 文章。
+ *
+ * @param int $post_id 文章 ID
+ * @return bool
+ */
+function brave_is_legacy_memory_post($post_id) {
+    $post = get_post($post_id);
+
+    return $post instanceof WP_Post && 'memory' === $post->post_type;
+}
+
+/**
  * 管理页面内容
  */
 function brave_gallery_admin_page() {
+    if (!current_user_can('manage_options')) {
+        wp_die(__('权限不足', 'brave-love'));
+    }
+
     // 处理删除请求
     if (isset($_POST['action']) && check_admin_referer('brave_gallery_admin_nonce')) {
         $action = sanitize_key(wp_unslash($_POST['action']));
@@ -48,8 +64,12 @@ function brave_gallery_admin_page() {
         } elseif ($action === 'delete_selected' && !empty($_POST['memory_ids']) && is_array($_POST['memory_ids'])) {
             // 删除选中的相册
             foreach (wp_unslash($_POST['memory_ids']) as $memory_id) {
-                wp_delete_post(intval($memory_id), true);
-                $deleted++;
+                $memory_id = absint($memory_id);
+
+                if ($memory_id > 0 && brave_is_legacy_memory_post($memory_id)) {
+                    wp_delete_post($memory_id, true);
+                    $deleted++;
+                }
             }
         } elseif ($action === 'convert_all') {
             // 转换所有旧相册为点滴
@@ -89,7 +109,7 @@ function brave_gallery_admin_page() {
             <h2><?php _e('数据统计', 'brave-love'); ?></h2>
             <p style="font-size: 18px;">
                 <?php _e('旧相册文章数量：', 'brave-love'); ?>
-                <strong style="color: #ff5162; font-size: 24px;"><?php echo $total_count; ?></strong>
+                <strong style="color: #ff5162; font-size: 24px;"><?php echo esc_html((string) $total_count); ?></strong>
             </p>
             
             <?php if ($total_count > 0) : ?>
@@ -153,14 +173,14 @@ function brave_gallery_admin_page() {
                             <td>
                                 <strong><?php echo esc_html($memory->post_title); ?></strong>
                                 <div class="row-actions">
-                                    <a href="<?php echo get_edit_post_link($memory->ID); ?>"><?php _e('编辑', 'brave-love'); ?></a> | 
-                                    <a href="<?php echo get_permalink($memory->ID); ?>" target="_blank"><?php _e('查看', 'brave-love'); ?></a>
+                                    <a href="<?php echo esc_url(get_edit_post_link($memory->ID)); ?>"><?php _e('编辑', 'brave-love'); ?></a> |
+                                    <a href="<?php echo esc_url(get_permalink($memory->ID)); ?>" target="_blank" rel="noopener noreferrer"><?php _e('查看', 'brave-love'); ?></a>
                                 </div>
                             </td>
                             <td><?php echo $memory_date ? esc_html($memory_date) : '—'; ?></td>
-                            <td><?php echo $photo_count; ?></td>
+                            <td><?php echo esc_html((string) $photo_count); ?></td>
                             <td>
-                                <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=brave-gallery-admin&action=delete_single&memory_id=' . $memory->ID), 'delete_memory_' . $memory->ID); ?>" 
+                                <a href="<?php echo esc_url(wp_nonce_url(admin_url('admin.php?page=brave-gallery-admin&action=delete_single&memory_id=' . $memory->ID), 'delete_memory_' . $memory->ID)); ?>" 
                                    class="button button-small" 
                                    onclick="return confirm('<?php _e('确定删除？', 'brave-love'); ?>')"
                                    style="color: #d63638;">
@@ -203,7 +223,7 @@ function brave_handle_single_delete() {
     $action = isset($_GET['action']) ? sanitize_key(wp_unslash($_GET['action'])) : '';
 
     if ($action === 'delete_single' && isset($_GET['memory_id'])) {
-        $memory_id = intval(wp_unslash($_GET['memory_id']));
+        $memory_id = absint(wp_unslash($_GET['memory_id']));
         $nonce = isset($_GET['_wpnonce']) ? sanitize_text_field(wp_unslash($_GET['_wpnonce'])) : '';
 
         if (!wp_verify_nonce($nonce, 'delete_memory_' . $memory_id)) {
@@ -213,10 +233,14 @@ function brave_handle_single_delete() {
         if (!current_user_can('manage_options')) {
             wp_die(__('权限不足', 'brave-love'));
         }
+
+        if (!brave_is_legacy_memory_post($memory_id)) {
+            wp_die(__('仅支持删除旧版相册数据', 'brave-love'));
+        }
         
         wp_delete_post($memory_id, true);
         
-        wp_redirect(admin_url('edit.php?post_type=moment&page=brave-gallery-admin&deleted=1'));
+        wp_safe_redirect(admin_url('edit.php?post_type=moment&page=brave-gallery-admin&deleted=1'));
         exit;
     }
 }

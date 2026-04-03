@@ -209,6 +209,110 @@
             return rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(1);
         }
 
+        function formatAqi(value) {
+            if (typeof value !== 'number' || isNaN(value)) {
+                return '--';
+            }
+
+            return String(Math.round(value));
+        }
+
+        function getAqiTone(value) {
+            if (typeof value !== 'number' || isNaN(value)) {
+                return 'unknown';
+            }
+
+            if (value <= 50) {
+                return 'good';
+            }
+
+            if (value <= 100) {
+                return 'moderate';
+            }
+
+            if (value <= 150) {
+                return 'sensitive';
+            }
+
+            if (value <= 200) {
+                return 'unhealthy';
+            }
+
+            return 'hazardous';
+        }
+
+        function getAqiLabel(value) {
+            if (typeof value !== 'number' || isNaN(value)) {
+                return '暂无';
+            }
+
+            if (value <= 50) {
+                return '优';
+            }
+
+            if (value <= 100) {
+                return '良';
+            }
+
+            if (value <= 150) {
+                return '敏感';
+            }
+
+            if (value <= 200) {
+                return '较差';
+            }
+
+            return '很差';
+        }
+
+        function getUvLabel(value) {
+            if (typeof value !== 'number' || isNaN(value)) {
+                return '暂无';
+            }
+
+            if (value < 3) {
+                return '低';
+            }
+
+            if (value < 6) {
+                return '中';
+            }
+
+            if (value < 8) {
+                return '较高';
+            }
+
+            if (value < 11) {
+                return '高';
+            }
+
+            return '很高';
+        }
+
+        function getUvTone(value) {
+            if (typeof value !== 'number' || isNaN(value)) {
+                return 'unknown';
+            }
+
+            if (value < 3) {
+                return 'good';
+            }
+
+            if (value < 6) {
+                return 'moderate';
+            }
+
+            if (value < 8) {
+                return 'sensitive';
+            }
+
+            if (value < 11) {
+                return 'unhealthy';
+            }
+
+            return 'hazardous';
+        }
+
         function buildHourlyTrend(hourlyData, currentTime) {
             var items = [];
 
@@ -267,34 +371,89 @@
             $hourly.html(html);
         }
 
-        function getClothingAdvice(temp, weatherCode, precipitation, windSpeed) {
-            var baseAdvice = '';
-            var extraTips = [];
+        function addClothingTag(tags, label, kind) {
+            if (!label) {
+                return;
+            }
 
-            if (temp >= 30) {
-                baseAdvice = '短袖或轻薄裙装就够了，尽量选透气面料。';
-                extraTips.push('记得防晒和补水');
-            } else if (temp >= 24) {
-                baseAdvice = '短袖加一件薄外套，室内外切换会更舒服。';
-            } else if (temp >= 18) {
-                baseAdvice = '衬衫、薄针织或卫衣都很合适。';
-            } else if (temp >= 12) {
-                baseAdvice = '外套最好带上，早晚会明显偏凉。';
-            } else if (temp >= 5) {
-                baseAdvice = '厚外套或毛衣更稳妥，别只顾好看。';
+            var exists = tags.some(function(item) {
+                return item.label === label;
+            });
+
+            if (!exists) {
+                tags.push({
+                    label: label,
+                    kind: kind || 'wear'
+                });
+            }
+        }
+
+        function getClothingTags(feelsLike, weatherCode, precipitation, windSpeed, uvValue, aqiValue) {
+            var tags = [];
+            var hasRain = precipitation >= 45 || (weatherCode >= 51 && weatherCode <= 82) || weatherCode >= 95;
+
+            if (typeof feelsLike !== 'number' || isNaN(feelsLike)) {
+                return tags;
+            }
+
+            if (feelsLike >= 30) {
+                addClothingTag(tags, '短袖');
+                addClothingTag(tags, '短裤');
+            } else if (feelsLike >= 24) {
+                addClothingTag(tags, '短袖');
+                addClothingTag(tags, '薄裤');
+            } else if (feelsLike >= 18) {
+                addClothingTag(tags, '长袖');
+                addClothingTag(tags, '长裤');
+            } else if (feelsLike >= 12) {
+                addClothingTag(tags, '长袖');
+                addClothingTag(tags, '薄外套');
+                addClothingTag(tags, '长裤');
+            } else if (feelsLike >= 6) {
+                addClothingTag(tags, '卫衣');
+                addClothingTag(tags, '外套');
+                addClothingTag(tags, '长裤');
             } else {
-                baseAdvice = '羽绒或加绒衣物更合适，保暖优先。';
+                addClothingTag(tags, '羽绒');
+                addClothingTag(tags, '保暖裤');
             }
 
-            if (precipitation >= 45 || (weatherCode >= 51 && weatherCode <= 82) || weatherCode >= 95) {
-                extraTips.push('出门带伞');
+            if (hasRain) {
+                addClothingTag(tags, '带伞', 'extra');
             }
 
-            if (windSpeed >= 25) {
-                extraTips.push('风偏大，注意防风');
+            if (typeof windSpeed === 'number' && !isNaN(windSpeed) && windSpeed >= 25) {
+                addClothingTag(tags, '防风', 'extra');
             }
 
-            return baseAdvice + (extraTips.length ? ' ' + extraTips.join('，') + '。' : '');
+            if (typeof uvValue === 'number' && !isNaN(uvValue) && uvValue >= 6) {
+                addClothingTag(tags, '防晒', 'extra');
+            }
+
+            if (typeof aqiValue === 'number' && !isNaN(aqiValue) && aqiValue > 100) {
+                addClothingTag(tags, '口罩', 'extra');
+            }
+
+            return tags;
+        }
+
+        function renderClothingTags(tags) {
+            var $container = $('#modal-clothing');
+
+            if (!$container.length) {
+                return;
+            }
+
+            if (!tags.length) {
+                $container.html('<span class="weather-modal-tag is-muted">待更新</span>');
+                return;
+            }
+
+            var html = tags.map(function(item) {
+                return '<span class="weather-modal-tag' + (item.kind === 'extra' ? ' is-extra' : '') + '">' + item.label + '</span>';
+            }).join('');
+
+            $container.html(html);
         }
 
         function setCardError($card) {
@@ -362,6 +521,7 @@
                     var uvMax = getArrayValue(daily.uv_index_max, 0, null);
                     var sunrise = getArrayValue(daily.sunrise, 0, '');
                     var sunset = getArrayValue(daily.sunset, 0, '');
+                    var previousData = weatherCache[index] || {};
 
                     weatherCache[index] = {
                         name: cityName,
@@ -378,12 +538,17 @@
                         tempMax: tempMax,
                         tempMin: tempMin,
                         precipitationMax: precipitationMax,
+                        uvValue: uvMax,
                         uvMax: formatUvIndex(uvMax),
+                        uvLabel: getUvLabel(uvMax),
+                        uvTone: getUvTone(uvMax),
                         sunrise: sunrise,
                         sunset: sunset,
-                        daylight: formatClock(sunrise) + ' / ' + formatClock(sunset),
                         hourlyTrend: buildHourlyTrend(data.hourly, current.time),
-                        advice: getClothingAdvice(temp, code, precipitationMax, wind)
+                        aqi: typeof previousData.aqi === 'number' ? previousData.aqi : null,
+                        aqiDisplay: previousData.aqiDisplay || '--',
+                        aqiTone: previousData.aqiTone || 'unknown',
+                        aqiLabel: previousData.aqiLabel || '暂无'
                     };
 
                     updateCard($card, weatherCache[index]);
@@ -396,12 +561,35 @@
                     setCardError($card);
                 }
             });
+
+            $.ajax({
+                url: 'https://air-quality-api.open-meteo.com/v1/air-quality?latitude=' + lat + '&longitude=' + lon + '&current=us_aqi&timezone=auto',
+                method: 'GET',
+                dataType: 'json',
+                timeout: 10000,
+                success: function(data) {
+                    var current = data && data.current ? data.current : {};
+                    var aqiValue = typeof current.us_aqi === 'number' ? current.us_aqi : null;
+                    var existingData = weatherCache[index] || { name: cityName };
+
+                    existingData.aqi = aqiValue;
+                    existingData.aqiDisplay = formatAqi(aqiValue);
+                    existingData.aqiTone = getAqiTone(aqiValue);
+                    existingData.aqiLabel = getAqiLabel(aqiValue);
+
+                    weatherCache[index] = existingData;
+
+                    if (activeIndex === index) {
+                        openModal(index);
+                    }
+                }
+            });
         }
 
         function openModal(index) {
             var data = weatherCache[String(index)];
 
-            if (!data) {
+            if (!data || typeof data.temp === 'undefined' || typeof data.tempMin === 'undefined') {
                 return;
             }
 
@@ -413,13 +601,21 @@
             $('#modal-temp').text(data.temp + '°');
             $('#modal-desc').text(data.desc);
             $('#modal-range').text('今日 ' + data.tempMin + '° ~ ' + data.tempMax + '°');
+            $('#modal-sunrise').text(formatClock(data.sunrise));
+            $('#modal-sunset').text(formatClock(data.sunset));
+            $('#modal-aqi')
+                .attr('data-tone', data.aqiTone || 'unknown')
+                .find('.weather-modal-aside-text')
+                .text((data.aqiLabel || '暂无') + ' · AQI ' + (data.aqiDisplay || '--'));
+            $('#modal-uv')
+                .attr('data-tone', data.uvTone || 'unknown')
+                .find('.weather-modal-aside-text')
+                .text((data.uvLabel || '暂无') + ' · UV ' + (data.uvMax || '--'));
             $('#modal-feels').text(data.feels + '°');
             $('#modal-humidity').text(data.humidity + '%');
             $('#modal-wind').text(data.wind + ' km/h');
             $('#modal-precip').text(data.precipitationMax + '%');
-            $('#modal-uv').text(data.uvMax);
-            $('#modal-daylight').text(data.daylight);
-            $('#modal-clothing').text(data.advice);
+            renderClothingTags(getClothingTags(data.feels, data.code, data.precipitationMax, data.wind, data.uvValue, data.aqi));
             renderHourlyTrend(data.hourlyTrend);
 
             $modalContent.attr('data-weather', data.weatherType);
@@ -438,6 +634,12 @@
         });
 
         $weatherCards.on('click', function() {
+            var $row = $(this).closest('.weather-scroll');
+
+            if ($row.attr('data-drag-click-block') === '1') {
+                return;
+            }
+
             if ($(this).hasClass('is-error')) {
                 return;
             }
@@ -511,18 +713,101 @@
         });
     }
 
+    // 横向列表在桌面端支持滚轮和拖拽浏览
+    function initHorizontalScrollRows() {
+        var selectors = ['.weather-scroll', '.anniversary-scroll'];
+
+        selectors.forEach(function(selector) {
+            document.querySelectorAll(selector).forEach(function(row) {
+                var isPointerDown = false;
+                var startX = 0;
+                var startScrollLeft = 0;
+                var hasDragged = false;
+
+                if (row.scrollWidth > row.clientWidth) {
+                    row.classList.add('is-scrollable');
+                }
+
+                row.addEventListener('wheel', function(e) {
+                    if (row.scrollWidth <= row.clientWidth) {
+                        return;
+                    }
+
+                    if (Math.abs(e.deltaX) <= 0 && Math.abs(e.deltaY) <= 0) {
+                        return;
+                    }
+
+                    e.preventDefault();
+                    row.scrollLeft += Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+                }, { passive: false });
+
+                row.addEventListener('mousedown', function(e) {
+                    if (row.scrollWidth <= row.clientWidth) {
+                        return;
+                    }
+
+                    isPointerDown = true;
+                    hasDragged = false;
+                    startX = e.pageX;
+                    startScrollLeft = row.scrollLeft;
+                    row.classList.add('is-dragging');
+                });
+
+                window.addEventListener('mousemove', function(e) {
+                    if (!isPointerDown) {
+                        return;
+                    }
+
+                    var delta = e.pageX - startX;
+                    if (Math.abs(delta) > 6) {
+                        hasDragged = true;
+                    }
+                    row.scrollLeft = startScrollLeft - delta;
+                });
+
+                window.addEventListener('mouseup', function() {
+                    if (!isPointerDown) {
+                        return;
+                    }
+
+                    isPointerDown = false;
+                    row.classList.remove('is-dragging');
+
+                    if (hasDragged) {
+                        row.setAttribute('data-drag-click-block', '1');
+                        window.setTimeout(function() {
+                            row.removeAttribute('data-drag-click-block');
+                        }, 120);
+                    }
+                });
+
+                row.addEventListener('mouseleave', function() {
+                    if (!isPointerDown) {
+                        return;
+                    }
+
+                    isPointerDown = false;
+                    row.classList.remove('is-dragging');
+                });
+            });
+        });
+    }
+
     // 导航栏滚动效果
     function initNavbar() {
         var $navbar = $('.navbar-brave');
         if (!$navbar.length) return;
 
-        $(window).on('scroll', function() {
+        function syncNavbarState() {
             if ($(window).scrollTop() > 50) {
                 $navbar.addClass('scrolled');
             } else {
                 $navbar.removeClass('scrolled');
             }
-        });
+        }
+
+        $(window).on('scroll', syncNavbarState);
+        syncNavbarState();
     }
 
     // 返回顶部
@@ -541,191 +826,6 @@
         $btn.on('click', function() {
             $('html, body').animate({ scrollTop: 0 }, 300);
         });
-    }
-
-    // PhotoSwipe 5 初始化 - 修复移动端支持
-    function initPhotoSwipe() {
-        if (!$('.memory-card').length) return;
-
-        // 检查 PhotoSwipe 是否加载
-        if (typeof PhotoSwipe === 'undefined' || typeof PhotoSwipeLightbox === 'undefined') {
-            return;
-        }
-
-        // 相册卡片点击
-        $('.memory-card').on('click touchstart', function(e) {
-            // 防止重复触发
-            if (e.type === 'touchstart') {
-                e.preventDefault();
-            }
-            
-            var $this = $(this);
-            var photosData = $this.data('photos');
-            var title = $this.data('title');
-            
-            if (!photosData || !photosData.length) {
-                return;
-            }
-
-            // 准备图片数据
-            var items = photosData.map(function(photo) {
-                return {
-                    src: photo.url,
-                    width: photo.width || 0,
-                    height: photo.height || 0,
-                    alt: title + (photo.title ? ' - ' + photo.title : '')
-                };
-            });
-
-            // 如果没有尺寸信息，先预加载获取
-            var needLoading = items.some(function(item) {
-                return item.width === 0 || item.height === 0;
-            });
-
-            if (needLoading) {
-                var loadedCount = 0;
-                var totalCount = items.length;
-                
-                items.forEach(function(item, index) {
-                    if (item.width === 0 || item.height === 0) {
-                        var img = new Image();
-                        img.onload = function() {
-                            items[index].width = this.naturalWidth;
-                            items[index].height = this.naturalHeight;
-                            loadedCount++;
-                            
-                            if (loadedCount === totalCount) {
-                                openPhotoSwipe(items, 0);
-                            }
-                        };
-                        img.onerror = function() {
-                            // 如果加载失败，使用默认尺寸
-                            items[index].width = 800;
-                            items[index].height = 600;
-                            loadedCount++;
-                            
-                            if (loadedCount === totalCount) {
-                                openPhotoSwipe(items, 0);
-                            }
-                        };
-                        img.src = item.src;
-                    } else {
-                        loadedCount++;
-                    }
-                });
-
-                // 如果所有图片已有尺寸，直接打开
-                if (loadedCount === totalCount) {
-                    openPhotoSwipe(items, 0);
-                }
-            } else {
-                openPhotoSwipe(items, 0);
-            }
-        });
-
-        // 说说图片点击
-        $('.note-image').on('click touchstart', function(e) {
-            if (e.type === 'touchstart') {
-                e.preventDefault();
-            }
-            
-            e.stopPropagation();
-            var $this = $(this);
-            var $images = $this.closest('.note-images').find('.note-image');
-            var index = $images.index($this);
-
-            var items = [];
-            $images.each(function() {
-                var src = $(this).data('full') || $(this).attr('src');
-                items.push({
-                    src: src,
-                    width: 0,
-                    height: 0
-                });
-            });
-
-            // 预加载获取尺寸
-            var loadedCount = 0;
-            items.forEach(function(item, idx) {
-                var img = new Image();
-                img.onload = function() {
-                    items[idx].width = this.naturalWidth;
-                    items[idx].height = this.naturalHeight;
-                    loadedCount++;
-                    
-                    if (loadedCount === items.length) {
-                        openPhotoSwipe(items, index);
-                    }
-                };
-                img.onerror = function() {
-                    items[idx].width = 800;
-                    items[idx].height = 600;
-                    loadedCount++;
-                    
-                    if (loadedCount === items.length) {
-                        openPhotoSwipe(items, index);
-                    }
-                };
-                img.src = item.src;
-            });
-        });
-
-        // 时间轴图片灯箱
-        $('.timeline-image').on('click touchstart', function(e) {
-            if (e.type === 'touchstart') {
-                e.preventDefault();
-            }
-            
-            if ($(this).is('a')) return;
-            
-            var src = $(this).attr('src');
-            if (!src) return;
-
-            var fullSrc = src.replace('-300x300', '').replace('-150x150', '').replace('-400x400', '');
-
-            var img = new Image();
-            img.onload = function() {
-                openPhotoSwipe([{
-                    src: fullSrc,
-                    width: this.naturalWidth,
-                    height: this.naturalHeight
-                }], 0);
-            };
-            img.src = fullSrc;
-        });
-    }
-
-    // 打开 PhotoSwipe
-    function openPhotoSwipe(items, index) {
-        // 确保所有图片都有尺寸
-        items.forEach(function(item) {
-            if (!item.width || item.width === 0) item.width = 800;
-            if (!item.height || item.height === 0) item.height = 600;
-        });
-
-        // 使用 PhotoSwipeLightbox（支持移动端）
-        var lightbox = new PhotoSwipeLightbox({
-            dataSource: items,
-            pswpModule: PhotoSwipe,
-            bgOpacity: 0.9,
-            showHideAnimationType: 'fade',
-            initialZoomLevel: 'fit',
-            secondaryZoomLevel: 1.5,
-            maxZoomLevel: 1,
-            pinchToClose: true,
-            closeOnVerticalDrag: true,
-            tapAction: 'toggle-controls',
-            doubleTapAction: 'zoom',
-            index: index
-        });
-
-        // 添加错误处理
-        lightbox.on('itemLoadError', function(e) {
-            console.warn('Image load error:', e.item.src);
-        });
-
-        lightbox.init();
-        lightbox.loadAndOpen(index);
     }
 
     // 滚动渐显动画
@@ -752,25 +852,163 @@
 
     // 清单项展开/收起
     function initListToggle() {
-        $('.list-toggle').on('click', function(e) {
-            e.stopPropagation();
-            var $detail = $(this).closest('.list-item').find('.list-detail');
-            $detail.toggleClass('show');
-            $(this).text($detail.hasClass('show') ? '▲' : '▼');
+        $(document).on('click', '.toggle-detail', function() {
+            var $button = $(this);
+            var $card = $button.closest('.love-list-card');
+            var $detail = $card.find('.card-detail').first();
+            var $label = $button.find('span').first();
+
+            if (!$card.length || !$detail.length || !$label.length) {
+                return;
+            }
+
+            var isExpanded = !$card.hasClass('expanded');
+
+            $card.toggleClass('expanded', isExpanded);
+            $detail.css('max-height', isExpanded ? $detail.prop('scrollHeight') + 'px' : '0');
+            $label.text(isExpanded ? '收起详情' : '查看详情');
+            $button.attr('aria-expanded', isExpanded ? 'true' : 'false');
+        });
+
+        $(window).on('resize', function() {
+            $('.love-list-card.expanded .card-detail').each(function() {
+                this.style.maxHeight = this.scrollHeight + 'px';
+            });
+        });
+    }
+
+    // 随笔说说快捷发布交互
+    function initQuickNoteForm() {
+        var form = document.getElementById('quick-note-form');
+
+        if (!form) {
+            return;
+        }
+
+        var moodBtns = form.querySelectorAll('.mood-btn');
+        var moodInput = document.getElementById('selected-mood');
+        var starBtns = form.querySelectorAll('.star-btn');
+        var missInput = document.getElementById('selected-miss-level');
+
+        if (moodBtns.length && moodInput) {
+            function updateMood(value) {
+                moodBtns.forEach(function(btn) {
+                    btn.classList.toggle('active', btn.getAttribute('data-mood') === value);
+                });
+                moodInput.value = value;
+            }
+
+            moodBtns.forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    updateMood(this.getAttribute('data-mood'));
+                });
+            });
+
+            updateMood(moodInput.value || moodBtns[0].getAttribute('data-mood'));
+        }
+
+        if (starBtns.length && missInput) {
+            function updateStars(level) {
+                starBtns.forEach(function(btn, index) {
+                    btn.classList.toggle('active', index < level);
+                });
+                missInput.value = String(level);
+            }
+
+            starBtns.forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var level = parseInt(this.getAttribute('data-level'), 10);
+                    updateStars(isNaN(level) ? 3 : Math.max(1, Math.min(5, level)));
+                });
+            });
+
+            updateStars(Math.max(1, Math.min(5, parseInt(missInput.value, 10) || 3)));
+        }
+    }
+
+    // 全局主题切换
+    function initThemeToggle() {
+        var root = document.documentElement;
+        var toggle = document.querySelector('[data-theme-toggle]');
+        var icon = document.querySelector('[data-theme-toggle-icon]');
+        var themeColorMeta = document.getElementById('brave-theme-color');
+        var storageKey = 'brave-theme';
+        var themeColors = {
+            light: '#fff7f8',
+            dark: '#18161d'
+        };
+
+        function normalizeTheme(value) {
+            return value === 'dark' ? 'dark' : 'light';
+        }
+
+        function persistTheme(value) {
+            try {
+                window.localStorage.setItem(storageKey, value);
+            } catch (error) {
+                // 忽略隐私模式下可能出现的存储异常。
+            }
+        }
+
+        function updateToggle(theme) {
+            if (!toggle) {
+                return;
+            }
+
+            var isDark = theme === 'dark';
+            var nextLabel = isDark ? '切换到浅色模式' : '切换到深色模式';
+
+            toggle.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+            toggle.setAttribute('aria-label', nextLabel);
+            toggle.setAttribute('title', nextLabel);
+
+            if (icon) {
+                icon.textContent = isDark ? '☀️' : '🌙';
+            }
+        }
+
+        function applyTheme(theme, shouldPersist) {
+            var normalized = normalizeTheme(theme);
+
+            root.setAttribute('data-theme', normalized);
+            root.style.colorScheme = normalized;
+
+            if (themeColorMeta) {
+                themeColorMeta.setAttribute('content', themeColors[normalized]);
+            }
+
+            if (shouldPersist) {
+                persistTheme(normalized);
+            }
+
+            updateToggle(normalized);
+        }
+
+        applyTheme(root.getAttribute('data-theme'), false);
+
+        if (!toggle) {
+            return;
+        }
+
+        toggle.addEventListener('click', function() {
+            var nextTheme = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            applyTheme(nextTheme, true);
         });
     }
 
     // 初始化
     $(document).ready(function() {
+        initThemeToggle();
         initLoveTimer();
         initAnniversaryCountdown();
         initWeather();
+        initHorizontalScrollRows();
         initFilterDropdowns();
         initNavbar();
         initBackToTop();
-        initPhotoSwipe();
         initScrollReveal();
         initListToggle();
+        initQuickNoteForm();
     });
 
 })(jQuery);

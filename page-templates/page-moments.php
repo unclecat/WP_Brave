@@ -23,10 +23,10 @@ get_template_part(
 $current_year = isset($_GET['filter_year']) ? absint(wp_unslash($_GET['filter_year'])) : 0;
 
 // 获取当前页码
-$paged = get_query_var('paged') ? get_query_var('paged') : 1;
+$paged = max(1, absint(get_query_var('paged')));
 
 // 获取每页文章数设置
-$per_page = get_theme_mod('brave_moments_per_page', 7);
+$per_page = max(1, absint(get_theme_mod('brave_moments_per_page', 7)));
 
 // 获取所有年份（用于导航）
 $all_years = brave_get_moment_years();
@@ -139,8 +139,8 @@ rsort($years);
                             $author_name = get_the_author_meta('display_name', $author_id);
                             
                             // 使用主题设置的头像（与 Hero 区域保持一致）
-                            $boy_user_id = intval(get_theme_mod('brave_boy_user_id'));
-                            $girl_user_id = intval(get_theme_mod('brave_girl_user_id'));
+                            $boy_user_id = absint(get_theme_mod('brave_boy_user_id'));
+                            $girl_user_id = absint(get_theme_mod('brave_girl_user_id'));
                             
                             if ($boy_user_id > 0 && $author_id == $boy_user_id) {
                                 // 作者是男生
@@ -201,7 +201,7 @@ rsort($years);
                                                 
                                                 <?php if ($mood) : ?>
                                                     <div class="timeline-card-mood">
-                                                        <span class="mood-emoji"><?php echo $mood_emoji; ?></span>
+                                                        <span class="mood-emoji"><?php echo esc_html($mood_emoji); ?></span>
                                                         <span class="mood-text"><?php echo esc_html($mood_text); ?></span>
                                                     </div>
                                                 <?php endif; ?>
@@ -229,7 +229,7 @@ rsort($years);
                 $base = add_query_arg('paged', '%#%', $moments_base_url);
             }
         ?>
-            <nav class="pagination" style="margin-top: 2rem; text-align: center;">
+            <nav class="pagination">
                 <?php
                 echo paginate_links(array(
                     'base' => $base,

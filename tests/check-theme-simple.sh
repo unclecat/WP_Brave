@@ -93,12 +93,19 @@ echo ""
 # 检查文件大小
 echo "📦 文件大小..."
 theme_size=$(du -sh "$THEME_DIR" | cut -f1)
-zip_size=$(find "$THEME_DIR/.." -maxdepth 1 -type f -name 'brave-love*.zip' -exec du -sh {} \; 2>/dev/null | tail -n 1 | cut -f1)
-if [ -z "$zip_size" ]; then
+zip_file="$THEME_DIR/../brave-love.zip"
+if [ ! -f "$zip_file" ]; then
+    zip_file=$(ls -t "$THEME_DIR"/../brave-love*.zip 2>/dev/null | head -n 1)
+fi
+if [ -n "$zip_file" ] && [ -f "$zip_file" ]; then
+    zip_size=$(du -sh "$zip_file" | cut -f1)
+    zip_label="$zip_size ($(basename "$zip_file"))"
+else
     zip_size="未打包"
+    zip_label="$zip_size"
 fi
 echo "   主题目录: $theme_size"
-echo "   ZIP 包: $zip_size"
+echo "   ZIP 包: $zip_label"
 echo ""
 
 # 检查模板文件

@@ -58,13 +58,14 @@ $format_story_date = static function ($date_value, $fallback = '') {
 
 $start_date = $first_story ? get_post_meta($first_story->ID, '_story_date', true) : '';
 $latest_date = $last_story ? get_post_meta($last_story->ID, '_story_date', true) : '';
-$latest_story_overview = __('待补充', 'brave-love');
+$latest_story_title = __('待补充', 'brave-love');
+$latest_story_date_label = '';
 
 if ($last_story) {
-    $latest_story_overview = get_the_title($last_story);
+    $latest_story_title = get_the_title($last_story);
 
     if ($latest_date) {
-        $latest_story_overview = $format_story_date($latest_date) . ' · ' . $latest_story_overview;
+        $latest_story_date_label = $format_story_date($latest_date);
     }
 }
 
@@ -108,7 +109,13 @@ get_template_part(
 
                             <div class="about-overview-item">
                                 <span class="about-overview-label"><?php esc_html_e('最近节点', 'brave-love'); ?></span>
-                                <strong class="about-overview-value"><?php echo esc_html($latest_story_overview); ?></strong>
+                                <div class="about-overview-stack">
+                                    <?php if ($latest_story_date_label) : ?>
+                                        <span class="about-overview-note"><?php echo esc_html($latest_story_date_label); ?></span>
+                                    <?php endif; ?>
+
+                                    <strong class="about-overview-value about-overview-value-secondary"><?php echo esc_html($latest_story_title); ?></strong>
+                                </div>
                             </div>
                         </div>
                     </aside>

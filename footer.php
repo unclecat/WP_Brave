@@ -6,10 +6,22 @@ if (!defined('ABSPATH')) {
 </main><!-- #main -->
 
 <!-- 页脚 -->
+<?php $footer_nav_items = function_exists('brave_get_footer_nav_items') ? brave_get_footer_nav_items() : array(); ?>
 <footer class="footer">
-    <div class="footer-text footer-copyright">
-        <?php if (get_theme_mod('brave_pv_enabled', '1')) : ?>
-        <?php $pv = brave_get_pv_stats(); ?>
+    <?php if (!empty($footer_nav_items)) : ?>
+    <nav class="footer-nav" aria-label="<?php esc_attr_e('页脚导航', 'brave-love'); ?>">
+        <ul class="footer-nav-list">
+            <?php foreach ($footer_nav_items as $item) : ?>
+            <li class="footer-nav-item">
+                <a href="<?php echo esc_url($item['url']); ?>" class="footer-nav-link"><?php echo esc_html($item['label']); ?></a>
+            </li>
+            <?php endforeach; ?>
+        </ul>
+    </nav>
+    <?php endif; ?>
+    <?php if (brave_theme_mod_enabled('brave_pv_enabled', true)) : ?>
+    <?php $pv = brave_get_pv_stats(); ?>
+    <div class="footer-text footer-stats">
         <span class="pv-stats-inline">
             <span class="pv-label"><?php echo esc_html(brave_get_pv_display_text('today_prefix')); ?></span>
             <span class="pv-number"><?php echo number_format($pv['today_count']); ?></span>
@@ -19,12 +31,11 @@ if (!defined('ABSPATH')) {
             <span class="pv-number"><?php echo number_format($pv['total_count']); ?></span>
             <span class="pv-label"><?php echo esc_html(brave_get_pv_display_text('total_suffix')); ?></span>
         </span>
-        <span class="pv-copyright-separator">©</span>
-        <?php endif; ?>
-        <?php echo date('Y'); ?> <a href="<?php echo esc_url(home_url('/')); ?>"><?php bloginfo('name'); ?></a>
     </div>
-    <div class="footer-text footer-slogan">
-        <?php _e('用 ❤️ 记录我们的故事', 'brave-love'); ?>
+    <?php endif; ?>
+    <div class="footer-text footer-signoff">
+        <span class="footer-signoff-copyright">© <?php echo esc_html(wp_date('Y')); ?> <a href="<?php echo esc_url('https://www.1ink.ink/'); ?>"><?php echo esc_html(get_bloginfo('name')); ?></a></span>
+        <span class="footer-slogan"><?php _e('用 ❤️ 记录我们的故事', 'brave-love'); ?></span>
     </div>
 </footer>
 

@@ -22,7 +22,7 @@
     min-height: var(--page-chip-min-height);
     padding: 0.55rem 1rem;
     background: rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(255, 81, 98, 0.12);
+    border: 1px solid var(--editorial-border-subtle);
     border-radius: 999px;
     color: var(--text-muted);
     font-size: var(--page-chip-font-size);
@@ -57,6 +57,12 @@
 @media (min-width: 640px) {
     .gallery-waterfall {
         column-count: 2;
+    }
+}
+
+@media (min-width: 980px) {
+    .gallery-waterfall {
+        column-count: 3;
     }
 }
 
@@ -179,19 +185,28 @@
 .gallery-empty-btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     padding: 0.75rem 1.5rem;
-    background: var(--primary-color);
-    color: #fff;
-    border-radius: 25px;
+    border: 1px solid rgba(255, 81, 98, 0.18);
+    background: var(--editorial-surface-active);
+    color: var(--primary-color);
+    border-radius: 999px;
     text-decoration: none;
-    font-weight: 500;
-    transition: var(--transition);
+    font-weight: 600;
+    box-shadow:
+        0 10px 22px rgba(255, 81, 98, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.92);
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .gallery-empty-btn:hover {
-    background: var(--secondary-color);
-    color: #fff;
-    transform: translateY(-2px);
+    border-color: rgba(255, 81, 98, 0.24);
+    background: linear-gradient(180deg, rgba(255, 229, 235, 1), rgba(255, 242, 245, 1));
+    color: var(--primary-color);
+    transform: translateY(-1px);
+    box-shadow:
+        0 12px 24px rgba(255, 81, 98, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 
 /* ==================== 分页 ==================== */
@@ -199,35 +214,12 @@
     display: flex;
     justify-content: center;
     gap: 0.5rem;
-    margin-top: var(--page-stack-gap);
+    margin-top: 1.22rem;
     padding: 0;
 }
 
-.gallery-pagination a,
-.gallery-pagination span {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 40px;
-    height: 40px;
-    padding: 0 0.75rem;
-    background: var(--card-bg);
-    border-radius: 8px;
-    color: var(--text-color);
-    font-size: 0.875rem;
-    text-decoration: none;
-    box-shadow: var(--shadow);
-    transition: var(--transition);
-}
-
-.gallery-pagination a:hover {
-    background: var(--primary-color);
-    color: #fff;
-}
-
-.gallery-pagination .current {
-    background: var(--primary-color);
-    color: #fff;
+.gallery-waterfall + .gallery-pagination {
+    margin-top: 0.96rem;
 }
 
 /* ==================== PhotoSwipe 自定义样式 ==================== */
@@ -292,69 +284,98 @@
     display: inline-block;
     margin-top: 0.75rem;
     padding: 0.5rem 1rem;
-    background: var(--primary-color);
-    color: #fff;
-    border-radius: 20px;
+    border: 1px solid rgba(255, 81, 98, 0.18);
+    background: var(--editorial-surface-active);
+    color: var(--primary-color);
+    border-radius: 999px;
     text-decoration: none;
     font-size: 0.85rem;
-    font-weight: 500;
-    transition: var(--transition);
+    font-weight: 600;
+    box-shadow:
+        0 10px 22px rgba(255, 81, 98, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.92);
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .pswp-info-link:hover {
-    background: var(--secondary-color);
-    color: #fff;
+    border-color: rgba(255, 81, 98, 0.24);
+    background: linear-gradient(180deg, rgba(255, 229, 235, 1), rgba(255, 242, 245, 1));
+    color: var(--primary-color);
+    transform: translateY(-1px);
+    box-shadow:
+        0 12px 24px rgba(255, 81, 98, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 
 /* 暗黑模式适配 */
-@media (prefers-color-scheme: dark) {
-    .gallery-year-item {
-        background: rgba(36, 32, 41, 0.92);
-        border-color: rgba(255, 255, 255, 0.08);
+
+        html[data-theme="dark"] .gallery-year-item {
+        background: var(--editorial-surface-muted);
+        border-color: var(--editorial-border-subtle);
         color: #c1bac6;
         box-shadow: 0 10px 22px rgba(0, 0, 0, 0.2);
     }
 
-    .gallery-year-item:hover {
-        background: rgba(255, 81, 98, 0.12);
+        html[data-theme="dark"] .gallery-year-item:hover {
+        background: var(--editorial-accent-wash);
         border-color: rgba(255, 81, 98, 0.32);
         color: #ff8f9b;
     }
 
-    .gallery-year-item.active {
+        html[data-theme="dark"] .gallery-year-item.active {
         color: #fff;
         box-shadow: 0 10px 22px rgba(255, 81, 98, 0.24);
     }
 
-    .gallery-empty {
+        html[data-theme="dark"] .gallery-empty {
         background: #1e1e1e;
-        border-color: rgba(255, 255, 255, 0.08);
+        border-color: var(--editorial-border-subtle);
         box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
     }
 
-    .gallery-empty-title {
+        html[data-theme="dark"] .gallery-empty-title {
         color: #f3f3f3;
     }
 
-    .gallery-empty-desc {
+        html[data-theme="dark"] .gallery-empty-desc {
         color: #a8a1ad;
     }
 
-    .pswp__custom-info {
+        html[data-theme="dark"] .gallery-empty-btn,
+    html[data-theme="dark"] .pswp-info-link {
+        background: var(--editorial-surface-active);
+        border-color: var(--editorial-border-strong);
+        color: #ffe5ea;
+        box-shadow:
+            0 12px 24px rgba(0, 0, 0, 0.24),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+        html[data-theme="dark"] .gallery-empty-btn:hover,
+    html[data-theme="dark"] .pswp-info-link:hover {
+        border-color: rgba(255, 143, 155, 0.28);
+        color: #ffeef1;
+    }
+
+        html[data-theme="dark"] .pswp__custom-info {
         background: rgba(40, 40, 40, 0.95);
     }
     
-    .pswp-info-date {
+        html[data-theme="dark"] .pswp-info-date {
         color: #fff;
     }
     
-    .pswp-info-summary {
+        html[data-theme="dark"] .pswp-info-summary {
         color: #ddd;
     }
-}
+
 
 /* 移动端适配 */
 @media (max-width: 576px) {
+    .gallery-waterfall + .gallery-pagination {
+        margin-top: 0.9rem;
+    }
+
     .pswp__custom-info {
         bottom: 70px;
         width: calc(100% - 2rem);

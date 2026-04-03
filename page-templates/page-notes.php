@@ -21,11 +21,11 @@ get_template_part(
 );
 
 // 获取筛选参数
-$filter_year = isset($_GET['filter_year']) ? intval(wp_unslash($_GET['filter_year'])) : 0;
-$filter_month = isset($_GET['filter_month']) ? intval(wp_unslash($_GET['filter_month'])) : 0;
-$filter_day = isset($_GET['filter_day']) ? intval(wp_unslash($_GET['filter_day'])) : 0;
+$filter_year = isset($_GET['filter_year']) ? absint(wp_unslash($_GET['filter_year'])) : 0;
+$filter_month = isset($_GET['filter_month']) ? absint(wp_unslash($_GET['filter_month'])) : 0;
+$filter_day = isset($_GET['filter_day']) ? absint(wp_unslash($_GET['filter_day'])) : 0;
 
-$paged = get_query_var('paged') ? get_query_var('paged') : 1;
+$paged = max(1, absint(get_query_var('paged')));
 
 // 构建查询参数
 $args = array(
@@ -74,7 +74,7 @@ if ($filter_year && $filter_month) {
 $is_logged_in = is_user_logged_in();
 $current_user = wp_get_current_user();
 
-$notes_filter_label = '共 ' . intval($query->found_posts) . ' 条记录，按时间回看每次心情波动';
+$notes_filter_label = '';
 
 if ($filter_year) {
     $notes_filter_label = $filter_year . '年';
@@ -94,9 +94,11 @@ if ($filter_year) {
 <section class="content-section">
     <div class="page-shell page-shell-narrow">
         <div class="content-filter-shell notes-filter-shell">
-            <div class="content-filter-heading">
-                <p class="content-filter-meta"><?php echo esc_html($notes_filter_label); ?></p>
-            </div>
+            <?php if ($notes_filter_label) : ?>
+                <div class="content-filter-heading">
+                    <p class="content-filter-meta"><?php echo esc_html($notes_filter_label); ?></p>
+                </div>
+            <?php endif; ?>
 
             <div class="notes-filter-bar content-filter-actions">
                 <!-- 全部按钮 -->
@@ -110,14 +112,14 @@ if ($filter_year) {
                 <!-- 年份筛选 - 始终显示 -->
                 <div class="filter-group">
                     <button class="filter-dropdown-toggle <?php echo $filter_year ? 'has-value' : ''; ?>" data-toggle="year">
-                        <?php echo $filter_year ? $filter_year . '年' : '年份'; ?>
+                        <?php echo $filter_year ? esc_html($filter_year . '年') : '年份'; ?>
                     </button>
                     <div class="filter-dropdown" id="year-dropdown">
                         <?php if (!empty($years)) : ?>
                             <?php foreach ($years as $year) : ?>
                                 <a href="<?php echo esc_url(add_query_arg(array('filter_year' => $year, 'filter_month' => false, 'filter_day' => false))); ?>" 
                                    class="filter-option <?php echo $filter_year == $year ? 'active' : ''; ?>">
-                                    <?php echo $year; ?>年
+                                    <?php echo esc_html($year); ?>年
                                 </a>
                             <?php endforeach; ?>
                         <?php else : ?>
@@ -130,14 +132,14 @@ if ($filter_year) {
                 <?php if ($filter_year) : ?>
                 <div class="filter-group">
                     <button class="filter-dropdown-toggle <?php echo $filter_month ? 'has-value' : ''; ?>" data-toggle="month">
-                        <?php echo $filter_month ? $filter_month . '月' : '月份'; ?>
+                        <?php echo $filter_month ? esc_html($filter_month . '月') : '月份'; ?>
                     </button>
                     <div class="filter-dropdown" id="month-dropdown">
                         <?php if (!empty($months)) : ?>
                             <?php foreach ($months as $month) : ?>
                                 <a href="<?php echo esc_url(add_query_arg(array('filter_month' => $month, 'filter_day' => false))); ?>" 
                                    class="filter-option <?php echo $filter_month == $month ? 'active' : ''; ?>">
-                                    <?php echo $month; ?>月
+                                    <?php echo esc_html($month); ?>月
                                 </a>
                             <?php endforeach; ?>
                         <?php else : ?>
@@ -151,14 +153,14 @@ if ($filter_year) {
                 <?php if ($filter_year && $filter_month) : ?>
                 <div class="filter-group">
                     <button class="filter-dropdown-toggle <?php echo $filter_day ? 'has-value' : ''; ?>" data-toggle="day">
-                        <?php echo $filter_day ? $filter_day . '日' : '日期'; ?>
+                        <?php echo $filter_day ? esc_html($filter_day . '日') : '日期'; ?>
                     </button>
                     <div class="filter-dropdown" id="day-dropdown">
                         <?php if (!empty($days)) : ?>
                             <?php foreach ($days as $day) : ?>
                                 <a href="<?php echo esc_url(add_query_arg('filter_day', $day)); ?>" 
                                    class="filter-option <?php echo $filter_day == $day ? 'active' : ''; ?>">
-                                    <?php echo $day; ?>日
+                                    <?php echo esc_html($day); ?>日
                                 </a>
                             <?php endforeach; ?>
                         <?php else : ?>
@@ -175,15 +177,15 @@ if ($filter_year) {
         <div class="notes-waterfall" id="notesWaterfall">
             <?php while ($query->have_posts()) : $query->the_post(); 
                 $note_mood = get_post_meta(get_the_ID(), '_note_mood', true);
-                $note_miss_level = get_post_meta(get_the_ID(), '_note_miss_level', true);
-                if (empty($note_miss_level)) $note_miss_level = 3;
+                $note_miss_level_raw = absint(get_post_meta(get_the_ID(), '_note_miss_level', true));
+                $note_miss_level = $note_miss_level_raw > 0 ? max(1, min(5, $note_miss_level_raw)) : 3;
                 
                 $author_id = get_the_author_meta('ID');
                 $author_name = get_the_author();
                 
                 // 获取头像：优先使用主题设置的头像，否则使用 WordPress 头像
-                $boy_user_id = intval(get_theme_mod('brave_boy_user_id'));
-                $girl_user_id = intval(get_theme_mod('brave_girl_user_id'));
+                $boy_user_id = absint(get_theme_mod('brave_boy_user_id'));
+                $girl_user_id = absint(get_theme_mod('brave_girl_user_id'));
                 
                 if ($boy_user_id > 0 && $author_id == $boy_user_id) {
                     // 作者是男生
@@ -219,9 +221,11 @@ if ($filter_year) {
                     
                     <div class="note-card-footer">
                         <div class="note-miss-level">
-                            <span class="miss-label">思念</span>
-                            <span class="miss-stars">
-                                <?php echo str_repeat('⭐', $note_miss_level); ?>
+                            <span class="note-miss-chip">
+                                <span class="miss-label">思念度</span>
+                                <span class="miss-stars">
+                                    <?php echo str_repeat('⭐', $note_miss_level); ?>
+                                </span>
                             </span>
                         </div>
                     </div>
@@ -269,8 +273,8 @@ if ($filter_year) {
     <?php if ($is_logged_in) : 
         // 获取当前用户头像
         $current_user_id = $current_user->ID;
-        $boy_user_id = intval(get_theme_mod('brave_boy_user_id'));
-        $girl_user_id = intval(get_theme_mod('brave_girl_user_id'));
+        $boy_user_id = absint(get_theme_mod('brave_boy_user_id'));
+        $girl_user_id = absint(get_theme_mod('brave_girl_user_id'));
         
         if ($boy_user_id > 0 && $current_user_id == $boy_user_id) {
             $current_avatar = brave_get_couple_avatar('boy', 100);
@@ -324,52 +328,6 @@ if ($filter_year) {
     <?php endif; ?>
     </div>
 </section>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // 心情选择
-    const moodBtns = document.querySelectorAll('.mood-btn');
-    const moodInput = document.getElementById('selected-mood');
-    
-    moodBtns.forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            moodBtns.forEach(function(b) { b.classList.remove('active'); });
-            this.classList.add('active');
-            moodInput.value = this.getAttribute('data-mood');
-        });
-    });
-    
-    // 默认选中第一个心情
-    if (moodBtns.length > 0) {
-        moodBtns[0].classList.add('active');
-    }
-    
-    // 思念度选择
-    const starBtns = document.querySelectorAll('.star-btn');
-    const missInput = document.getElementById('selected-miss-level');
-    
-    function updateStars(level) {
-        starBtns.forEach(function(btn, index) {
-            if (index < level) {
-                btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
-            }
-        });
-        missInput.value = level;
-    }
-    
-    starBtns.forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            const level = parseInt(this.getAttribute('data-level'));
-            updateStars(level);
-        });
-    });
-    
-    // 默认选中3星
-    updateStars(3);
-});
-</script>
 
 <?php
 get_footer();

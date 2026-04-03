@@ -20,6 +20,73 @@ function brave_sanitize_pv_number($value) {
 }
 
 /**
+ * 页脚导航链接 sanitize，支持相对路径和完整 URL。
+ *
+ * @param string $value 原始值
+ * @return string
+ */
+function brave_sanitize_footer_nav_url($value) {
+    $value = trim((string) $value);
+
+    if ('' === $value) {
+        return '';
+    }
+
+    if (0 === strpos($value, '/')) {
+        return esc_url_raw(home_url($value));
+    }
+
+    if (!preg_match('#^[a-z][a-z0-9+\-.]*://#i', $value)) {
+        $value = home_url('/' . ltrim($value, '/'));
+    }
+
+    return esc_url_raw($value, array('http', 'https'));
+}
+
+/**
+ * Customizer 复选框 sanitize。
+ *
+ * @param mixed $value 原始值
+ * @return bool
+ */
+function brave_sanitize_checkbox($value) {
+    return wp_validate_boolean($value);
+}
+
+/**
+ * 自定义 CSS sanitize。
+ *
+ * 仅移除包裹 style 标签，保留正常 CSS 语法，避免把选择器内容误伤。
+ *
+ * @param string $value 原始值
+ * @return string
+ */
+function brave_sanitize_custom_css($value) {
+    $value = (string) $value;
+    $value = preg_replace('#</?style[^>]*>#i', '', $value);
+    $value = str_ireplace('</style', '<\\/style', $value);
+
+    return trim($value);
+}
+
+/**
+ * 底部代码 sanitize。
+ *
+ * 拥有 unfiltered_html 的管理员允许保存原始统计代码，
+ * 其他用户仍回退到文章级白名单。
+ *
+ * @param string $value 原始值
+ * @return string
+ */
+function brave_sanitize_footer_code($value) {
+    if (current_user_can('unfiltered_html')) {
+        return (string) $value;
+    }
+
+    return wp_kses_post($value);
+}
+
+/**
  * 自定义控制类 - 纪念日管理说明
  */
 if (class_exists('WP_Customize_Control')) {
@@ -28,7 +95,7 @@ if (class_exists('WP_Customize_Control')) {
             ?>
             <div class="brave-anniversary-note">
                 <p><?php _e('纪念日管理请前往：后台 → 设置 → 纪念日管理', 'brave-love'); ?></p>
-                <a href="<?php echo admin_url('options-general.php?page=brave-anniversary'); ?>" class="button">
+                <a href="<?php echo esc_url(admin_url('options-general.php?page=brave-anniversary')); ?>" class="button">
                     <?php _e('管理纪念日', 'brave-love'); ?>
                 </a>
             </div>
@@ -249,7 +316,7 @@ function brave_customize_register($wp_customize) {
     // 男生关联用户
     $wp_customize->add_setting('brave_boy_user_id', array(
         'default' => '',
-        'sanitize_callback' => 'sanitize_text_field',
+        'sanitize_callback' => 'absint',
         'transport' => 'refresh',
     ));
     $wp_customize->add_control('brave_boy_user_id', array(
@@ -262,7 +329,7 @@ function brave_customize_register($wp_customize) {
     // 女生关联用户
     $wp_customize->add_setting('brave_girl_user_id', array(
         'default' => '',
-        'sanitize_callback' => 'sanitize_text_field',
+        'sanitize_callback' => 'absint',
         'transport' => 'refresh',
     ));
     $wp_customize->add_control('brave_girl_user_id', array(
@@ -453,6 +520,54 @@ function brave_customize_register($wp_customize) {
         'type' => 'dropdown-pages',
     ));
 
+    // ==================== 页脚导航 ====================
+    $wp_customize->add_section('brave_footer_nav', array(
+        'title' => __('页脚导航', 'brave-love'),
+        'description' => __('可单独自定义页脚导航名称和链接。链接留空时，会自动跟随当前页面配置。', 'brave-love'),
+        'panel' => 'brave_settings',
+    ));
+
+    $footer_nav_fields = array(
+        'home' => __('首页', 'brave-love'),
+        'about' => __('关于我们', 'brave-love'),
+        'moments' => __('点点滴滴', 'brave-love'),
+        'lists' => __('恋爱清单', 'brave-love'),
+        'memories' => __('甜蜜相册', 'brave-love'),
+        'notes' => __('随笔说说', 'brave-love'),
+        'blessing' => __('祝福留言', 'brave-love'),
+    );
+
+    $priority = 10;
+
+    foreach ($footer_nav_fields as $key => $label) {
+        $wp_customize->add_setting("brave_footer_nav_{$key}_label", array(
+            'default' => $label,
+            'sanitize_callback' => 'sanitize_text_field',
+            'transport' => 'refresh',
+        ));
+        $wp_customize->add_control("brave_footer_nav_{$key}_label", array(
+            'label' => sprintf(__('%s名称', 'brave-love'), $label),
+            'section' => 'brave_footer_nav',
+            'type' => 'text',
+            'priority' => $priority,
+        ));
+        $priority += 5;
+
+        $wp_customize->add_setting("brave_footer_nav_{$key}_url", array(
+            'default' => '',
+            'sanitize_callback' => 'brave_sanitize_footer_nav_url',
+            'transport' => 'refresh',
+        ));
+        $wp_customize->add_control("brave_footer_nav_{$key}_url", array(
+            'label' => sprintf(__('%s链接', 'brave-love'), $label),
+            'description' => __('支持填写完整链接或站内相对路径；留空则自动使用当前页面链接。', 'brave-love'),
+            'section' => 'brave_footer_nav',
+            'type' => 'text',
+            'priority' => $priority,
+        ));
+        $priority += 5;
+    }
+
     // ==================== 分页设置 ====================
     $wp_customize->add_section('brave_pagination', array(
         'title' => __('分页设置', 'brave-love'),
@@ -523,7 +638,7 @@ function brave_customize_register($wp_customize) {
     // 自定义 CSS
     $wp_customize->add_setting('brave_custom_css', array(
         'default' => '',
-        'sanitize_callback' => 'wp_strip_all_tags',
+        'sanitize_callback' => 'brave_sanitize_custom_css',
         'transport' => 'refresh',
     ));
     $wp_customize->add_control('brave_custom_css', array(
@@ -539,7 +654,7 @@ function brave_customize_register($wp_customize) {
     // 底部代码
     $wp_customize->add_setting('brave_footer_code', array(
         'default' => '',
-        'sanitize_callback' => 'wp_kses_post',
+        'sanitize_callback' => 'brave_sanitize_footer_code',
         'transport' => 'refresh',
     ));
     $wp_customize->add_control('brave_footer_code', array(
@@ -560,8 +675,8 @@ function brave_customize_register($wp_customize) {
 
     // 启用 PV 统计
     $wp_customize->add_setting('brave_pv_enabled', array(
-        'default' => '1',
-        'sanitize_callback' => 'sanitize_text_field',
+        'default' => true,
+        'sanitize_callback' => 'brave_sanitize_checkbox',
     ));
     $wp_customize->add_control('brave_pv_enabled', array(
         'label' => __('启用访问统计', 'brave-love'),
@@ -655,7 +770,7 @@ add_action('customize_register', 'brave_customize_register');
 function brave_output_custom_css() {
     $custom_css = get_theme_mod('brave_custom_css', '');
     if (!empty($custom_css)) {
-        echo '<style type="text/css">' . wp_strip_all_tags($custom_css) . '</style>';
+        echo "<style type=\"text/css\" id=\"brave-custom-css\">\n" . $custom_css . "\n</style>"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
     }
 }
 add_action('wp_head', 'brave_output_custom_css', 100);
@@ -666,7 +781,7 @@ add_action('wp_head', 'brave_output_custom_css', 100);
 function brave_output_footer_code() {
     $footer_code = get_theme_mod('brave_footer_code', '');
     if (!empty($footer_code)) {
-        echo wp_kses_post($footer_code);
+        echo $footer_code; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
     }
 }
 add_action('wp_footer', 'brave_output_footer_code', 100);
@@ -691,6 +806,10 @@ add_action('admin_menu', 'brave_add_anniversary_menu');
  * 纪念日管理页面
  */
 function brave_anniversary_page() {
+    if (!current_user_can('manage_options')) {
+        wp_die(__('权限不足', 'brave-love'));
+    }
+
     // 保存数据
     if (isset($_POST['brave_save_anniversaries']) && check_admin_referer('brave_anniversary_nonce')) {
         $anniversaries = array();
@@ -701,7 +820,7 @@ function brave_anniversary_page() {
                 : array();
 
             foreach ($anniversary_names as $key => $name) {
-                $date = sanitize_text_field($anniversary_dates[$key] ?? '');
+                $date = brave_sanitize_iso_date($anniversary_dates[$key] ?? '');
                 $name = sanitize_text_field($name);
                 if (!empty($name) && !empty($date)) {
                     $anniversaries[] = array(

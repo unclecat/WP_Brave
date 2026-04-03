@@ -1,72 +1,80 @@
-# Brave Love Test Report
+# Brave Love 1.0 Test Report
 
-Generated: 2026-04-03
-Project: `brave-love`
-Tester: Codex CLI
-Environment: local WordPress Docker runtime + local PHP CLI
+Generated: 2026-04-03  
+Project: `brave-love`  
+Tester: Codex CLI  
+Environment: local WordPress Docker runtime + local PHP CLI + headless Chrome capture
 
 ## Scope
 
-This run covered:
+This release check covered:
 
 - full PHP syntax linting for theme source
 - bundled theme structure and metadata checks
 - bundled security scan
 - local WordPress HTTP smoke tests for the main templates
-- metadata consistency verification for theme header and README
-- release artifact documentation refresh
+- release metadata verification for `style.css`, `functions.php`, `README.md`, `RELEASE.md` and `CHANGELOG.md`
+- release archive packaging and exclusion verification for the installable ZIP assets
+- WordPress theme screenshot regeneration and dimension validation
+- front-end / admin code audit around sanitize, capability, redirect, and output escaping
 
 This run did not cover:
 
-- real browser-driven visual regression
-- authenticated end-to-end publishing flows in a browser
-- external weather API correctness in live network conditions
+- browser-driven click-through regression for every authenticated admin flow
+- live third-party weather API correctness under production network conditions
+- package installation verification on a second clean WordPress instance
 
 ## Environment
 
 - `php`: available
+- `python3`: available
 - `docker`: available
-- local WordPress: available at `http://localhost:8080`
-- local phpMyAdmin: available at `http://localhost:8081`
-- theme runtime version: `0.7.9`
+- local WordPress: `http://localhost:8080`
+- local phpMyAdmin: `http://localhost:8081`
+- theme runtime version: `1.0.0`
+- screenshot output: `screenshot.png (1200 x 900)`
 
 ## Review Findings And Fixes
 
-### 1. Theme header author metadata mismatch
+### 1. Release metadata was not ready for a 1.0 product launch
 
 Risk:
 
-- WordPress 后台读取的主题头信息仍指向旧作者与占位仓库地址
-- 安装用户在主题后台看到的作者和实际 GitHub 发布源不一致，容易引发信任与维护混淆
+- WordPress 后台主题详情、GitHub README、Release 文案和仓库 About 信息容易出现各写各的情况
+- 版本升级到 1.0 后，如果描述、技术栈、截图和发布说明不同步，会明显拉低产品完整度
 
 Fix:
 
-- updated `style.css` header metadata to the live repository URL and current author website
-- kept version metadata aligned with the new patch release
+- refreshed `style.css` header for a formal `1.0.0` release
+- rewrote `README.md`, `RELEASE.md`, `RELEASE-CHECKLIST.md`
+- added `./.github/ABOUT.md` as the canonical GitHub About copy source
+- regenerated `screenshot.png` for WordPress theme previews
 
-### 2. README release metadata drift
+### 2. Admin/configuration data still had pre-release validation gaps
 
 Risk:
 
-- README still showed an old version badge and outdated capability notes
-- public documentation no longer matched the released theme package
+- Customizer custom CSS, footer code, user IDs, weather coordinates, anniversaries, and meta box dates had several weak validation points
+- release users could save malformed data or create avoidable admin-side inconsistencies
 
 Fix:
 
-- refreshed README version badge and current release section
-- synced feature descriptions for the about page, weather module, and project ownership
+- tightened sanitize logic for CSS, footer code, booleans, user IDs, ISO dates, and coordinates
+- added capability guards for anniversary, weather, and gallery admin pages
+- restricted legacy gallery deletion to actual `memory` posts only
 
-### 3. Release document alignment
+### 3. Runtime counters and redirects needed release-grade hardening
 
 Risk:
 
-- release notes, changelog, and test report can drift from the actual patch contents
-- this makes future maintenance and release auditing harder
+- PV stats could be polluted by admin, Ajax, REST, preview, or other non-frontend requests
+- a few redirect paths were still better expressed as safe redirects for release confidence
 
 Fix:
 
-- bumped theme version to `0.7.9`
-- refreshed release notes, changelog, and test report for this metadata patch
+- added a dedicated PV tracking gate to ignore non-frontend contexts
+- unified key redirects onto `wp_safe_redirect`
+- kept frontend publishing and archive normalization flows aligned with the hardened redirect strategy
 
 ## Executed Tests
 
@@ -83,13 +91,13 @@ Result: passed.
 Coverage:
 
 - `functions.php`
-- theme templates and template parts
-- `inc/` helper and admin modules
-- archive and single templates
+- all page templates and template parts
+- `inc/` feature modules and admin modules
+- archive / single templates
 
 Status: passed.
 
-### 2. Bundled shell smoke check
+### 2. Bundled shell structure check
 
 Command:
 
@@ -103,13 +111,13 @@ Observed summary:
 
 - required theme files: complete
 - theme name: `Brave Love`
-- version: `0.7.9`
+- version: `1.0.0`
+- text domain: detected and consistent
 - dangerous runtime functions: none found
-- text domain usage: detected and consistent
 
 Status: passed.
 
-### 3. Bundled PHP check
+### 3. Bundled PHP project check
 
 Command:
 
@@ -123,6 +131,7 @@ Observed summary:
 
 - all required files present
 - all scanned PHP files linted successfully
+- style header fields present and readable
 - no dangerous runtime function warnings
 
 Status: passed.
@@ -149,14 +158,59 @@ Observed summary:
 
 Status: passed.
 
-### 5. Metadata consistency check
+### 5. Local WordPress smoke test
 
 Checks executed:
 
-- theme header `Theme URI` matches the current GitHub repository
-- theme header `Author` and `Author URI` match the requested release identity
-- README no longer contains stale version badge `0.3.5`
-- README no longer contains old author references
+- homepage
+- about page
+- moments page
+- memories page
+- notes page
+- blessing page
+- love list archive
+
+Observed summary:
+
+- all checked pages served versioned assets with `ver=1.0.0`
+- global theme toggle markup present
+- footer navigation present across the checked pages
+- key page structures present: weather, about overview, timeline, gallery, quick note form, blessing waterfall, love list grid
+
+Status: passed.
+
+### 6. Screenshot asset verification
+
+Checks executed:
+
+- regenerated `screenshot.png` from current local pages
+- verified theme screenshot dimensions
+- verified file format remains PNG
+
+Observed summary:
+
+- screenshot path: `screenshot.png`
+- dimensions: `1200 x 900`
+- format: `PNG`
+
+Status: passed.
+
+### 7. Release archive verification
+
+Checks executed:
+
+- generated `brave-love-1.0.0.zip`
+- synced `brave-love.zip` to the same release payload
+- verified archive root directory name is `brave-love/`
+- verified dev-only items such as `.git`, `.github`, `tests`, `RELEASE*.md`, `TEST-REPORT.md` and `SECURITY-REPORT.md` are excluded
+- verified `screenshot.png` is included as a non-empty file
+
+Observed summary:
+
+- versioned archive: `../brave-love-1.0.0.zip`
+- generic archive: `../brave-love.zip`
+- archive size: about `1.1 MB`
+- screenshot file present inside archive and no longer empty
 
 Status: passed.
 
@@ -165,16 +219,17 @@ Status: passed.
 - Static PHP validation: passed
 - Theme structure check: passed
 - Security scan: passed
-- Metadata consistency verification: passed
-- Release docs refresh: completed
+- Release metadata refresh: completed
+- Release archive packaging: completed
+- Screenshot asset refresh: completed
+- Local runtime smoke test: passed
 
 ## Remaining Risks
 
-- no screenshot-based or browser automation regression coverage yet
-- this run focuses on metadata, documentation, and packaging consistency rather than UI behavior changes
+- no full end-to-end browser automation for authenticated publishing/editing flows
+- weather widget live data quality still depends on third-party API availability in production
+- screenshot asset was regenerated from real local pages, but not reviewed through a separate automated visual diff pipeline
 
 ## Recommended Release State
 
-Current state is suitable for a patch release.
-
-Recommended release version: `v0.7.9`
+Current state is suitable for a formal `v1.0.0` release.

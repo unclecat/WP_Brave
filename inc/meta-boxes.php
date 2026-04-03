@@ -142,7 +142,7 @@ function brave_moment_meta_box($post) {
         </select>
     </p>
     <p class="description" style="color: #666; font-size: 12px; margin-top: 15px; padding: 10px; background: #f0f0f0; border-radius: 4px;">
-        💡 <strong>提示：</strong>在编辑器中上传的照片会自动显示在<a href="<?php echo esc_url(home_url('/memories/')); ?>" target="_blank">甜蜜相册</a>页面
+        💡 <strong>提示：</strong>在编辑器中上传的照片会自动显示在<a href="<?php echo esc_url(home_url('/memories/')); ?>" target="_blank" rel="noopener noreferrer">甜蜜相册</a>页面
     </p>
     <?php
 }
@@ -288,13 +288,25 @@ function brave_save_meta_boxes($post_id) {
     // 点点滴滴
     if (isset($_POST['brave_moment_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['brave_moment_nonce'])), 'brave_moment_meta')) {
         if (isset($_POST['meet_date'])) {
-            update_post_meta($post_id, '_meet_date', sanitize_text_field(wp_unslash($_POST['meet_date'])));
+            $meet_date = brave_sanitize_iso_date(wp_unslash($_POST['meet_date']));
+            if ('' !== $meet_date) {
+                update_post_meta($post_id, '_meet_date', $meet_date);
+            } else {
+                delete_post_meta($post_id, '_meet_date');
+            }
         }
         if (isset($_POST['meet_location'])) {
             update_post_meta($post_id, '_meet_location', sanitize_text_field(wp_unslash($_POST['meet_location'])));
         }
         if (isset($_POST['mood'])) {
-            update_post_meta($post_id, '_mood', sanitize_text_field(wp_unslash($_POST['mood'])));
+            $mood = sanitize_key(wp_unslash($_POST['mood']));
+            $allowed_moods = array('happy', 'excited', 'romantic', 'peaceful', 'touched', 'miss');
+
+            if (in_array($mood, $allowed_moods, true)) {
+                update_post_meta($post_id, '_mood', $mood);
+            } else {
+                delete_post_meta($post_id, '_mood');
+            }
         }
         if (isset($_POST['moment_summary'])) {
             update_post_meta($post_id, '_moment_summary', wp_kses_post(wp_unslash($_POST['moment_summary'])));
@@ -307,7 +319,12 @@ function brave_save_meta_boxes($post_id) {
         update_post_meta($post_id, '_is_done', $is_done);
         
         if (isset($_POST['done_date'])) {
-            update_post_meta($post_id, '_done_date', sanitize_text_field(wp_unslash($_POST['done_date'])));
+            $done_date = brave_sanitize_iso_date(wp_unslash($_POST['done_date']));
+            if ('' !== $done_date) {
+                update_post_meta($post_id, '_done_date', $done_date);
+            } else {
+                delete_post_meta($post_id, '_done_date');
+            }
         }
     }
 
@@ -324,7 +341,12 @@ function brave_save_meta_boxes($post_id) {
     // 关于我们故事节点
     if (isset($_POST['brave_story_milestone_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['brave_story_milestone_nonce'])), 'brave_story_milestone_meta')) {
         if (isset($_POST['story_date'])) {
-            update_post_meta($post_id, '_story_date', sanitize_text_field(wp_unslash($_POST['story_date'])));
+            $story_date = brave_sanitize_iso_date(wp_unslash($_POST['story_date']));
+            if ('' !== $story_date) {
+                update_post_meta($post_id, '_story_date', $story_date);
+            } else {
+                delete_post_meta($post_id, '_story_date');
+            }
         }
         if (isset($_POST['story_phase'])) {
             update_post_meta($post_id, '_story_phase', sanitize_text_field(wp_unslash($_POST['story_phase'])));
@@ -334,6 +356,9 @@ function brave_save_meta_boxes($post_id) {
         }
 
         $related_moment_id = isset($_POST['related_moment_id']) ? absint(wp_unslash($_POST['related_moment_id'])) : 0;
+        if ($related_moment_id > 0 && 'moment' !== get_post_type($related_moment_id)) {
+            $related_moment_id = 0;
+        }
         update_post_meta($post_id, '_related_moment_id', $related_moment_id);
     }
 }
@@ -353,13 +378,16 @@ function brave_extract_images_from_content($post_id) {
     if (function_exists('parse_blocks')) {
         $blocks = parse_blocks($content);
         foreach ($blocks as $block) {
+            $block_name = $block['blockName'] ?? '';
+            $block_attrs = isset($block['attrs']) && is_array($block['attrs']) ? $block['attrs'] : array();
+
             // 图片块
-            if ($block['blockName'] === 'core/image' && !empty($block['attrs']['id'])) {
-                $images[] = $block['attrs']['id'];
+            if ('core/image' === $block_name && !empty($block_attrs['id'])) {
+                $images[] = $block_attrs['id'];
             }
             // 画廊块
-            if ($block['blockName'] === 'core/gallery' && !empty($block['attrs']['ids'])) {
-                $images = array_merge($images, $block['attrs']['ids']);
+            if ('core/gallery' === $block_name && !empty($block_attrs['ids']) && is_array($block_attrs['ids'])) {
+                $images = array_merge($images, $block_attrs['ids']);
             }
         }
     }

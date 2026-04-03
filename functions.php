@@ -6,7 +6,7 @@
  */
 
 // 定义常量
-define('BRAVE_VERSION', '0.7.9');
+define('BRAVE_VERSION', '1.0.0');
 define('BRAVE_BOOTSTRAP_VERSION', '5.3.2');
 define('BRAVE_PHOTOSWIPE_VERSION', '5.4.2');
 define('BRAVE_DIR', get_template_directory());
@@ -88,7 +88,7 @@ function brave_scripts() {
     
     // 随笔说说页面样式
     if (is_page_template('page-templates/page-notes.php')) {
-        wp_enqueue_style('brave-notes', BRAVE_URI . '/assets/css/notes.css', array(), BRAVE_VERSION);
+        wp_enqueue_style('brave-notes', BRAVE_URI . '/assets/css/notes.css', array('brave-extra'), BRAVE_VERSION);
     }
 
     // 关于我们页面样式
@@ -268,6 +268,11 @@ require BRAVE_DIR . '/inc/post-types.php';
 require BRAVE_DIR . '/inc/meta-boxes.php';
 
 /**
+ * 工具函数
+ */
+require BRAVE_DIR . '/inc/helpers.php';
+
+/**
  * Customizer 设置
  */
 require BRAVE_DIR . '/inc/customizer.php';
@@ -286,11 +291,6 @@ require BRAVE_DIR . '/inc/gallery-admin.php';
  * 短代码
  */
 require BRAVE_DIR . '/inc/shortcodes.php';
-
-/**
- * 工具函数
- */
-require BRAVE_DIR . '/inc/helpers.php';
 
 /**
  * 禁用 WordPress 默认功能
@@ -407,17 +407,22 @@ function brave_get_anniversaries() {
     
     if (!empty($anniversaries) && is_array($anniversaries)) {
         foreach ($anniversaries as $item) {
-            if (empty($item['name']) || empty($item['date'])) continue;
-            
-            $date = strtotime($item['date']);
+            $name = sanitize_text_field($item['name'] ?? '');
+            $date_value = brave_sanitize_iso_date($item['date'] ?? '');
+
+            if ('' === $name || '' === $date_value) {
+                continue;
+            }
+
+            $date = strtotime($date_value);
             $now = strtotime(current_time('Y-m-d'));
             $diff = $date - $now;
             $days = abs(floor($diff / 86400));
             $is_countdown = $diff > 0;
             
             $result[] = array(
-                'name' => $item['name'],
-                'date' => $item['date'],
+                'name' => $name,
+                'date' => $date_value,
                 'days' => $days,
                 'is_countdown' => $is_countdown,
             );
@@ -462,7 +467,7 @@ function brave_page_template_redirect() {
     if (is_post_type_archive('moment')) {
         $page = get_page_by_path('moments');
         if ($page) {
-            wp_redirect(get_permalink($page));
+            wp_safe_redirect(get_permalink($page));
             exit;
         }
     }
@@ -559,15 +564,36 @@ function brave_comment_moderation($approved, $commentdata) {
 }
 
 /**
+ * 当前请求是否应计入 PV。
+ *
+ * @return bool
+ */
+function brave_should_track_pv() {
+    if (is_admin() || wp_doing_ajax()) {
+        return false;
+    }
+
+    if ((function_exists('wp_is_json_request') && wp_is_json_request()) || (defined('REST_REQUEST') && REST_REQUEST)) {
+        return false;
+    }
+
+    if (is_customize_preview() || is_preview() || is_feed() || is_robots() || is_trackback()) {
+        return false;
+    }
+
+    return true;
+}
+
+/**
  * PV 访问统计
  */
 function brave_update_pv_stats() {
     // 检查是否启用
-    if (!get_theme_mod('brave_pv_enabled', '1')) {
+    if (!brave_theme_mod_enabled('brave_pv_enabled', true) || !brave_should_track_pv()) {
         return;
     }
-    
-    $today = date('Y-m-d');
+
+    $today = wp_date('Y-m-d');
     
     // 获取统计数据
     $stats = get_option('brave_pv_stats', array(
@@ -612,13 +638,13 @@ add_action('wp', 'brave_update_pv_stats');
  */
 function brave_get_pv_stats() {
     $stats = get_option('brave_pv_stats', array(
-        'today_date' => date('Y-m-d'),
+        'today_date' => wp_date('Y-m-d'),
         'today_count' => 0,
         'total_count' => 0,
     ));
     
     // 如果日期不对，今日计数为0
-    if ($stats['today_date'] !== date('Y-m-d')) {
+    if ($stats['today_date'] !== wp_date('Y-m-d')) {
         $stats['today_count'] = 0;
     }
     

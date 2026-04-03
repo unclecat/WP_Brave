@@ -9,145 +9,6 @@
     margin-bottom: 0;
 }
 
-.filter-group {
-    position: relative;
-}
-
-/* 全部按钮 */
-.filter-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: var(--page-chip-min-height);
-    padding: 0.55rem 1.1rem;
-    border-radius: 999px;
-    font-size: var(--page-chip-font-size);
-    font-weight: 500;
-    cursor: pointer;
-    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
-    border: 1px solid rgba(255, 81, 98, 0.12);
-    background: rgba(255, 255, 255, 0.9);
-    color: var(--text-muted);
-    text-decoration: none;
-}
-
-.filter-btn:hover {
-    background: rgba(255, 81, 98, 0.06);
-    border-color: rgba(255, 81, 98, 0.26);
-    box-shadow: 0 8px 18px rgba(255, 81, 98, 0.08);
-    color: var(--primary-color);
-    transform: translateY(-1px);
-}
-
-.filter-btn.active {
-    background: linear-gradient(135deg, var(--primary-color), #ff6b7a);
-    border-color: transparent;
-    color: #fff;
-    box-shadow: 0 10px 22px rgba(255, 81, 98, 0.2);
-}
-
-/* 下拉筛选按钮 */
-.filter-dropdown-toggle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: var(--page-chip-min-height);
-    padding: 0.55rem 1rem 0.55rem 1.15rem;
-    border-radius: 999px;
-    font-size: var(--page-chip-font-size);
-    font-weight: 500;
-    cursor: pointer;
-    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
-    border: 1px solid rgba(255, 81, 98, 0.12);
-    background: rgba(255, 255, 255, 0.9);
-    color: var(--text-muted);
-    white-space: nowrap;
-}
-
-.filter-dropdown-toggle:hover {
-    background: rgba(255, 81, 98, 0.06);
-    border-color: rgba(255, 81, 98, 0.26);
-    box-shadow: 0 8px 18px rgba(255, 81, 98, 0.08);
-    color: var(--primary-color);
-    transform: translateY(-1px);
-}
-
-.filter-dropdown-toggle.has-value {
-    background: linear-gradient(135deg, var(--primary-color), #ff6b7a);
-    border-color: transparent;
-    color: #fff;
-    box-shadow: 0 10px 22px rgba(255, 81, 98, 0.2);
-}
-
-/* 下拉箭头 */
-.filter-dropdown-toggle::after {
-    content: '';
-    display: inline-block;
-    width: 0;
-    height: 0;
-    margin-left: 0.5rem;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 4px solid currentColor;
-    transition: transform 0.3s ease;
-    opacity: 0.6;
-}
-
-.filter-dropdown-toggle.is-open::after {
-    transform: rotate(180deg);
-}
-
-/* 下拉菜单 */
-.filter-dropdown {
-    position: absolute;
-    top: calc(100% + 0.5rem);
-    left: 0;
-    min-width: 120px;
-    max-height: 240px;
-    overflow-y: auto;
-    background: rgba(255, 255, 255, 0.96);
-    border: 1px solid rgba(255, 81, 98, 0.12);
-    border-radius: 20px;
-    box-shadow: 0 18px 36px rgba(24, 14, 22, 0.12);
-    backdrop-filter: blur(14px);
-    padding: 0.5rem;
-    z-index: 100;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-8px);
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.filter-dropdown.show {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-/* 下拉选项 */
-.filter-option {
-    display: block;
-    padding: 0.5rem 1rem;
-    border-radius: 12px;
-    color: var(--text-color);
-    font-size: 0.875rem;
-    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
-    text-decoration: none;
-    white-space: nowrap;
-}
-
-.filter-option:hover {
-    background: rgba(255, 81, 98, 0.08);
-    color: var(--primary-color);
-    transform: translateX(2px);
-}
-
-.filter-option.active {
-    background: rgba(255, 81, 98, 0.12);
-    color: var(--primary-color);
-    font-weight: 600;
-}
-
 .filter-option.disabled {
     color: #aaa;
     cursor: default;
@@ -239,12 +100,16 @@
 .star-btn {
     width: 36px;
     height: 36px;
-    border: none;
-    background: #f5f5f5;
+    border: 1px solid rgba(255, 81, 98, 0.1);
+    background: var(--editorial-surface-base);
     border-radius: 50%;
     cursor: pointer;
     font-size: 1.125rem;
-    transition: all 0.2s ease;
+    color: rgba(120, 86, 92, 0.94);
+    box-shadow:
+        0 8px 18px rgba(24, 14, 22, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.82);
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -252,14 +117,22 @@
 
 .mood-btn:hover,
 .star-btn:hover {
-    transform: scale(1.1);
-    background: rgba(255, 154, 158, 0.2);
+    transform: translateY(-1px) scale(1.04);
+    border-color: rgba(255, 81, 98, 0.18);
+    background: var(--editorial-surface-hover);
+    box-shadow:
+        0 10px 20px rgba(24, 14, 22, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .mood-btn.active,
 .star-btn.active {
-    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-    color: #fff;
+    border-color: rgba(255, 81, 98, 0.18);
+    background: var(--editorial-surface-active);
+    color: var(--primary-color);
+    box-shadow:
+        0 10px 22px rgba(255, 81, 98, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.92);
 }
 
 .star-btn {
@@ -281,27 +154,40 @@
 
 .publish-submit {
     padding: 0.75rem 2rem;
-    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-    color: #fff;
-    border: none;
-    border-radius: 24px;
+    background: var(--editorial-surface-active);
+    color: var(--primary-color);
+    border: 1px solid rgba(255, 81, 98, 0.18);
+    border-radius: 999px;
     font-size: 0.9375rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    box-shadow:
+        0 10px 22px rgba(255, 81, 98, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.92);
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .publish-submit:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 154, 158, 0.4);
+    transform: translateY(-1px);
+    border-color: rgba(255, 81, 98, 0.24);
+    background: linear-gradient(180deg, rgba(255, 229, 235, 1), rgba(255, 242, 245, 1));
+    box-shadow:
+        0 12px 24px rgba(255, 81, 98, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 
 /* 瀑布流布局 */
 .notes-waterfall {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(var(--page-notes-card-min-width), 100%), 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--page-waterfall-gap);
     align-items: start;
+}
+
+@media (max-width: 960px) {
+    .notes-waterfall {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 .note-waterfall-card {
@@ -358,11 +244,16 @@
 .note-mood-badge {
     display: inline-flex;
     align-items: center;
-    padding: 0.25rem 0.75rem;
-    background: rgba(255, 154, 158, 0.1);
-    border-radius: 16px;
-    font-size: 0.875rem;
+    gap: 0.25rem;
+    padding: 0.3rem 0.78rem;
+    border: 1px solid var(--editorial-border-subtle);
+    background: linear-gradient(180deg, rgba(255, 239, 243, 0.96), rgba(255, 248, 249, 0.98));
+    border-radius: 999px;
+    color: rgba(120, 86, 92, 0.94);
+    font-size: 0.82rem;
+    font-weight: 600;
     margin-bottom: 0.75rem;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82);
 }
 
 .note-content {
@@ -388,15 +279,34 @@
 .note-miss-level {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
     font-size: 0.8125rem;
 }
 
+.note-miss-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0.78rem;
+    border: 1px solid var(--editorial-border-subtle);
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(255, 239, 243, 0.96), rgba(255, 248, 249, 0.98));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82);
+}
+
 .miss-label {
-    color: #999;
+    display: inline-flex;
+    align-items: center;
+    color: var(--primary-color);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
 }
 
 .miss-stars {
+    display: inline-flex;
+    align-items: center;
+    color: rgba(120, 86, 92, 0.94);
+    font-size: 0.86rem;
     letter-spacing: -2px;
 }
 
@@ -404,62 +314,53 @@
 .notes-pagination {
     display: flex;
     justify-content: center;
-    margin-top: var(--page-stack-gap);
+    margin-top: 1.22rem;
     gap: 0.5rem;
-}
-
-.notes-pagination a,
-.notes-pagination span {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-size: 0.875rem;
-    color: #666;
-    background: #fff;
-    transition: all 0.3s ease;
-}
-
-.notes-pagination a:hover {
-    background: rgba(255, 154, 158, 0.1);
-    color: #ff9a9e;
-}
-
-.notes-pagination .current {
-    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-    color: #fff;
 }
 
 /* 空状态 */
 .notes-empty {
     text-align: center;
-    padding: 4rem 2rem;
-    background: #fff;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 3.4rem 2rem 3.1rem;
+    background: linear-gradient(180deg, rgba(255, 247, 249, 0.96), rgba(255, 255, 255, 0.98));
     border-radius: var(--page-card-radius);
-    border: 1px solid rgba(255, 81, 98, 0.08);
-    box-shadow: var(--page-card-shadow);
+    border: 1px solid var(--editorial-border-subtle);
+    box-shadow:
+        0 16px 34px rgba(24, 14, 22, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.82);
 }
 
 .notes-empty-icon {
-    font-size: 4rem;
-    margin-bottom: 1rem;
+    font-size: 3.6rem;
+    margin-bottom: 1.05rem;
+    opacity: 0.72;
 }
 
 .notes-empty-text {
-    font-size: 1.08rem;
-    font-weight: 600;
+    font-size: 1.12rem;
+    font-weight: 700;
     color: var(--text-color);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.6rem;
+    line-height: 1.45;
+    letter-spacing: 0.01em;
 }
 
 .notes-empty-hint {
     font-size: 0.92rem;
     line-height: 1.7;
-    color: #999;
+    color: var(--text-muted);
+    max-width: 26rem;
+    margin: 0 auto;
 }
 
 /* 响应式调整 */
 @media (max-width: 640px) {
+    .notes-waterfall {
+        grid-template-columns: 1fr;
+    }
+
     .notes-filter-bar {
         gap: 0.5rem;
     }
@@ -485,6 +386,14 @@
         height: 32px;
         font-size: 1rem;
     }
+
+    .notes-pagination a,
+    .notes-pagination span {
+        min-width: 34px;
+        height: 34px;
+        padding: 0 0.75rem;
+        font-size: 0.8rem;
+    }
     
     .note-waterfall-card {
         padding: 1rem;
@@ -495,99 +404,105 @@
 /* ================================
    夜间模式支持
    ================================ */
-@media (prefers-color-scheme: dark) {
-    .filter-btn,
-    .filter-dropdown-toggle {
-        background: rgba(36, 32, 41, 0.92);
-        border-color: rgba(255, 255, 255, 0.08);
-        color: #c1bac6;
+
+        html[data-theme="dark"] .note-mood-badge {
+        background: var(--editorial-surface-base);
+        border-color: var(--editorial-border-subtle);
+        color: #f2e6ea;
+        box-shadow:
+            0 12px 24px rgba(0, 0, 0, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.04);
     }
 
-    .filter-btn:hover,
-    .filter-dropdown-toggle:hover {
-        background: rgba(255, 81, 98, 0.12);
-        border-color: rgba(255, 81, 98, 0.32);
-        box-shadow: 0 10px 22px rgba(0, 0, 0, 0.2);
+        html[data-theme="dark"] .miss-label {
         color: #ff8f9b;
     }
 
-    .filter-btn.active,
-    .filter-dropdown-toggle.has-value {
-        color: #fff;
-        box-shadow: 0 10px 22px rgba(255, 81, 98, 0.24);
+        html[data-theme="dark"] .note-miss-chip {
+        background: var(--editorial-surface-base);
+        border-color: var(--editorial-border-subtle);
+        box-shadow:
+            0 12px 24px rgba(0, 0, 0, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.04);
     }
 
-    .filter-dropdown {
-        background: rgba(27, 24, 31, 0.96);
-        border-color: rgba(255, 255, 255, 0.08);
-        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.3);
-    }
-    
-    .filter-option {
-        color: #d7d1db;
-    }
-    
-    .filter-option:hover {
-        background: rgba(255, 81, 98, 0.12);
-        color: #ff8f9b;
+        html[data-theme="dark"] .miss-stars {
+        color: #f2e6ea;
     }
 
-    .filter-option.active {
-        background: rgba(255, 81, 98, 0.16);
-        color: #ff8f9b;
-    }
-    
-    .note-publish-form {
+        html[data-theme="dark"] .note-publish-form {
         background: #1e1e1e;
-        border-color: rgba(255, 255, 255, 0.08);
+        border-color: var(--editorial-border-subtle);
         box-shadow: 0 18px 36px rgba(0, 0, 0, 0.28);
     }
     
-    .publish-textarea {
+        html[data-theme="dark"] .publish-textarea {
         background: #2a2a2a;
         border-color: #333;
         color: #e0e0e0;
     }
     
-    .mood-btn,
-    .star-btn {
-        background: #2a2a2a;
+        html[data-theme="dark"] .mood-btn,
+    html[data-theme="dark"] .star-btn {
+        background: var(--editorial-surface-base);
+        border-color: var(--editorial-border-subtle);
+        color: #f2e6ea;
+        box-shadow:
+            0 12px 24px rgba(0, 0, 0, 0.24),
+            inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+        html[data-theme="dark"] .mood-btn.active,
+    html[data-theme="dark"] .star-btn.active,
+    html[data-theme="dark"] .publish-submit {
+        background: var(--editorial-surface-active);
+        border-color: var(--editorial-border-strong);
+        color: #ffe5ea;
+        box-shadow:
+            0 12px 24px rgba(0, 0, 0, 0.24),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+        html[data-theme="dark"] .publish-submit:hover {
+        border-color: rgba(255, 143, 155, 0.28);
+        background: linear-gradient(180deg, rgba(91, 63, 72, 0.98), rgba(66, 45, 53, 0.98));
     }
     
-    .note-waterfall-card {
+        html[data-theme="dark"] .note-waterfall-card {
         background: #1e1e1e;
-        border-color: rgba(255, 255, 255, 0.08);
+        border-color: var(--editorial-border-subtle);
         box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
     }
     
-    .note-waterfall-card:hover {
+        html[data-theme="dark"] .note-waterfall-card:hover {
         box-shadow: 0 22px 42px rgba(0, 0, 0, 0.42);
     }
 
-    .publish-name,
-    .note-author-name {
+        html[data-theme="dark"] .publish-name,
+    html[data-theme="dark"] .note-author-name {
         color: #f3f3f3;
     }
 
-    .note-datetime {
+        html[data-theme="dark"] .note-datetime {
         color: #9a9a9a;
     }
     
-    .note-content {
+        html[data-theme="dark"] .note-content {
         color: #ccc;
     }
     
-    .notes-empty {
-        background: #1e1e1e;
-        border-color: rgba(255, 255, 255, 0.08);
-        box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
+        html[data-theme="dark"] .notes-empty {
+        background: var(--editorial-surface-base);
+        border-color: var(--editorial-border-subtle);
+        box-shadow:
+            0 16px 34px rgba(0, 0, 0, 0.28),
+            inset 0 1px 0 rgba(255, 255, 255, 0.04);
     }
     
-    .notes-empty-text {
+        html[data-theme="dark"] .notes-empty-text {
         color: #f3f3f3;
     }
     
-    .notes-empty-hint {
+        html[data-theme="dark"] .notes-empty-hint {
         color: #9a9a9a;
     }
-}

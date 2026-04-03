@@ -8,8 +8,30 @@ if (!defined('ABSPATH')) {
 <head>
     <meta charset="<?php bloginfo('charset'); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#ff5162">
+    <meta name="theme-color" content="#fff7f8" id="brave-theme-color">
     <link rel="profile" href="https://gmpg.org/xfn/11">
+    <script>
+        (function() {
+            var theme = 'light';
+
+            try {
+                var storedTheme = window.localStorage.getItem('brave-theme');
+                if (storedTheme === 'dark' || storedTheme === 'light') {
+                    theme = storedTheme;
+                }
+            } catch (error) {
+                theme = 'light';
+            }
+
+            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.style.colorScheme = theme;
+
+            var themeColor = document.getElementById('brave-theme-color');
+            if (themeColor) {
+                themeColor.setAttribute('content', theme === 'dark' ? '#18161d' : '#fff7f8');
+            }
+        })();
+    </script>
     
     <?php wp_head(); ?>
 </head>
@@ -24,30 +46,52 @@ $girl_avatar = brave_get_couple_avatar('girl', 200);
 $girl_name = brave_get_couple_name('girl');
 $nav_text = get_theme_mod('brave_nav_text', '世间最动情之事，莫过于两人相依');
 $hero_bg_style = brave_get_hero_background_style();
+$is_home_nav = is_page_template('page-templates/page-home.php') || is_front_page();
+$has_primary_menu = has_nav_menu('primary');
 ?>
 
 <!-- 导航栏 -->
-<nav class="navbar navbar-expand-lg navbar-brave">
+<nav class="navbar navbar-expand-lg navbar-brave <?php echo $is_home_nav ? 'is-home-nav' : 'is-inner-nav'; ?> <?php echo $has_primary_menu ? 'has-primary-menu' : 'no-primary-menu'; ?>">
     <div class="container">
         <a class="navbar-brand" href="<?php echo esc_url(home_url('/')); ?>">
-            <?php bloginfo('name'); ?>
+            <span class="navbar-brand-title"><?php echo esc_html(get_bloginfo('name')); ?></span>
+            <?php if ($nav_text) : ?>
+                <span class="navbar-brand-subtitle"><?php echo esc_html($nav_text); ?></span>
+            <?php endif; ?>
         </a>
+        <?php if ($has_primary_menu) : ?>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon" style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 30 30%22%3E%3Cpath stroke=%22rgba%28255,255,255,0.9%29%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-miterlimit=%2210%22 d=%22M4 7h22M4 15h22M4 23h22%22/%3E%3C/svg%3E');"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto align-items-center">
-                <?php if ($nav_text) : ?>
-                <li class="nav-item">
-                    <span class="nav-say text-white"><?php echo esc_html($nav_text); ?></span>
-                </li>
-                <?php endif; ?>
-            </ul>
+            <?php
+            wp_nav_menu(
+                array(
+                    'theme_location' => 'primary',
+                    'container' => false,
+                    'menu_class' => 'navbar-nav ms-auto align-items-lg-center',
+                    'fallback_cb' => false,
+                    'depth' => 2,
+                )
+            );
+            ?>
         </div>
+        <?php endif; ?>
     </div>
 </nav>
 
-<?php if (is_page_template('page-templates/page-home.php') || is_front_page()) : ?>
+<button
+    class="theme-toggle"
+    type="button"
+    aria-label="切换到深色模式"
+    aria-pressed="false"
+    title="切换到深色模式"
+    data-theme-toggle
+>
+    <span class="theme-toggle-icon" aria-hidden="true" data-theme-toggle-icon>🌙</span>
+</button>
+
+<?php if ($is_home_nav) : ?>
 <!-- Hero 区域 -->
 <section class="hero-section">
     <div class="hero-bg" style="<?php echo esc_attr($hero_bg_style); ?>"></div>

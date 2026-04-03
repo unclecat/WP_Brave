@@ -22,13 +22,13 @@ get_template_part(
 );
 
 // 获取设置
-$per_page = get_theme_mod('brave_gallery_per_page', 12);
-$show_info = get_theme_mod('brave_gallery_show_info', true);
+$per_page = max(1, absint(get_theme_mod('brave_gallery_per_page', 12)));
+$show_info = brave_theme_mod_enabled('brave_gallery_show_info', true);
 $gallery_base_url = get_permalink();
 
 // 获取筛选参数 - 使用 filter_year 避免与 WordPress 保留参数 year 冲突
-$current_year = isset($_GET['filter_year']) ? intval(wp_unslash($_GET['filter_year'])) : 0;
-$paged = get_query_var('paged') ? get_query_var('paged') : 1;
+$current_year = isset($_GET['filter_year']) ? absint(wp_unslash($_GET['filter_year'])) : 0;
+$paged = max(1, absint(get_query_var('paged')));
 
 // 获取照片数据
 $photo_data = brave_get_all_moment_photos(array(
@@ -222,7 +222,7 @@ $years = brave_get_gallery_years();
             <div class="pswp-info-location"></div>
             <div class="pswp-info-mood"></div>
             <div class="pswp-info-summary"></div>
-            <a href="#" class="pswp-info-link" target="_blank">
+            <a href="#" class="pswp-info-link" target="_blank" rel="noopener noreferrer">
                 <?php _e('查看点滴详情 →', 'brave-love'); ?>
             </a>
         </div>

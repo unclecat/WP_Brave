@@ -189,7 +189,6 @@ $result_label = implode(' · ', $result_parts);
                                 <button
                                     type="button"
                                     class="toggle-detail"
-                                    onclick="toggleDetail(this)"
                                     aria-expanded="false"
                                     aria-controls="love-list-detail-<?php echo esc_attr(get_the_ID()); ?>"
                                 >
@@ -213,35 +212,6 @@ $result_label = implode(' · ', $result_parts);
         </div>
     </div>
 </section>
-
-<script>
-function toggleDetail(btn) {
-    const card = btn.closest('.love-list-card');
-    if (!card) {
-        return;
-    }
-
-    const detail = card.querySelector('.card-detail');
-    const span = btn.querySelector('span');
-
-    if (!detail || !span) {
-        return;
-    }
-
-    card.classList.toggle('expanded');
-    const isExpanded = card.classList.contains('expanded');
-
-    if (isExpanded) {
-        detail.style.maxHeight = detail.scrollHeight + 'px';
-        span.textContent = '收起详情';
-    } else {
-        detail.style.maxHeight = '0';
-        span.textContent = '查看详情';
-    }
-
-    btn.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
-}
-</script>
 
 <?php
 get_footer();
