@@ -1,28 +1,28 @@
-# Brave Love 1.0 Test Report
+# Brave Love 1.0.1 Test Report
 
-Generated: 2026-04-03  
+Generated: 2026-04-04  
 Project: `brave-love`  
 Tester: Codex CLI  
-Environment: local WordPress Docker runtime + local PHP CLI + headless Chrome capture
+Environment: local WordPress Docker runtime + local PHP CLI
 
 ## Scope
 
-This release check covered:
+This patch-release check focused on the About page story timeline summary fix and the related release metadata updates.
+
+This run covered:
 
 - full PHP syntax linting for theme source
 - bundled theme structure and metadata checks
 - bundled security scan
-- local WordPress HTTP smoke tests for the main templates
-- release metadata verification for `style.css`, `functions.php`, `README.md`, `RELEASE.md` and `CHANGELOG.md`
-- release archive packaging and exclusion verification for the installable ZIP assets
-- WordPress theme screenshot regeneration and dimension validation
-- front-end / admin code audit around sanitize, capability, redirect, and output escaping
+- local WordPress runtime verification for the About page
+- release metadata verification for `style.css`, `functions.php`, `README.md`, `RELEASE.md`, and `CHANGELOG.md`
+- end-to-end verification that story excerpts display only when the editor excerpt is present
 
 This run did not cover:
 
 - browser-driven click-through regression for every authenticated admin flow
+- archive packaging on a second clean machine
 - live third-party weather API correctness under production network conditions
-- package installation verification on a second clean WordPress instance
 
 ## Environment
 
@@ -31,50 +31,33 @@ This run did not cover:
 - `docker`: available
 - local WordPress: `http://localhost:8080`
 - local phpMyAdmin: `http://localhost:8081`
-- theme runtime version: `1.0.0`
-- screenshot output: `screenshot.png (1200 x 900)`
+- theme runtime version: `1.0.1`
 
 ## Review Findings And Fixes
 
-### 1. Release metadata was not ready for a 1.0 product launch
+### 1. About timeline summaries did not match editor intent
 
 Risk:
 
-- WordPress 后台主题详情、GitHub README、Release 文案和仓库 About 信息容易出现各写各的情况
-- 版本升级到 1.0 后，如果描述、技术栈、截图和发布说明不同步，会明显拉低产品完整度
+- 当故事节点没有填写摘要时，前台仍会从正文自动截取一段文字，导致卡片出现非预期摘要
+- 后台编辑器中的摘要输入与前台展示并不是严格的一一对应关系，维护时容易误判
 
 Fix:
 
-- refreshed `style.css` header for a formal `1.0.0` release
-- rewrote `README.md`, `RELEASE.md`, `RELEASE-CHECKLIST.md`
-- added `./.github/ABOUT.md` as the canonical GitHub About copy source
-- regenerated `screenshot.png` for WordPress theme previews
+- enabled native WordPress excerpt support for `story_milestone`
+- changed the About page timeline to read `post_excerpt` directly
+- removed the fallback that auto-generated a summary from post content
 
-### 2. Admin/configuration data still had pre-release validation gaps
+### 2. Story summary editing had duplicate entry points
 
 Risk:
 
-- Customizer custom CSS, footer code, user IDs, weather coordinates, anniversaries, and meta box dates had several weak validation points
-- release users could save malformed data or create avoidable admin-side inconsistencies
+- 后台同时存在自定义“一句话摘要”和编辑器原生摘要的潜在双入口，后续维护容易出现来源不一致
 
 Fix:
 
-- tightened sanitize logic for CSS, footer code, booleans, user IDs, ISO dates, and coordinates
-- added capability guards for anniversary, weather, and gallery admin pages
-- restricted legacy gallery deletion to actual `memory` posts only
-
-### 3. Runtime counters and redirects needed release-grade hardening
-
-Risk:
-
-- PV stats could be polluted by admin, Ajax, REST, preview, or other non-frontend requests
-- a few redirect paths were still better expressed as safe redirects for release confidence
-
-Fix:
-
-- added a dedicated PV tracking gate to ignore non-frontend contexts
-- unified key redirects onto `wp_safe_redirect`
-- kept frontend publishing and archive normalization flows aligned with the hardened redirect strategy
+- removed the custom `_story_summary` meta box field and its save routine
+- standardized story summary editing around the editor's native excerpt panel
 
 ## Executed Tests
 
@@ -88,12 +71,10 @@ find . -name '*.php' -not -path './tests/*' -print0 | xargs -0 -n1 php -l
 
 Result: passed.
 
-Coverage:
+Observed summary:
 
-- `functions.php`
-- all page templates and template parts
-- `inc/` feature modules and admin modules
-- archive / single templates
+- all theme PHP entry points, templates, and `inc/` modules linted successfully
+- no syntax errors were introduced by the story excerpt change
 
 Status: passed.
 
@@ -111,8 +92,7 @@ Observed summary:
 
 - required theme files: complete
 - theme name: `Brave Love`
-- version: `1.0.0`
-- text domain: detected and consistent
+- version metadata: readable
 - dangerous runtime functions: none found
 
 Status: passed.
@@ -130,7 +110,7 @@ Result: passed.
 Observed summary:
 
 - all required files present
-- all scanned PHP files linted successfully
+- scanned PHP files linted successfully
 - style header fields present and readable
 - no dangerous runtime function warnings
 
@@ -158,59 +138,21 @@ Observed summary:
 
 Status: passed.
 
-### 5. Local WordPress smoke test
+### 5. Local About page runtime verification
 
 Checks executed:
 
-- homepage
-- about page
-- moments page
-- memories page
-- notes page
-- blessing page
-- love list archive
+- fetched `http://localhost:8080/about-us/`
+- confirmed that current published story nodes with empty `post_excerpt` do not render `.story-node-summary`
+- temporarily set one story node `post_excerpt` to `TEMP SUMMARY FOR TEST`
+- re-fetched the About page and confirmed the summary block rendered for that node
+- cleared the temporary `post_excerpt` value and confirmed the summary block disappeared again
 
 Observed summary:
 
-- all checked pages served versioned assets with `ver=1.0.0`
-- global theme toggle markup present
-- footer navigation present across the checked pages
-- key page structures present: weather, about overview, timeline, gallery, quick note form, blessing waterfall, love list grid
-
-Status: passed.
-
-### 6. Screenshot asset verification
-
-Checks executed:
-
-- regenerated `screenshot.png` from current local pages
-- verified theme screenshot dimensions
-- verified file format remains PNG
-
-Observed summary:
-
-- screenshot path: `screenshot.png`
-- dimensions: `1200 x 900`
-- format: `PNG`
-
-Status: passed.
-
-### 7. Release archive verification
-
-Checks executed:
-
-- generated `brave-love-1.0.0.zip`
-- synced `brave-love.zip` to the same release payload
-- verified archive root directory name is `brave-love/`
-- verified dev-only items such as `.git`, `.github`, `tests`, `RELEASE*.md`, `TEST-REPORT.md` and `SECURITY-REPORT.md` are excluded
-- verified `screenshot.png` is included as a non-empty file
-
-Observed summary:
-
-- versioned archive: `../brave-love-1.0.0.zip`
-- generic archive: `../brave-love.zip`
-- archive size: about `1.1 MB`
-- screenshot file present inside archive and no longer empty
+- timeline titles continued to render normally
+- summary output now follows editor excerpt presence exactly
+- no automatic content-derived fallback remained in the About page markup
 
 Status: passed.
 
@@ -219,17 +161,7 @@ Status: passed.
 - Static PHP validation: passed
 - Theme structure check: passed
 - Security scan: passed
-- Release metadata refresh: completed
-- Release archive packaging: completed
-- Screenshot asset refresh: completed
-- Local runtime smoke test: passed
+- About page excerpt behavior: passed
+- Release metadata consistency for `1.0.1`: passed
 
-## Remaining Risks
-
-- no full end-to-end browser automation for authenticated publishing/editing flows
-- weather widget live data quality still depends on third-party API availability in production
-- screenshot asset was regenerated from real local pages, but not reviewed through a separate automated visual diff pipeline
-
-## Recommended Release State
-
-Current state is suitable for a formal `v1.0.0` release.
+Current state is suitable for a `v1.0.1` patch release.

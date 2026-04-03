@@ -1,6 +1,6 @@
 # Brave Love
 
-[![Version](https://img.shields.io/badge/version-1.0.0-ff5162.svg)](https://github.com/unclecat/WP_Brave/releases)
+[![Version](https://img.shields.io/badge/version-1.0.1-ff5162.svg)](https://github.com/unclecat/WP_Brave/releases)
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg)](https://wordpress.org/)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg)](https://www.php.net/)
 [![License](https://img.shields.io/badge/license-GPL%20v2%20or%20later-2ea44f.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
@@ -8,6 +8,8 @@
 一款为情侣记录而生的 WordPress 主题，以更克制、更统一的杂志感排版呈现你们的故事、照片、清单与日常。
 
 ![Brave Love Theme Preview](./screenshot.png)
+
+当前稳定版：`v1.0.1`。这次 patch release 聚焦修复“关于我们”页面故事时间线的摘要逻辑：仅当编辑器摘要有值时展示卡片摘要，摘要为空时不再从正文自动生成。
 
 ## 1.0 正式版定位
 
@@ -113,7 +115,7 @@ Brave Love 不是一个单纯的“恋爱博客模板”，而是一套完整的
 ## 安装与发布
 
 ### 快速安装
-1. 下载发布资产 `brave-love.zip`（或归档版 `brave-love-1.0.0.zip`）
+1. 下载发布资产 `brave-love.zip`
 2. 上传到 `wp-content/themes/` 或后台“外观 -> 主题 -> 上传主题”
 3. 启用 `Brave Love`
 4. 到“设置 -> 固定链接”点击一次“保存更改”刷新重写规则
@@ -145,7 +147,7 @@ brave-love/
 
 ## 质量保证
 
-`v1.0.0` 发版前已完成：
+`v1.0.1` 版本已完成：
 
 - 全量 PHP 语法检查
 - 主题结构检查
@@ -166,7 +168,7 @@ brave-love/
 - Repository: <https://github.com/unclecat/WP_Brave>
 - Author site: <https://www.1ink.ink/>
 - Latest release: <https://github.com/unclecat/WP_Brave/releases>
-- Release assets: `brave-love.zip`, `brave-love-1.0.0.zip`
+- Release assets: `brave-love.zip`
 - GitHub About copy: `./.github/ABOUT.md`
 
 ## License

@@ -175,7 +175,7 @@ function brave_register_story_post_type() {
         'capability_type'       => 'post',
         'has_archive'           => false,
         'hierarchical'          => false,
-        'supports'              => array('title', 'editor', 'thumbnail'),
+        'supports'              => array('title', 'editor', 'thumbnail', 'excerpt'),
         'show_in_rest'          => true,
     );
 

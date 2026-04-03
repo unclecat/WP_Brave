@@ -209,7 +209,6 @@ function brave_story_milestone_meta_box($post) {
 
     $story_date = get_post_meta($post->ID, '_story_date', true);
     $story_phase = get_post_meta($post->ID, '_story_phase', true);
-    $story_summary = get_post_meta($post->ID, '_story_summary', true);
     $related_moment_id = (int) get_post_meta($post->ID, '_related_moment_id', true);
 
     $moment_posts = get_posts(array(
@@ -228,10 +227,6 @@ function brave_story_milestone_meta_box($post) {
     <p>
         <label for="story_phase"><strong><?php _e('阶段标题', 'brave-love'); ?></strong></label><br>
         <input type="text" id="story_phase" name="story_phase" value="<?php echo esc_attr($story_phase); ?>" class="widefat" placeholder="<?php esc_attr_e('例如：相遇、靠近、稳定、未来', 'brave-love'); ?>">
-    </p>
-    <p>
-        <label for="story_summary"><strong><?php _e('一句话摘要', 'brave-love'); ?></strong></label><br>
-        <textarea id="story_summary" name="story_summary" class="widefat" rows="3" placeholder="<?php esc_attr_e('用于关于我们页面卡片中的简短描述', 'brave-love'); ?>"><?php echo esc_textarea($story_summary); ?></textarea>
     </p>
     <p>
         <label for="related_moment_id"><strong><?php _e('关联点点滴滴（可选）', 'brave-love'); ?></strong></label><br>
@@ -351,10 +346,6 @@ function brave_save_meta_boxes($post_id) {
         if (isset($_POST['story_phase'])) {
             update_post_meta($post_id, '_story_phase', sanitize_text_field(wp_unslash($_POST['story_phase'])));
         }
-        if (isset($_POST['story_summary'])) {
-            update_post_meta($post_id, '_story_summary', sanitize_textarea_field(wp_unslash($_POST['story_summary'])));
-        }
-
         $related_moment_id = isset($_POST['related_moment_id']) ? absint(wp_unslash($_POST['related_moment_id'])) : 0;
         if ($related_moment_id > 0 && 'moment' !== get_post_type($related_moment_id)) {
             $related_moment_id = 0;

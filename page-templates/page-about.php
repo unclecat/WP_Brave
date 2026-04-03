@@ -132,15 +132,11 @@ get_template_part(
                     $story_id = get_the_ID();
                     $story_date = get_post_meta($story_id, '_story_date', true);
                     $story_phase = get_post_meta($story_id, '_story_phase', true);
-                    $story_summary = get_post_meta($story_id, '_story_summary', true);
+                    $story_summary = trim((string) get_post_field('post_excerpt', $story_id));
                     $story_content_raw = get_the_content();
                     $story_content = '' !== trim(wp_strip_all_tags($story_content_raw))
                         ? apply_filters('the_content', $story_content_raw)
                         : '';
-
-                    if (empty($story_summary)) {
-                        $story_summary = wp_trim_words(wp_strip_all_tags($story_content_raw), 36, '...');
-                    }
 
                     $related_moment_id = (int) get_post_meta($story_id, '_related_moment_id', true);
                     $related_moment_url = '';
