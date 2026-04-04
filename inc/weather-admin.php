@@ -89,9 +89,7 @@ function brave_weather_page() {
             
             <h2><?php _e('城市列表', 'brave-love'); ?></h2>
             <p class="description">
-                <?php _e('经纬度可从 ', 'brave-love'); ?>
-                <a href="https://open-meteo.com/en/docs" target="_blank" rel="noopener noreferrer">Open-Meteo</a>
-                <?php _e(' 查询，或搜索 "城市名 latitude longitude"', 'brave-love'); ?>
+                <?php _e('请填写城市名称以及对应经纬度，也可以直接搜索“城市名 latitude longitude”获取坐标。', 'brave-love'); ?>
             </p>
             
             <table class="wp-list-table widefat fixed striped">

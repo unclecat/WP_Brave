@@ -16,7 +16,7 @@ $timer_text = get_theme_mod('brave_timer_text', '我们风雨同舟已经一起�
 $countdown_text = get_theme_mod('brave_countdown_text', '距离我们的特别日子还有');
 $next_anniversary_name = get_theme_mod('brave_next_anniversary_name', '恋爱周年纪念日');
 $next_anniversary_datetime = get_theme_mod('brave_next_anniversary_datetime', '');
-$love_start_datetime = get_theme_mod('brave_love_start_datetime', '');
+$love_start_datetime = brave_get_love_start_datetime();
 $anniversary_section_title = get_theme_mod('brave_anniversary_section_title', '💕 特别的日子');
 ?>
 

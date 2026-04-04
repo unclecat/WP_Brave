@@ -6,7 +6,7 @@
  */
 
 // 定义常量
-define('BRAVE_VERSION', '1.0.2');
+define('BRAVE_VERSION', '1.0.3');
 define('BRAVE_BOOTSTRAP_VERSION', '5.3.2');
 define('BRAVE_PHOTOSWIPE_VERSION', '5.4.2');
 define('BRAVE_DIR', get_template_directory());
@@ -68,7 +68,7 @@ function brave_scripts() {
     
     // 传递数据到 JS
     $theme_options = array(
-        'love_start_datetime' => get_theme_mod('brave_love_start_datetime', '2020-01-01 00:00'),
+        'love_start_datetime' => brave_get_love_start_datetime(),
         'next_anniversary_datetime' => get_theme_mod('brave_next_anniversary_datetime', ''),
         'next_anniversary_name' => get_theme_mod('brave_next_anniversary_name', ''),
         'ajax_url' => admin_url('admin-ajax.php'),
@@ -288,9 +288,9 @@ require BRAVE_DIR . '/inc/weather-admin.php';
 require BRAVE_DIR . '/inc/gallery-admin.php';
 
 /**
- * 短代码
+ * 点滴摘要迁移
  */
-require BRAVE_DIR . '/inc/shortcodes.php';
+require BRAVE_DIR . '/inc/moment-excerpt-migration.php';
 
 /**
  * 禁用 WordPress 默认功能

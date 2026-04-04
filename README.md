@@ -1,6 +1,6 @@
 # Brave Love
 
-[![Version](https://img.shields.io/badge/version-1.0.2-ff5162.svg)](https://github.com/unclecat/WP_Brave/releases)
+[![Version](https://img.shields.io/badge/version-1.0.3-ff5162.svg)](https://github.com/unclecat/WP_Brave/releases)
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg)](https://wordpress.org/)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg)](https://www.php.net/)
 [![License](https://img.shields.io/badge/license-GPL%20v2%20or%20later-2ea44f.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
@@ -9,7 +9,7 @@
 
 ![Brave Love Theme Preview](./screenshot.png)
 
-当前稳定版：`v1.0.2`。这次 patch release 聚焦两件事：去掉首页天气卡片的 4 城市上限，并清理一批未使用的主题 helper、旧注释和过时测试描述，让代码与文档更一致。
+当前稳定版：`v1.0.3`。这次 patch release 聚焦两件事：把点点滴滴摘要统一迁移到 WordPress 原生摘要体系，并补齐后台迁移工具；同时完成首页计时器与后台文案的安全收口。
 
 ## 1.0 正式版定位
 
@@ -41,7 +41,7 @@ Brave Love 不是一个单纯的“恋爱博客模板”，而是一套完整的
 
 ### 3. 点点滴滴
 - 年份筛选 + 杂志感时间轴布局
-- 支持日期、地点、心情、自定义摘要和作者头像识别
+- 支持日期、地点、心情、WordPress 原生摘要和作者头像识别
 - 详情页与列表页共享统一日期口径，缺失 `_meet_date` 时自动回退文章日期
 - 与相册、关于我们等模块互相关联
 
@@ -84,6 +84,7 @@ Brave Love 不是一个单纯的“恋爱博客模板”，而是一套完整的
 - `设置 -> 天气城市`：配置首页天气卡片的城市与坐标
 - `设置 -> 纪念日`：维护特别日子列表
 - `点点滴滴 -> 相册数据管理`：处理旧版 `memory` 数据迁移或清理
+- `点点滴滴 -> 摘要迁移`：将旧 `_moment_summary` 迁移到 WordPress 原生摘要并按需清理旧字段
 
 ### 内容模型
 - `moment`：点点滴滴
@@ -147,7 +148,7 @@ brave-love/
 
 ## 质量保证
 
-`v1.0.2` 版本已完成：
+`v1.0.3` 版本已完成：
 
 - 全量 PHP 语法检查
 - 主题结构检查

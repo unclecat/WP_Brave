@@ -670,6 +670,30 @@ function brave_get_moment_ids_by_year($year) {
 }
 
 /**
+ * 获取点滴摘要。
+ *
+ * 优先读取 WordPress 原生摘要，迁移期内回退到旧的自定义摘要字段。
+ *
+ * @param int|WP_Post $moment 点滴文章 ID 或对象
+ * @return string
+ */
+function brave_get_moment_summary($moment) {
+    $moment = get_post($moment);
+
+    if (!$moment instanceof WP_Post || 'moment' !== $moment->post_type) {
+        return '';
+    }
+
+    $summary = trim((string) $moment->post_excerpt);
+
+    if ('' !== $summary) {
+        return $summary;
+    }
+
+    return trim((string) get_post_meta($moment->ID, '_moment_summary', true));
+}
+
+/**
  * 获取附件缓存版本号。
  *
  * @return int 缓存版本
@@ -733,7 +757,7 @@ function brave_build_gallery_photo_index() {
         $effective_year = absint(substr($meet_date, 0, 4));
         $location = get_post_meta($moment_id, '_meet_location', true);
         $mood = get_post_meta($moment_id, '_mood', true);
-        $summary = get_post_meta($moment_id, '_moment_summary', true);
+        $summary = brave_get_moment_summary($moment_id);
 
         $date_obj = strtotime($meet_date);
         $date_formatted = date_i18n(__('Y年n月j日', 'brave-love'), $date_obj);

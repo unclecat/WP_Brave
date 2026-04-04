@@ -43,11 +43,11 @@ while (have_posts()) :
 
         <!-- 摘要 -->
         <?php 
-        $moment_summary = get_post_meta(get_the_ID(), '_moment_summary', true);
+        $moment_summary = brave_get_moment_summary(get_the_ID());
         if (!empty($moment_summary)) : 
         ?>
             <div class="moment-summary">
-                <?php echo wpautop($moment_summary); ?>
+                <?php echo wpautop(wp_kses_post($moment_summary)); ?>
             </div>
         <?php endif; ?>
 

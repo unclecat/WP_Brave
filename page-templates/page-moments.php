@@ -130,7 +130,7 @@ rsort($years);
                             $mood = get_post_meta($moment->ID, '_mood', true);
                             $mood_text = brave_get_mood_text($mood);
                             $mood_emoji = brave_get_mood_emoji($mood);
-                            $moment_summary = get_post_meta($moment->ID, '_moment_summary', true);
+                            $moment_summary = brave_get_moment_summary($moment->ID);
                             $has_thumbnail = has_post_thumbnail($moment->ID);
                             $moment_link = get_permalink($moment->ID);
                             
@@ -174,7 +174,7 @@ rsort($years);
                                             <div class="timeline-card-content">
                                                 <div class="timeline-card-excerpt">
                                                     <?php 
-                                                    // 优先显示自定义摘要
+                                                    // 优先显示原生摘要，迁移期兼容旧字段
                                                     if (!empty($moment_summary)) {
                                                         echo wpautop(wp_kses_post($moment_summary));
                                                     } else {

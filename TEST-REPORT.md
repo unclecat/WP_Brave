@@ -1,4 +1,4 @@
-# Brave Love 1.0.2 Test Report
+# Brave Love 1.0.3 Test Report
 
 Generated: 2026-04-04  
 Project: `brave-love`  
@@ -7,22 +7,22 @@ Environment: local WordPress Docker runtime + local PHP CLI
 
 ## Scope
 
-This patch-release check focused on the homepage weather city limit removal and the cleanup of redundant theme code/documentation.
+This patch-release check focused on the moment summary migration to native WordPress excerpts, the safe cleanup of duplicate summary entry points, and the related release metadata updates.
 
 This run covered:
 
-- full PHP syntax linting for theme source
+- full PHP syntax linting for changed theme source
 - bundled theme structure and metadata checks
 - bundled security scan
-- local WordPress runtime verification for the homepage weather module
+- local WordPress runtime verification for the moments page and homepage timer
+- local migration verification for `_moment_summary` -> `post_excerpt` backfill and legacy cleanup
 - release metadata verification for `style.css`, `functions.php`, `README.md`, `RELEASE.md`, and `CHANGELOG.md`
-- cleanup verification that removed helpers and stale version comments are no longer present in the theme source
 
 This run did not cover:
 
 - browser-driven click-through regression for every authenticated admin flow
 - archive packaging on a second clean machine
-- live third-party weather API correctness under production network conditions
+- full production-data migration rehearsal beyond the local test dataset
 
 ## Environment
 
@@ -31,35 +31,48 @@ This run did not cover:
 - `docker`: available
 - local WordPress: `http://localhost:8080`
 - local phpMyAdmin: `http://localhost:8081`
-- theme runtime version: `1.0.2`
+- theme runtime version: `1.0.3`
 
 ## Review Findings And Fixes
 
-### 1. Homepage weather cities were artificially capped at four
+### 1. Moment summaries had duplicated data sources
 
 Risk:
 
-- 后台录入超过 4 个天气城市时，保存逻辑和前台读取逻辑都会截断数据
-- 用户以为已经配置成功，但首页天气卡片不会完整展示所有城市
+- 点点滴滴同时保留了原生摘要能力和自定义 `_moment_summary` 字段，后续维护容易混淆来源
+- 列表页、详情页、相册摘要如果继续直接读旧字段，会阻碍后续数据收口
 
 Fix:
 
-- removed the 4-city cap from weather city saving
-- removed the 4-city cap from front-end weather city sanitization
-- updated the admin and README copy so it no longer documents the old limit
+- added a shared `brave_get_moment_summary()` helper that prefers native excerpts and falls back to the legacy meta during migration
+- updated moments list, single moment, and gallery summary building to use the shared helper
+- removed the duplicate custom summary input from the moment meta box so future editing stays in the editor excerpt panel
 
-### 2. Theme source still contained redundant cleanup candidates
+### 2. Existing sites needed a safe migration path
 
 Risk:
 
-- 未使用 helper、未接入的说说图片逻辑和旧版本注释会增加阅读噪音
-- 测试文档中的过时描述会误导后续回归验证
+- 直接切到原生摘要会让已有 `_moment_summary` 数据在前台消失
+- 粗暴删除旧字段可能误伤已人工编辑过的原生摘要
 
 Fix:
 
-- removed unused helper functions and the unused note image extraction helper
-- removed stale `@version` annotations from legacy file headers
-- aligned `tests/README-TEST.md` with the current notes feature set
+- added an admin migration tool under `点点滴滴 -> 摘要迁移`
+- backfill only copies old summaries into `post_excerpt` when the native excerpt is currently empty
+- cleanup only deletes legacy `_moment_summary` rows when they exactly match the native excerpt
+
+### 3. Minor safe-cleanup regressions were still possible
+
+Risk:
+
+- 首页计时器如果直接读取新配置键，旧站点可能误提示未设置
+- 未使用短代码和天气后台外链会继续增加维护噪音与后台外链暴露面
+
+Fix:
+
+- unified the homepage timer data source around `brave_get_love_start_datetime()`
+- removed the unused shortcode module
+- replaced the weather admin external-doc link with internal plain-text instructions
 
 ## Executed Tests
 
@@ -68,15 +81,22 @@ Fix:
 Command:
 
 ```bash
-find . -name '*.php' -not -path './tests/*' -print0 | xargs -0 -n1 php -l
+php -l functions.php
+php -l inc/helpers.php
+php -l inc/meta-boxes.php
+php -l inc/moment-excerpt-migration.php
+php -l inc/weather-admin.php
+php -l page-templates/page-home.php
+php -l page-templates/page-moments.php
+php -l single-moment.php
 ```
 
 Result: passed.
 
 Observed summary:
 
-- all theme PHP entry points, templates, and `inc/` modules linted successfully
-- no syntax errors were introduced by the weather limit removal or cleanup changes
+- all changed PHP files linted successfully
+- no syntax errors were introduced by the summary migration or safe cleanup changes
 
 Status: passed.
 
@@ -140,20 +160,38 @@ Observed summary:
 
 Status: passed.
 
-### 5. Local homepage weather verification
+### 5. Local moment summary migration verification
 
 Checks executed:
 
-- fetched `http://localhost:8080/`
-- confirmed the homepage loads weather assets with `ver=1.0.2`
-- confirmed the homepage currently renders more than 4 configured weather cities
-- verified the weather city names continue to appear in the card list after removing the limit
+- queried migration stats before backfill
+- executed `brave_run_moment_excerpt_backfill()` in the local WordPress runtime
+- re-checked stats after backfill
+- executed `brave_cleanup_legacy_moment_summaries()` in the local WordPress runtime
+- re-checked final stats and database row counts
 
 Observed summary:
 
-- homepage rendered six weather city entries during verification
-- no 4-city truncation remained in the homepage weather markup
-- theme footer author-site link remained unchanged by the cleanup work
+- before backfill: `23` moments had legacy summaries and `0` had native excerpts
+- backfill migrated `23` summaries into `post_excerpt`
+- cleanup removed `23` legacy `_moment_summary` rows
+- final state: `0` legacy summaries remained and `23` native excerpts were present
+
+Status: passed.
+
+### 6. Local front-end verification
+
+Checks executed:
+
+- fetched `http://localhost:8080/?page_id=5` and confirmed moments cards still render summary blocks after migration
+- fetched `http://localhost:8080/` and confirmed the homepage timer still shows a valid start time
+- confirmed the homepage weather city cards continue to render after the safe-cleanup changes
+
+Observed summary:
+
+- moments timeline excerpts continued to render normally after migration
+- homepage timer displayed `2023-05-20 12:00` in the local dataset
+- homepage weather city list remained intact
 
 Status: passed.
 
@@ -162,8 +200,8 @@ Status: passed.
 - Static PHP validation: passed
 - Theme structure check: passed
 - Security scan: passed
-- Homepage weather city limit removal: passed
-- Cleanup consistency check: passed
-- Release metadata consistency for `1.0.2`: passed
+- Moment summary migration and cleanup flow: passed
+- Front-end rendering after migration: passed
+- Release metadata consistency for `1.0.3`: passed
 
-Current state is suitable for a `v1.0.2` patch release.
+Current state is suitable for a `v1.0.3` patch release.
