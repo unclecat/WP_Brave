@@ -1,6 +1,6 @@
 # Brave Love
 
-[![Version](https://img.shields.io/badge/version-1.0.1-ff5162.svg)](https://github.com/unclecat/WP_Brave/releases)
+[![Version](https://img.shields.io/badge/version-1.0.2-ff5162.svg)](https://github.com/unclecat/WP_Brave/releases)
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg)](https://wordpress.org/)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg)](https://www.php.net/)
 [![License](https://img.shields.io/badge/license-GPL%20v2%20or%20later-2ea44f.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
@@ -9,7 +9,7 @@
 
 ![Brave Love Theme Preview](./screenshot.png)
 
-当前稳定版：`v1.0.1`。这次 patch release 聚焦修复“关于我们”页面故事时间线的摘要逻辑：仅当编辑器摘要有值时展示卡片摘要，摘要为空时不再从正文自动生成。
+当前稳定版：`v1.0.2`。这次 patch release 聚焦两件事：去掉首页天气卡片的 4 城市上限，并清理一批未使用的主题 helper、旧注释和过时测试描述，让代码与文档更一致。
 
 ## 1.0 正式版定位
 
@@ -123,7 +123,7 @@ Brave Love 不是一个单纯的“恋爱博客模板”，而是一套完整的
 ### 推荐初始化流程
 1. 创建并指定页面模板：首页、关于我们、点点滴滴、甜蜜相册、随笔说说、祝福留言
 2. 在“外观 -> 自定义 -> Brave 主题设置”完成站点品牌、情侣头像、页面链接与页脚导航配置
-3. 在“设置 -> 天气城市”中添加 2-4 个常用城市
+3. 在“设置 -> 天气城市”中添加常用城市
 4. 在“设置 -> 纪念日”中维护特别的日子
 5. 补充点点滴滴、故事节点和恋爱清单数据，再检查首页聚合效果
 
@@ -147,7 +147,7 @@ brave-love/
 
 ## 质量保证
 
-`v1.0.1` 版本已完成：
+`v1.0.2` 版本已完成：
 
 - 全量 PHP 语法检查
 - 主题结构检查

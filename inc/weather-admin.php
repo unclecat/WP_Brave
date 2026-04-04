@@ -53,9 +53,6 @@ function brave_weather_page() {
                         'lon' => $lon,
                     );
 
-                    if (count($cities) >= 4) {
-                        break;
-                    }
                 }
             }
         }
@@ -72,7 +69,7 @@ function brave_weather_page() {
     <div class="wrap">
         <h1><?php _e('天气城市管理', 'brave-love'); ?></h1>
         <p class="description">
-            <?php _e('添加 2-4 个关心的城市，首页将显示这些地区的天气概况。点击天气卡片可查看详细穿衣指南。', 'brave-love'); ?>
+            <?php _e('添加任意数量关心的城市，首页将显示这些地区的天气概况。点击天气卡片可查看详细穿衣指南。', 'brave-love'); ?>
         </p>
         
         <form method="post" action="" id="weather-form">
@@ -215,9 +212,6 @@ function brave_get_weather_cities() {
             'lon' => $lon,
         );
 
-        if (count($sanitized_cities) >= 4) {
-            break;
-        }
     }
 
     return $sanitized_cities;
