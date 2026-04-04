@@ -1,4 +1,4 @@
-# Brave Love 1.0.3 Test Report
+# Brave Love 1.0.4 Test Report
 
 Generated: 2026-04-04  
 Project: `brave-love`  
@@ -7,22 +7,21 @@ Environment: local WordPress Docker runtime + local PHP CLI
 
 ## Scope
 
-This patch-release check focused on the moment summary migration to native WordPress excerpts, the safe cleanup of duplicate summary entry points, and the related release metadata updates.
+This documentation patch-release check focused on the new user guide, the expanded GitHub project README, and the related version metadata updates for `v1.0.4`.
 
 This run covered:
 
-- full PHP syntax linting for changed theme source
-- bundled theme structure and metadata checks
-- bundled security scan
-- local WordPress runtime verification for the moments page and homepage timer
-- local migration verification for `_moment_summary` -> `post_excerpt` backfill and legacy cleanup
-- release metadata verification for `style.css`, `functions.php`, `README.md`, `RELEASE.md`, and `CHANGELOG.md`
+- metadata version alignment for `style.css`, `functions.php`, `README.md`, `RELEASE.md`, and `CHANGELOG.md`
+- user-facing documentation presence and linkability for `docs/USER-GUIDE.md`
+- bundled theme structure check
+- bundled PHP project check
+- local homepage asset-version verification after bumping the runtime version to `1.0.4`
 
 This run did not cover:
 
-- browser-driven click-through regression for every authenticated admin flow
-- archive packaging on a second clean machine
-- full production-data migration rehearsal beyond the local test dataset
+- full authenticated admin click-through regression
+- a new content migration rehearsal
+- browser-driven visual review for every front-end template
 
 ## Environment
 
@@ -31,48 +30,45 @@ This run did not cover:
 - `docker`: available
 - local WordPress: `http://localhost:8080`
 - local phpMyAdmin: `http://localhost:8081`
-- theme runtime version: `1.0.3`
+- theme runtime version target: `1.0.4`
 
 ## Review Findings And Fixes
 
-### 1. Moment summaries had duplicated data sources
+### 1. GitHub project page lacked a complete usage manual
 
 Risk:
 
-- 点点滴滴同时保留了原生摘要能力和自定义 `_moment_summary` 字段，后续维护容易混淆来源
-- 列表页、详情页、相册摘要如果继续直接读旧字段，会阻碍后续数据收口
+- 新用户打开仓库后，只能看到功能概览，无法直接照着完成建站
+- 页面模板、后台入口和各模块维护方法分散在代码和历史说明里，不利于交付
 
 Fix:
 
-- added a shared `brave_get_moment_summary()` helper that prefers native excerpts and falls back to the legacy meta during migration
-- updated moments list, single moment, and gallery summary building to use the shared helper
-- removed the duplicate custom summary input from the moment meta box so future editing stays in the editor excerpt panel
+- expanded `README.md` into a full project-page guide
+- documented page setup, template mapping, admin entry points, and expected content workflows
+- added direct references to the standalone user guide
 
-### 2. Existing sites needed a safe migration path
+### 2. End users still needed a station-owner oriented manual
 
 Risk:
 
-- 直接切到原生摘要会让已有 `_moment_summary` 数据在前台消失
-- 粗暴删除旧字段可能误伤已人工编辑过的原生摘要
+- README 更适合做仓库说明，但站长在日常维护时仍需要一份“怎么用”的操作手册
+- 没有独立手册时，后续交接和长期维护成本较高
 
 Fix:
 
-- added an admin migration tool under `点点滴滴 -> 摘要迁移`
-- backfill only copies old summaries into `post_excerpt` when the native excerpt is currently empty
-- cleanup only deletes legacy `_moment_summary` rows when they exactly match the native excerpt
+- added `docs/USER-GUIDE.md`
+- organized the manual around quick start, page-by-page usage, admin entry lookup, daily workflows, and FAQ
 
-### 3. Minor safe-cleanup regressions were still possible
+### 3. Release metadata needed to stay consistent
 
 Risk:
 
-- 首页计时器如果直接读取新配置键，旧站点可能误提示未设置
-- 未使用短代码和天气后台外链会继续增加维护噪音与后台外链暴露面
+- 仅修改文档而不更新主题版本号，会导致 GitHub Release、主题资源版本和仓库说明口径不一致
 
 Fix:
 
-- unified the homepage timer data source around `brave_get_love_start_datetime()`
-- removed the unused shortcode module
-- replaced the weather admin external-doc link with internal plain-text instructions
+- bumped theme version metadata to `1.0.4` in `style.css` and `functions.php`
+- updated `CHANGELOG.md`, `RELEASE.md`, and this report to match the new documentation release
 
 ## Executed Tests
 
@@ -82,21 +78,13 @@ Command:
 
 ```bash
 php -l functions.php
-php -l inc/helpers.php
-php -l inc/meta-boxes.php
-php -l inc/moment-excerpt-migration.php
-php -l inc/weather-admin.php
-php -l page-templates/page-home.php
-php -l page-templates/page-moments.php
-php -l single-moment.php
 ```
 
 Result: passed.
 
 Observed summary:
 
-- all changed PHP files linted successfully
-- no syntax errors were introduced by the summary migration or safe cleanup changes
+- the version metadata update in `functions.php` introduced no syntax issues
 
 Status: passed.
 
@@ -138,60 +126,33 @@ Observed summary:
 
 Status: passed.
 
-### 4. Security scan
-
-Command:
-
-```bash
-php tests/security-scan.php
-```
-
-Result: passed.
-
-Observed summary:
-
-- direct access protection: passed
-- SQL injection scan: passed
-- XSS scan: passed
-- nonce presence: passed
-- dangerous function scan: passed
-- warnings: `0`
-- errors: `0`
-
-Status: passed.
-
-### 5. Local moment summary migration verification
+### 4. Local homepage version verification
 
 Checks executed:
 
-- queried migration stats before backfill
-- executed `brave_run_moment_excerpt_backfill()` in the local WordPress runtime
-- re-checked stats after backfill
-- executed `brave_cleanup_legacy_moment_summaries()` in the local WordPress runtime
-- re-checked final stats and database row counts
+- fetched `http://localhost:8080/`
+- verified homepage asset URLs include `ver=1.0.4`
 
 Observed summary:
 
-- before backfill: `23` moments had legacy summaries and `0` had native excerpts
-- backfill migrated `23` summaries into `post_excerpt`
-- cleanup removed `23` legacy `_moment_summary` rows
-- final state: `0` legacy summaries remained and `23` native excerpts were present
+- local homepage served the updated theme asset version
+- release metadata and runtime asset version were aligned
 
 Status: passed.
 
-### 6. Local front-end verification
+### 5. Documentation consistency review
 
 Checks executed:
 
-- fetched `http://localhost:8080/?page_id=5` and confirmed moments cards still render summary blocks after migration
-- fetched `http://localhost:8080/` and confirmed the homepage timer still shows a valid start time
-- confirmed the homepage weather city cards continue to render after the safe-cleanup changes
+- verified `README.md` mentions the standalone user guide
+- verified `docs/USER-GUIDE.md` exists in the repository
+- verified release documentation references were aligned around `1.0.4`
 
 Observed summary:
 
-- moments timeline excerpts continued to render normally after migration
-- homepage timer displayed `2023-05-20 12:00` in the local dataset
-- homepage weather city list remained intact
+- GitHub project page now contains setup and usage instructions
+- standalone user guide was present and linkable
+- release notes, changelog, and test report matched the new version
 
 Status: passed.
 
@@ -199,9 +160,8 @@ Status: passed.
 
 - Static PHP validation: passed
 - Theme structure check: passed
-- Security scan: passed
-- Moment summary migration and cleanup flow: passed
-- Front-end rendering after migration: passed
-- Release metadata consistency for `1.0.3`: passed
+- Runtime asset-version verification: passed
+- Documentation consistency review: passed
+- Release metadata consistency for `1.0.4`: passed
 
-Current state is suitable for a `v1.0.3` patch release.
+Current state is suitable for a `v1.0.4` documentation patch release.

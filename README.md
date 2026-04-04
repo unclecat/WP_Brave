@@ -1,6 +1,6 @@
 # Brave Love
 
-[![Version](https://img.shields.io/badge/version-1.0.3-ff5162.svg)](https://github.com/unclecat/WP_Brave/releases)
+[![Version](https://img.shields.io/badge/version-1.0.4-ff5162.svg)](https://github.com/unclecat/WP_Brave/releases)
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg)](https://wordpress.org/)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg)](https://www.php.net/)
 [![License](https://img.shields.io/badge/license-GPL%20v2%20or%20later-2ea44f.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
@@ -9,7 +9,9 @@
 
 ![Brave Love Theme Preview](./screenshot.png)
 
-当前稳定版：`v1.0.3`
+当前稳定版：`v1.0.4`
+
+完整用户手册：[`docs/USER-GUIDE.md`](./docs/USER-GUIDE.md)
 
 Brave Love 不是单独的某一个页面模板，而是一套完整的情侣纪念站主题：
 
@@ -411,6 +413,7 @@ Brave Love 不是单独的某一个页面模板，而是一套完整的情侣纪
 ```text
 brave-love/
 ├── assets/                  # CSS / JS / fonts / vendor
+├── docs/                    # 用户使用手册与后续补充文档
 ├── inc/                     # CPT、Customizer、Meta Box、后台页、工具函数
 ├── page-templates/          # 首页与主要内容页模板
 ├── template-parts/          # 通用模板片段
@@ -429,17 +432,16 @@ brave-love/
 - Repository: <https://github.com/unclecat/WP_Brave>
 - Latest release: <https://github.com/unclecat/WP_Brave/releases>
 - Release asset: `brave-love.zip`
+- User guide: [docs/USER-GUIDE.md](./docs/USER-GUIDE.md)
 - Author site: <https://www.1ink.ink/>
 
 ## 版本说明
 
-当前 `v1.0.3` 已包含：
+当前 `v1.0.4` 已包含：
 
-- 点点滴滴摘要统一收口到 WordPress 原生摘要
-- 点点滴滴摘要迁移与旧字段清理工具
-- 首页计时器兼容处理
-- 天气后台安全收口
-- 冗余短代码模块清理
+- 新增独立用户使用手册 `docs/USER-GUIDE.md`
+- 重写 GitHub 项目首页 README，补齐页面功能、后台入口与实际使用方法
+- 同步更新版本元信息与发布说明，便于按文档版 release 继续分发
 
 如果你推送新的 tag，仓库中的 GitHub Actions 发布流程会自动构建 Release 资产。
 
