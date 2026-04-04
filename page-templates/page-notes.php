@@ -7,7 +7,6 @@ if (!defined('ABSPATH')) {
  * Template Name: 随笔说说
  *
  * @package Brave_Love
- * @version 0.4.1
  */
 
 get_header();

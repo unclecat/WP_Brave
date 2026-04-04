@@ -2,7 +2,6 @@
  * 甜蜜相册交互脚本
  *
  * @package Brave_Love
- * @version 0.3.0
  */
 
 (function() {

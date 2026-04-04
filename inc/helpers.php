@@ -471,26 +471,6 @@ function brave_get_couple_name($gender = 'boy') {
 }
 
 /**
- * 获取头像 HTML
- * 兼容 WordPress 默认头像函数
- *
- * @param int|string $user_id 用户ID或性别(boy/girl)
- * @param int $size 头像尺寸
- * @return string 头像HTML
- */
-function brave_get_avatar_html($user_id_or_gender = 'boy', $size = 100) {
-    if (in_array($user_id_or_gender, array('boy', 'girl'))) {
-        $avatar_url = brave_get_couple_avatar($user_id_or_gender, $size);
-        $name = brave_get_couple_name($user_id_or_gender);
-        return '<img src="' . brave_esc_avatar_url($avatar_url) . '" alt="' . esc_attr($name) . '" class="avatar avatar-' . absint($size) . ' photo" width="' . absint($size) . '" height="' . absint($size) . '">';
-    }
-
-    $avatar_url = brave_get_person_avatar_url($user_id_or_gender, '', $size);
-
-    return '<img src="' . brave_esc_avatar_url($avatar_url) . '" alt="" class="avatar avatar-' . absint($size) . ' photo" width="' . absint($size) . '" height="' . absint($size) . '">';
-}
-
-/**
  * 获取心情表情
  */
 function brave_get_mood_emoji($mood) {
@@ -563,29 +543,6 @@ function brave_get_list_progress($term_id = 0) {
         'done' => $done,
         'percentage' => $total > 0 ? round(($done / $total) * 100) : 0,
     );
-}
-
-/**
- * 获取说说配图
- */
-function brave_get_note_images($post_id, $size = 'medium') {
-    $images = get_post_meta($post_id, '_note_images', true);
-    if (!is_array($images)) {
-        return array();
-    }
-    
-    $urls = array();
-    foreach ($images as $image_id) {
-        $url = wp_get_attachment_image_url($image_id, $size);
-        if ($url) {
-            $urls[] = array(
-                'id' => $image_id,
-                'url' => $url,
-                'thumb' => wp_get_attachment_image_url($image_id, 'thumbnail'),
-            );
-        }
-    }
-    return $urls;
 }
 
 /**
@@ -890,40 +847,6 @@ add_action('edit_attachment', 'brave_flush_gallery_cache_on_attachment_change');
 add_action('delete_attachment', 'brave_flush_gallery_cache_on_attachment_change');
 
 /**
- * 格式化日期差
- */
-function brave_format_date_diff($date1, $date2 = null) {
-    if ($date2 === null) {
-        $date2 = current_time('Y-m-d');
-    }
-    
-    $diff = abs(strtotime($date1) - strtotime($date2));
-    $days = floor($diff / 86400);
-    
-    return $days;
-}
-
-/**
- * 判断是否是移动端
- */
-function brave_is_mobile() {
-    if (function_exists('wp_is_mobile')) {
-        return wp_is_mobile();
-    }
-
-    $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? wp_unslash($_SERVER['HTTP_USER_AGENT']) : '';
-    $mobile_agents = array('Mobile', 'Android', 'Silk/', 'Kindle', 'BlackBerry', 'Opera Mini', 'Opera Mobi');
-
-    foreach ($mobile_agents as $agent) {
-        if (strpos($user_agent, $agent) !== false) {
-            return true;
-        }
-    }
-    
-    return false;
-}
-
-/**
  * 根据页面模板查找页面 ID。
  *
  * @param string $template 页面模板路径
@@ -1085,53 +1008,6 @@ function brave_get_love_start_datetime() {
  */
 function brave_get_option($key, $default = '') {
     return get_theme_mod("brave_{$key}", $default);
-}
-
-/**
- * 清理 SVG
- */
-function brave_kses_svg($svg) {
-    $allowed_tags = array(
-        'svg' => array(
-            'xmlns' => true,
-            'viewbox' => true,
-            'width' => true,
-            'height' => true,
-            'fill' => true,
-            'class' => true,
-            'preserveaspectratio' => true,
-        ),
-        'path' => array(
-            'd' => true,
-            'fill' => true,
-            'class' => true,
-        ),
-        'circle' => array(
-            'cx' => true,
-            'cy' => true,
-            'r' => true,
-            'fill' => true,
-        ),
-        'rect' => array(
-            'x' => true,
-            'y' => true,
-            'width' => true,
-            'height' => true,
-            'fill' => true,
-        ),
-        'g' => array(
-            'class' => true,
-            'transform' => true,
-        ),
-        'use' => array(
-            'href' => true,
-            'x' => true,
-            'y' => true,
-        ),
-        'defs' => array(),
-    );
-    
-    return wp_kses($svg, $allowed_tags);
 }
 
 /**
