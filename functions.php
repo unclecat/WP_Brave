@@ -6,7 +6,7 @@
  */
 
 // 定义常量
-define('BRAVE_VERSION', '1.0.4');
+define('BRAVE_VERSION', '1.0.5');
 define('BRAVE_BOOTSTRAP_VERSION', '5.3.2');
 define('BRAVE_PHOTOSWIPE_VERSION', '5.4.2');
 define('BRAVE_DIR', get_template_directory());
@@ -249,6 +249,10 @@ function brave_admin_scripts($hook) {
     
     // 在所有后台页面加载样式
     wp_enqueue_style('brave-admin', $theme_uri . '/assets/css/admin.css', array(), $version);
+
+    if ('settings_page_brave-weather' === $hook) {
+        wp_enqueue_script('jquery-ui-sortable');
+    }
 
     if (in_array($hook, array('post.php', 'post-new.php'), true)) {
         wp_enqueue_media();

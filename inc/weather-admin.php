@@ -89,21 +89,28 @@ function brave_weather_page() {
             
             <h2><?php _e('城市列表', 'brave-love'); ?></h2>
             <p class="description">
-                <?php _e('请填写城市名称以及对应经纬度，也可以直接搜索“城市名 latitude longitude”获取坐标。', 'brave-love'); ?>
+                <?php _e('请填写城市名称以及对应经纬度，也可以直接搜索“城市名 latitude longitude”获取坐标。拖拽左侧手柄即可调整首页天气卡片顺序，调整后记得点击“保存设置”。', 'brave-love'); ?>
             </p>
             
-            <table class="wp-list-table widefat fixed striped">
+            <table class="wp-list-table widefat fixed striped weather-city-table">
                 <thead>
                     <tr>
+                        <th style="width: 12%;"><?php _e('拖拽', 'brave-love'); ?></th>
                         <th style="width: 30%;"><?php _e('城市名称', 'brave-love'); ?></th>
-                        <th style="width: 25%;"><?php _e('纬度', 'brave-love'); ?></th>
-                        <th style="width: 25%;"><?php _e('经度', 'brave-love'); ?></th>
-                        <th style="width: 20%;"><?php _e('操作', 'brave-love'); ?></th>
+                        <th style="width: 20%;"><?php _e('纬度', 'brave-love'); ?></th>
+                        <th style="width: 20%;"><?php _e('经度', 'brave-love'); ?></th>
+                        <th style="width: 18%;"><?php _e('操作', 'brave-love'); ?></th>
                     </tr>
                 </thead>
                 <tbody id="city-list">
                     <?php foreach ($cities as $index => $city) : ?>
                         <tr class="city-item">
+                            <td class="city-drag-cell">
+                                <span class="city-drag-handle" title="<?php esc_attr_e('拖拽排序', 'brave-love'); ?>" aria-hidden="true">
+                                    <span class="dashicons dashicons-move"></span>
+                                </span>
+                                <strong class="city-order-number"><?php echo esc_html((string) ($index + 1)); ?></strong>
+                            </td>
                             <td>
                                 <input type="text" name="city_name[]" value="<?php echo esc_attr($city['name']); ?>" class="regular-text" placeholder="<?php _e('例如：北京', 'brave-love'); ?>">
                             </td>
@@ -158,23 +165,84 @@ function brave_weather_page() {
     
     <script>
     jQuery(document).ready(function($) {
+        function refreshSortable() {
+            var $list = $('#city-list');
+
+            if ($.fn.sortable && $list.data('ui-sortable')) {
+                $list.sortable('refresh');
+            }
+        }
+
+        function updateCityOrderState() {
+            var $rows = $('#city-list .city-item').not('.empty-row');
+
+            $rows.each(function(index) {
+                $(this).find('.city-order-number').text(index + 1);
+            });
+        }
+
+        function fixHelperWidths(event, ui) {
+            ui.children().each(function() {
+                $(this).width($(this).width());
+            });
+
+            return ui;
+        }
+
+        function initSortable() {
+            if (!$.fn.sortable) {
+                return;
+            }
+
+            $('#city-list').sortable({
+                items: '> .city-item:not(.empty-row)',
+                axis: 'y',
+                handle: '.city-drag-handle',
+                helper: fixHelperWidths,
+                placeholder: 'city-sort-placeholder',
+                forcePlaceholderSize: true,
+                tolerance: 'pointer',
+                start: function(event, ui) {
+                    ui.item.addClass('is-sorting');
+                },
+                stop: function(event, ui) {
+                    ui.item.removeClass('is-sorting');
+                    updateCityOrderState();
+                },
+            });
+        }
+
         $('#add-city').on('click', function() {
+            $('#city-list .empty-row').remove();
             var row = '<tr class="city-item">' +
+                '<td class="city-drag-cell">' +
+                    '<span class="city-drag-handle" title="<?php echo esc_attr__('拖拽排序', 'brave-love'); ?>" aria-hidden="true">' +
+                        '<span class="dashicons dashicons-move"></span>' +
+                    '</span>' +
+                    '<strong class="city-order-number"></strong>' +
+                '</td>' +
                 '<td><input type="text" name="city_name[]" class="regular-text" placeholder="<?php _e('例如：北京', 'brave-love'); ?>"></td>' +
                 '<td><input type="text" name="city_lat[]" class="regular-text" placeholder="39.9042"></td>' +
                 '<td><input type="text" name="city_lon[]" class="regular-text" placeholder="116.4074"></td>' +
                 '<td><button type="button" class="button remove-city"><?php _e('删除', 'brave-love'); ?></button></td>' +
                 '</tr>';
             $('#city-list').append(row);
+            updateCityOrderState();
+            refreshSortable();
         });
-        
+
         $(document).on('click', '.remove-city', function() {
             if ($('.city-item:visible').length > 1) {
                 $(this).closest('.city-item').remove();
+                updateCityOrderState();
+                refreshSortable();
             } else {
                 alert('<?php _e('至少保留一个城市', 'brave-love'); ?>');
             }
         });
+
+        initSortable();
+        updateCityOrderState();
     });
     </script>
     <?php

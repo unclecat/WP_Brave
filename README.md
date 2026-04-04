@@ -1,6 +1,6 @@
 # Brave Love
 
-[![Version](https://img.shields.io/badge/version-1.0.4-ff5162.svg)](https://github.com/unclecat/WP_Brave/releases)
+[![Version](https://img.shields.io/badge/version-1.0.5-ff5162.svg)](https://github.com/unclecat/WP_Brave/releases)
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg)](https://wordpress.org/)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg)](https://www.php.net/)
 [![License](https://img.shields.io/badge/license-GPL%20v2%20or%20later-2ea44f.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
@@ -9,7 +9,7 @@
 
 ![Brave Love Theme Preview](./screenshot.png)
 
-当前稳定版：`v1.0.4`
+当前稳定版：`v1.0.5`
 
 完整用户手册：[`docs/USER-GUIDE.md`](./docs/USER-GUIDE.md)
 
@@ -97,6 +97,7 @@ Brave Love 不是单独的某一个页面模板，而是一套完整的情侣纪
 - `设置 -> 天气城市`
   - 控制首页天气模块是否显示
   - 支持添加任意数量城市，不限制 4 个
+  - 支持在后台拖拽调整首页天气卡片顺序
 - `设置 -> 纪念日`
   - 控制“特别的日子”卡片内容
 
@@ -313,6 +314,7 @@ Brave Love 不是单独的某一个页面模板，而是一套完整的情侣纪
 - 开关天气模块
 - 添加任意数量城市
 - 为每个城市填写名称、纬度、经度
+- 通过拖拽左侧手柄调整首页天气卡片顺序
 
 填写建议：
 - 坐标格式使用十进制度，例如 `31.2304` / `121.4737`
@@ -437,11 +439,11 @@ brave-love/
 
 ## 版本说明
 
-当前 `v1.0.4` 已包含：
+当前 `v1.0.5` 已包含：
 
-- 新增独立用户使用手册 `docs/USER-GUIDE.md`
-- 重写 GitHub 项目首页 README，补齐页面功能、后台入口与实际使用方法
-- 同步更新版本元信息与发布说明，便于按文档版 release 继续分发
+- 首页天气城市后台支持拖拽排序，保存后前台按拖拽顺序展示
+- 为天气管理页补充拖拽手柄、排序占位样式与后台交互脚本
+- 同步更新版本元信息与发布说明，便于继续发版
 
 如果你推送新的 tag，仓库中的 GitHub Actions 发布流程会自动构建 Release 资产。
 

@@ -1,4 +1,4 @@
-# Brave Love 1.0.4 Test Report
+# Brave Love 1.0.5 Test Report
 
 Generated: 2026-04-04  
 Project: `brave-love`  
@@ -7,21 +7,20 @@ Environment: local WordPress Docker runtime + local PHP CLI
 
 ## Scope
 
-This documentation patch-release check focused on the new user guide, the expanded GitHub project README, and the related version metadata updates for `v1.0.4`.
+This patch-release check focused on the new drag-and-drop sorting flow for homepage weather cities, the related admin assets, and the release metadata updates for `v1.0.5`.
 
 This run covered:
 
-- metadata version alignment for `style.css`, `functions.php`, `README.md`, `RELEASE.md`, and `CHANGELOG.md`
-- user-facing documentation presence and linkability for `docs/USER-GUIDE.md`
-- bundled theme structure check
-- bundled PHP project check
-- local homepage asset-version verification after bumping the runtime version to `1.0.4`
+- PHP syntax lint for the changed theme source
+- admin weather page output verification for the drag handle and sortable initialization
+- local homepage ordering verification against saved weather city order
+- release metadata consistency for `style.css`, `functions.php`, `README.md`, `RELEASE.md`, and `CHANGELOG.md`
 
 This run did not cover:
 
-- full authenticated admin click-through regression
-- a new content migration rehearsal
-- browser-driven visual review for every front-end template
+- browser-driven drag interaction in a real admin session
+- full authenticated regression across other admin pages
+- production data verification beyond the local test site
 
 ## Environment
 
@@ -30,45 +29,46 @@ This run did not cover:
 - `docker`: available
 - local WordPress: `http://localhost:8080`
 - local phpMyAdmin: `http://localhost:8081`
-- theme runtime version target: `1.0.4`
+- theme runtime version target: `1.0.5`
 
 ## Review Findings And Fixes
 
-### 1. GitHub project page lacked a complete usage manual
+### 1. Weather cities could not be reordered directly in admin
 
 Risk:
 
-- 新用户打开仓库后，只能看到功能概览，无法直接照着完成建站
-- 页面模板、后台入口和各模块维护方法分散在代码和历史说明里，不利于交付
+- 首页天气展示顺序只能跟随保存数组，后台没有直接的可视化调整方式
+- 用户想改顺序时只能依赖额外按钮或重新录入，维护体验较差
 
 Fix:
 
-- expanded `README.md` into a full project-page guide
-- documented page setup, template mapping, admin entry points, and expected content workflows
-- added direct references to the standalone user guide
+- added drag handles to the weather city rows
+- enabled `jQuery UI sortable` on the weather settings page
+- kept the saved option order as the single source of truth for front-end rendering
 
-### 2. End users still needed a station-owner oriented manual
+### 2. Admin feedback needed to make sorting obvious
 
 Risk:
 
-- README 更适合做仓库说明，但站长在日常维护时仍需要一份“怎么用”的操作手册
-- 没有独立手册时，后续交接和长期维护成本较高
+- 仅增加排序能力而没有视觉引导，会让后台用户不知道哪里可以拖拽
 
 Fix:
 
-- added `docs/USER-GUIDE.md`
-- organized the manual around quick start, page-by-page usage, admin entry lookup, daily workflows, and FAQ
+- added a clearer weather admin description explaining that table order controls homepage order
+- styled the drag handle and placeholder state in `assets/css/admin.css`
+- kept visible order numbers so the final order remains easy to confirm before saving
 
-### 3. Release metadata needed to stay consistent
+### 3. Documentation needed to match the new workflow
 
 Risk:
 
-- 仅修改文档而不更新主题版本号，会导致 GitHub Release、主题资源版本和仓库说明口径不一致
+- README 和用户手册如果仍然只写“添加城市”，会与实际后台操作不一致
 
 Fix:
 
-- bumped theme version metadata to `1.0.4` in `style.css` and `functions.php`
-- updated `CHANGELOG.md`, `RELEASE.md`, and this report to match the new documentation release
+- updated `README.md` weather-management instructions
+- updated `docs/USER-GUIDE.md` to mention drag sorting for weather cities
+- bumped release metadata to `1.0.5`
 
 ## Executed Tests
 
@@ -78,90 +78,70 @@ Command:
 
 ```bash
 php -l functions.php
+php -l inc/weather-admin.php
 ```
 
 Result: passed.
 
 Observed summary:
 
-- the version metadata update in `functions.php` introduced no syntax issues
+- changed PHP files linted successfully
+- no syntax errors were introduced by the sortable admin changes
 
 Status: passed.
 
-### 2. Bundled shell structure check
-
-Command:
-
-```bash
-bash tests/check-theme-simple.sh
-```
-
-Result: passed.
-
-Observed summary:
-
-- required theme files: complete
-- theme name: `Brave Love`
-- version metadata: readable
-- dangerous runtime functions: none found
-
-Status: passed.
-
-### 3. Bundled PHP project check
-
-Command:
-
-```bash
-php tests/check-theme.php
-```
-
-Result: passed.
-
-Observed summary:
-
-- all required files present
-- scanned PHP files linted successfully
-- style header fields present and readable
-- no dangerous runtime function warnings
-
-Status: passed.
-
-### 4. Local homepage version verification
+### 2. Weather admin output verification
 
 Checks executed:
 
-- fetched `http://localhost:8080/`
-- verified homepage asset URLs include `ver=1.0.4`
+- rendered the weather admin page inside the local WordPress runtime
+- verified the output contains `city-drag-handle`
+- verified the output contains `sortable({`
+- verified the output contains `dashicons-move`
 
 Observed summary:
 
-- local homepage served the updated theme asset version
-- release metadata and runtime asset version were aligned
+- drag handle markup was present
+- sortable initialization script was present
+- drag icon output was present
 
 Status: passed.
 
-### 5. Documentation consistency review
+### 3. Local homepage order verification
 
 Checks executed:
 
-- verified `README.md` mentions the standalone user guide
-- verified `docs/USER-GUIDE.md` exists in the repository
-- verified release documentation references were aligned around `1.0.4`
+- temporarily changed local weather city option order to `深圳 -> 北京 -> 杭州`
+- fetched `http://localhost:8080/` and checked the first three weather card city names
+- restored the original local weather settings after verification
 
 Observed summary:
 
-- GitHub project page now contains setup and usage instructions
-- standalone user guide was present and linkable
-- release notes, changelog, and test report matched the new version
+- homepage rendered weather cities in the same order as the saved option array
+- temporary local verification order matched `深圳 -> 北京 -> 杭州`
+- original local option values were restored after the check
+
+Status: passed.
+
+### 4. Release metadata consistency
+
+Checks executed:
+
+- verified version metadata changed to `1.0.5` in `style.css` and `functions.php`
+- verified release documentation references were aligned around `1.0.5`
+
+Observed summary:
+
+- theme runtime version and release files matched
+- README, release notes, changelog, and test report were aligned
 
 Status: passed.
 
 ## Outcome Summary
 
 - Static PHP validation: passed
-- Theme structure check: passed
-- Runtime asset-version verification: passed
-- Documentation consistency review: passed
-- Release metadata consistency for `1.0.4`: passed
+- Weather admin output verification: passed
+- Homepage weather order verification: passed
+- Release metadata consistency for `1.0.5`: passed
 
-Current state is suitable for a `v1.0.4` documentation patch release.
+Current state is suitable for a `v1.0.5` patch release.
