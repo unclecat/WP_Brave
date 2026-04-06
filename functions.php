@@ -6,7 +6,7 @@
  */
 
 // 定义常量
-define('BRAVE_VERSION', '1.0.5');
+define('BRAVE_VERSION', '1.0.6');
 define('BRAVE_BOOTSTRAP_VERSION', '5.3.2');
 define('BRAVE_PHOTOSWIPE_VERSION', '5.4.2');
 define('BRAVE_DIR', get_template_directory());
@@ -108,14 +108,53 @@ function brave_scripts() {
 add_action('wp_enqueue_scripts', 'brave_scripts');
 
 /**
- * 为恋爱清单前台列表添加状态筛选。
+ * 判断是否为恋爱清单前台主查询。
  */
-function brave_filter_love_list_archive_query($query) {
-    if (is_admin() || !$query->is_main_query()) {
-        return;
+function brave_is_love_list_archive_query($query) {
+    return $query instanceof WP_Query
+        && !is_admin()
+        && $query->is_main_query()
+        && ($query->is_post_type_archive('love_list') || $query->is_tax('list_category'));
+}
+
+/**
+ * 将恋爱清单排序规则应用到查询 SQL。
+ */
+function brave_apply_love_list_sort_clauses($clauses) {
+    global $wpdb;
+
+    if (false === strpos($clauses['join'], 'brave_done_meta')) {
+        $clauses['join'] .= " LEFT JOIN {$wpdb->postmeta} AS brave_done_meta
+            ON ({$wpdb->posts}.ID = brave_done_meta.post_id AND brave_done_meta.meta_key = '_is_done')";
     }
 
-    if (!($query->is_post_type_archive('love_list') || $query->is_tax('list_category'))) {
+    if (false === strpos($clauses['join'], 'brave_done_date_meta')) {
+        $clauses['join'] .= " LEFT JOIN {$wpdb->postmeta} AS brave_done_date_meta
+            ON ({$wpdb->posts}.ID = brave_done_date_meta.post_id AND brave_done_date_meta.meta_key = '_done_date')";
+    }
+
+    $clauses['orderby'] = "CASE
+            WHEN brave_done_meta.meta_value = '1' THEN 1
+            ELSE 0
+        END ASC,
+        CASE
+            WHEN brave_done_meta.meta_value = '1' AND brave_done_date_meta.meta_value <> '' THEN 0
+            ELSE 1
+        END ASC,
+        CASE
+            WHEN brave_done_meta.meta_value = '1' THEN brave_done_date_meta.meta_value
+            ELSE NULL
+        END DESC,
+        {$wpdb->posts}.post_date DESC";
+
+    return $clauses;
+}
+
+/**
+ * 为恋爱清单前台列表添加状态筛选与排序。
+ */
+function brave_filter_love_list_archive_query($query) {
+    if (!brave_is_love_list_archive_query($query)) {
         return;
     }
 
@@ -123,6 +162,7 @@ function brave_filter_love_list_archive_query($query) {
     $query->set('posts_per_page', -1);
     $query->set('nopaging', true);
     $query->set('ignore_sticky_posts', true);
+    $query->set('brave_love_list_sort', true);
 
     $status = isset($_GET['filter_status']) ? sanitize_key(wp_unslash($_GET['filter_status'])) : '';
 
@@ -157,6 +197,63 @@ function brave_filter_love_list_archive_query($query) {
     $query->set('meta_query', $meta_query);
 }
 add_action('pre_get_posts', 'brave_filter_love_list_archive_query');
+
+/**
+ * 恋爱清单默认按完成状态和完成日期排序：
+ * 未完成置顶，已完成按完成日期倒序，最早完成的排在最后。
+ */
+function brave_sort_love_list_archive_clauses($clauses, $query) {
+    if (!brave_is_love_list_archive_query($query) || !$query->get('brave_love_list_sort')) {
+        return $clauses;
+    }
+
+    return brave_apply_love_list_sort_clauses($clauses);
+}
+add_filter('posts_clauses', 'brave_sort_love_list_archive_clauses', 10, 2);
+
+/**
+ * 判断是否为后台恋爱清单管理列表主查询。
+ */
+function brave_is_love_list_admin_query($query) {
+    global $pagenow;
+
+    return $query instanceof WP_Query
+        && is_admin()
+        && $query->is_main_query()
+        && 'edit.php' === $pagenow
+        && 'love_list' === $query->get('post_type');
+}
+
+/**
+ * 后台恋爱清单管理列表默认沿用前台排序规则；
+ * 如用户手动点击排序列，则尊重后台显式排序。
+ */
+function brave_sort_love_list_admin_query($query) {
+    if (!brave_is_love_list_admin_query($query)) {
+        return;
+    }
+
+    $orderby = isset($_GET['orderby']) ? sanitize_key(wp_unslash($_GET['orderby'])) : '';
+
+    if ('' !== $orderby) {
+        return;
+    }
+
+    $query->set('brave_love_list_sort', true);
+}
+add_action('pre_get_posts', 'brave_sort_love_list_admin_query');
+
+/**
+ * 为后台恋爱清单管理列表应用默认排序。
+ */
+function brave_sort_love_list_admin_clauses($clauses, $query) {
+    if (!brave_is_love_list_admin_query($query) || !$query->get('brave_love_list_sort')) {
+        return $clauses;
+    }
+
+    return brave_apply_love_list_sort_clauses($clauses);
+}
+add_filter('posts_clauses', 'brave_sort_love_list_admin_clauses', 10, 2);
 
 /**
  * 获取恋爱清单归档页的规范 URL。

@@ -1,74 +1,74 @@
-# Brave Love 1.0.5 Test Report
+# Brave Love 1.0.6 Test Report
 
-Generated: 2026-04-04  
+Generated: 2026-04-06  
 Project: `brave-love`  
 Tester: Codex CLI  
 Environment: local WordPress Docker runtime + local PHP CLI
 
 ## Scope
 
-This patch-release check focused on the new drag-and-drop sorting flow for homepage weather cities, the related admin assets, and the release metadata updates for `v1.0.5`.
+This patch-release check focused on the new ordering behavior for the `love_list` archive and the matching default ordering in the admin `love_list` table for `v1.0.6`.
 
 This run covered:
 
 - PHP syntax lint for the changed theme source
-- admin weather page output verification for the drag handle and sortable initialization
-- local homepage ordering verification against saved weather city order
+- local front-end ordering verification for the love list archive query
+- local admin ordering verification for the default love list management query
+- explicit admin `orderby` override verification
 - release metadata consistency for `style.css`, `functions.php`, `README.md`, `RELEASE.md`, and `CHANGELOG.md`
 
 This run did not cover:
 
-- browser-driven drag interaction in a real admin session
-- full authenticated regression across other admin pages
-- production data verification beyond the local test site
+- browser-driven authenticated admin UI checks
+- full regression across unrelated templates or settings pages
+- production data validation beyond the local test site
 
 ## Environment
 
 - `php`: available
-- `python3`: available
 - `docker`: available
 - local WordPress: `http://localhost:8080`
 - local phpMyAdmin: `http://localhost:8081`
-- theme runtime version target: `1.0.5`
+- theme runtime version target: `1.0.6`
 
 ## Review Findings And Fixes
 
-### 1. Weather cities could not be reordered directly in admin
+### 1. Love list archive lacked a user-oriented default order
 
 Risk:
 
-- 首页天气展示顺序只能跟随保存数组，后台没有直接的可视化调整方式
-- 用户想改顺序时只能依赖额外按钮或重新录入，维护体验较差
+- 前台恋爱清单没有明确的完成状态优先级时，待完成事项会被已完成事项打散
+- 用户打开页面后，最想先看的“还没完成的事”不一定能排在最前面
 
 Fix:
 
-- added drag handles to the weather city rows
-- enabled `jQuery UI sortable` on the weather settings page
-- kept the saved option order as the single source of truth for front-end rendering
+- added a unified love-list ordering clause in `functions.php`
+- grouped pending items first and done items second
+- sorted done items by `_done_date` descending with publish date as a fallback
 
-### 2. Admin feedback needed to make sorting obvious
+### 2. Admin maintenance order did not match the front end
 
 Risk:
 
-- 仅增加排序能力而没有视觉引导，会让后台用户不知道哪里可以拖拽
+- 后台列表和前台展示顺序不一致，会增加维护时的判断成本
+- 站长在后台处理事项时，需要额外筛选才能先看到待完成项
 
 Fix:
 
-- added a clearer weather admin description explaining that table order controls homepage order
-- styled the drag handle and placeholder state in `assets/css/admin.css`
-- kept visible order numbers so the final order remains easy to confirm before saving
+- applied the same default ordering rule to the admin `love_list` list table
+- limited the admin hook to the default `edit.php?post_type=love_list` main query
+- preserved explicit admin sorting when the user clicks another sortable column
 
-### 3. Documentation needed to match the new workflow
+### 3. Release metadata needed to reflect the new patch release
 
 Risk:
 
-- README 和用户手册如果仍然只写“添加城市”，会与实际后台操作不一致
+- 版本号和发布说明如果不更新，会让安装包、GitHub 项目页和实际代码状态不一致
 
 Fix:
 
-- updated `README.md` weather-management instructions
-- updated `docs/USER-GUIDE.md` to mention drag sorting for weather cities
-- bumped release metadata to `1.0.5`
+- bumped release metadata to `1.0.6`
+- updated `README.md`, `docs/USER-GUIDE.md`, `RELEASE.md`, and `CHANGELOG.md`
 
 ## Executed Tests
 
@@ -78,70 +78,64 @@ Command:
 
 ```bash
 php -l functions.php
-php -l inc/weather-admin.php
 ```
 
 Result: passed.
 
 Observed summary:
 
-- changed PHP files linted successfully
-- no syntax errors were introduced by the sortable admin changes
+- `functions.php` linted successfully
+- no syntax errors were introduced by the shared sorting helper or admin hook
 
 Status: passed.
 
-### 2. Weather admin output verification
+### 2. Front-end love list ordering verification
 
 Checks executed:
 
-- rendered the weather admin page inside the local WordPress runtime
-- verified the output contains `city-drag-handle`
-- verified the output contains `sortable({`
-- verified the output contains `dashicons-move`
+- loaded the local WordPress runtime inside Docker
+- executed the archive query with the theme hook applied
+- verified pending items render first
+- verified done items render after pending items and are ordered by `_done_date` descending
 
 Observed summary:
 
-- drag handle markup was present
-- sortable initialization script was present
-- drag icon output was present
+- pending items were grouped first
+- done items were ordered `2025-04-01 -> 2025-03-20 -> 2025-03-01 -> 2025-02-14`
+- items sharing the same done date fell back to publish date ordering
 
 Status: passed.
 
-### 3. Local homepage order verification
+### 3. Admin default ordering verification
 
 Checks executed:
 
-- temporarily changed local weather city option order to `深圳 -> 北京 -> 杭州`
-- fetched `http://localhost:8080/` and checked the first three weather card city names
-- restored the original local weather settings after verification
+- simulated the `edit.php?post_type=love_list` admin screen in the local runtime
+- executed the default main query with the new admin hook applied
+- compared the resulting order with the front-end archive order
 
 Observed summary:
 
-- homepage rendered weather cities in the same order as the saved option array
-- temporary local verification order matched `深圳 -> 北京 -> 杭州`
-- original local option values were restored after the check
+- admin default order matched the front-end logic
+- pending items appeared first and done items followed by done date descending
 
 Status: passed.
 
-### 4. Release metadata consistency
+### 4. Admin explicit orderby override verification
 
 Checks executed:
 
-- verified version metadata changed to `1.0.5` in `style.css` and `functions.php`
-- verified release documentation references were aligned around `1.0.5`
+- simulated `orderby=title&order=ASC` for the admin love list screen
+- verified the custom default sort flag was not enabled
+- confirmed the returned results followed title ordering instead of the default status/date ordering
 
 Observed summary:
 
-- theme runtime version and release files matched
-- README, release notes, changelog, and test report were aligned
+- explicit admin sorting was preserved
+- the default hook did not override user-selected ordering
 
 Status: passed.
 
-## Outcome Summary
+## Conclusion
 
-- Static PHP validation: passed
-- Weather admin output verification: passed
-- Homepage weather order verification: passed
-- Release metadata consistency for `1.0.5`: passed
-
-Current state is suitable for a `v1.0.5` patch release.
+Current state is suitable for a `v1.0.6` patch release.

@@ -1,6 +1,6 @@
 # Brave Love
 
-[![Version](https://img.shields.io/badge/version-1.0.5-ff5162.svg)](https://github.com/unclecat/WP_Brave/releases)
+[![Version](https://img.shields.io/badge/version-1.0.6-ff5162.svg)](https://github.com/unclecat/WP_Brave/releases)
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg)](https://wordpress.org/)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg)](https://www.php.net/)
 [![License](https://img.shields.io/badge/license-GPL%20v2%20or%20later-2ea44f.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
@@ -9,7 +9,7 @@
 
 ![Brave Love Theme Preview](./screenshot.png)
 
-当前稳定版：`v1.0.5`
+当前稳定版：`v1.0.6`
 
 完整用户手册：[`docs/USER-GUIDE.md`](./docs/USER-GUIDE.md)
 
@@ -191,8 +191,10 @@ Brave Love 不是单独的某一个页面模板，而是一套完整的情侣纪
 - 顶部会自动统计：已完成、待完成、完成度
 - 支持按分类筛选
 - 支持按状态筛选：`已完成 / 待完成`
+- 默认排序为：`待完成在前`，`已完成` 按完成日期从近到远排列
 - 已完成事项如果填写了正文或特色图，卡片支持展开查看详情
 - 未完成事项只显示简洁卡片信息
+- 后台 `恋爱清单` 管理列表默认也会沿用同样的排序逻辑，方便维护
 
 补充说明：
 - `恋爱清单` 的 Hero 不走页面模板，而是在 `外观 -> 自定义 -> Brave 主题设置 -> Hero 区域` 里单独设置
@@ -439,11 +441,11 @@ brave-love/
 
 ## 版本说明
 
-当前 `v1.0.5` 已包含：
+当前 `v1.0.6` 已包含：
 
 - 首页天气城市后台支持拖拽排序，保存后前台按拖拽顺序展示
-- 为天气管理页补充拖拽手柄、排序占位样式与后台交互脚本
-- 同步更新版本元信息与发布说明，便于继续发版
+- 恋爱清单前台支持按完成状态与完成日期自动排序
+- 后台恋爱清单管理列表默认同步相同排序逻辑，维护时更直观
 
 如果你推送新的 tag，仓库中的 GitHub Actions 发布流程会自动构建 Release 资产。
 
