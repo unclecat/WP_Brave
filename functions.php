@@ -6,7 +6,7 @@
  */
 
 // 定义常量
-define('BRAVE_VERSION', '1.0.6');
+define('BRAVE_VERSION', '1.0.7');
 define('BRAVE_BOOTSTRAP_VERSION', '5.3.2');
 define('BRAVE_PHOTOSWIPE_VERSION', '5.4.2');
 define('BRAVE_DIR', get_template_directory());
@@ -73,6 +73,8 @@ function brave_scripts() {
         'next_anniversary_name' => get_theme_mod('brave_next_anniversary_name', ''),
         'ajax_url' => admin_url('admin-ajax.php'),
         'home_url' => home_url(),
+        'weather_api_url' => rest_url('brave-love/v1/weather'),
+        'weather_refresh_ms' => 30 * MINUTE_IN_SECONDS * 1000,
     );
     wp_localize_script('brave-script', 'braveData', $theme_options);
     
@@ -377,6 +379,11 @@ require BRAVE_DIR . '/inc/helpers.php';
  * Customizer 设置
  */
 require BRAVE_DIR . '/inc/customizer.php';
+
+/**
+ * QWeather 天气服务
+ */
+require BRAVE_DIR . '/inc/weather-service.php';
 
 /**
  * 天气管理

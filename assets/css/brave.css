@@ -1037,6 +1037,65 @@
     transform: translateY(-1px);
 }
 
+.weather-modal-alert {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.56rem;
+    align-items: flex-start;
+    margin-bottom: 0.68rem;
+    padding: 0.62rem 0.72rem;
+    border: 1px solid rgba(255, 81, 98, 0.14);
+    border-radius: 16px;
+    background: linear-gradient(180deg, rgba(255, 246, 240, 0.92), rgba(255, 252, 250, 0.98));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.weather-modal-alert[data-tone="moderate"] {
+    border-color: rgba(214, 174, 84, 0.28);
+    background: linear-gradient(180deg, rgba(255, 251, 237, 0.94), rgba(255, 253, 247, 0.98));
+}
+
+.weather-modal-alert[data-tone="sensitive"] {
+    border-color: rgba(225, 176, 84, 0.32);
+    background: linear-gradient(180deg, rgba(255, 245, 227, 0.94), rgba(255, 251, 240, 0.98));
+}
+
+.weather-modal-alert[data-tone="unhealthy"],
+.weather-modal-alert[data-tone="hazardous"] {
+    border-color: rgba(214, 124, 96, 0.28);
+    background: linear-gradient(180deg, rgba(255, 239, 233, 0.94), rgba(255, 248, 244, 0.98));
+}
+
+.weather-modal-alert-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    padding: 0.18rem 0.64rem;
+    border-radius: 999px;
+    background: rgba(255, 81, 98, 0.08);
+    color: rgba(143, 76, 63, 0.94);
+    font-size: 0.72rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.weather-modal-alert-copy {
+    min-width: 0;
+}
+
+.weather-modal-alert-title {
+    color: var(--text-color);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.weather-modal-alert-meta {
+    margin-top: 0.14rem;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+}
+
 .weather-modal-main {
     display: grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(196px, 0.9fr);
@@ -1183,6 +1242,10 @@
     transform: translateY(1px);
 }
 
+.weather-modal-aside-plain {
+    color: rgba(108, 91, 97, 0.88);
+}
+
 .weather-modal-aside-dot {
     flex-shrink: 0;
     width: 7px;
@@ -1315,6 +1378,13 @@
     text-transform: uppercase;
 }
 
+.weather-modal-note-copy {
+    margin: 0.28rem 0 0;
+    color: rgba(106, 88, 95, 0.86);
+    font-size: 0.72rem;
+    line-height: 1.62;
+}
+
 .weather-modal-tag-list {
     display: flex;
     flex-wrap: wrap;
@@ -1343,6 +1413,62 @@
 
 .weather-modal-tag.is-muted {
     color: var(--text-muted);
+}
+
+.weather-modal-minute {
+    margin-top: 0.42rem;
+    padding: 0.46rem 0.52rem;
+    border: 1px solid rgba(255, 81, 98, 0.08);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.52);
+}
+
+.weather-modal-minute-label {
+    color: rgba(125, 103, 110, 0.78);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.weather-modal-minute-text {
+    margin-top: 0.18rem;
+    color: rgba(106, 88, 95, 0.88);
+    font-size: 0.72rem;
+    line-height: 1.56;
+}
+
+.weather-modal-health {
+    margin-top: 0.64rem;
+    padding: 0.66rem 0.72rem;
+    border: 1px solid rgba(255, 81, 98, 0.1);
+    border-radius: 18px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.56));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.weather-modal-health-row + .weather-modal-health-row {
+    margin-top: 0.52rem;
+    padding-top: 0.52rem;
+    border-top: 1px dashed rgba(255, 81, 98, 0.1);
+}
+
+.weather-modal-health-label {
+    display: inline-flex;
+    align-items: center;
+    color: rgba(125, 103, 110, 0.76);
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.weather-modal-health-text {
+    margin: 0.22rem 0 0;
+    color: rgba(103, 87, 93, 0.9);
+    font-size: 0.75rem;
+    line-height: 1.68;
 }
 
 .weather-modal-trend {
@@ -1484,6 +1610,10 @@
         text-align: left;
     }
 
+    .weather-modal-alert {
+        grid-template-columns: 1fr;
+    }
+
     .weather-modal-details {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -1550,9 +1680,11 @@
     }
 
         html[data-theme="dark"] .weather-card,
+    html[data-theme="dark"] .weather-modal-alert,
     html[data-theme="dark"] .weather-modal-main,
     html[data-theme="dark"] .weather-modal-aside,
     html[data-theme="dark"] .weather-modal-item,
+    html[data-theme="dark"] .weather-modal-health,
     html[data-theme="dark"] .weather-modal-trend,
     html[data-theme="dark"] .weather-hourly-item {
         border-color: var(--editorial-border-subtle);
@@ -1603,8 +1735,12 @@
     html[data-theme="dark"] .weather-modal-city,
     html[data-theme="dark"] .weather-modal-temp,
     html[data-theme="dark"] .weather-modal-desc,
+    html[data-theme="dark"] .weather-modal-alert-title,
     html[data-theme="dark"] .weather-modal-value,
     html[data-theme="dark"] .weather-modal-aside-value,
+    html[data-theme="dark"] .weather-modal-note-copy,
+    html[data-theme="dark"] .weather-modal-minute-text,
+    html[data-theme="dark"] .weather-modal-health-text,
     html[data-theme="dark"] .weather-modal-tag,
     html[data-theme="dark"] .weather-hourly-temp,
     html[data-theme="dark"] .weather-modal-section-title,
@@ -1625,6 +1761,12 @@
         background: rgba(255, 255, 255, 0.06);
         box-shadow: none;
         color: rgba(244, 238, 243, 0.82);
+    }
+
+        html[data-theme="dark"] .weather-modal-alert-meta,
+    html[data-theme="dark"] .weather-modal-minute-label,
+    html[data-theme="dark"] .weather-modal-health-label {
+        color: rgba(232, 221, 225, 0.72);
     }
 
         html[data-theme="dark"] .weather-modal-chip {
@@ -1701,8 +1843,17 @@
         border-top-color: rgba(255, 255, 255, 0.08);
     }
 
+        html[data-theme="dark"] .weather-modal-minute {
+        border-color: rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.04);
+    }
+
         html[data-theme="dark"] .weather-modal-aside-row {
         border-bottom-color: rgba(255, 255, 255, 0.06);
+    }
+
+        html[data-theme="dark"] .weather-modal-health-row + .weather-modal-health-row {
+        border-top-color: rgba(255, 255, 255, 0.08);
     }
 
         html[data-theme="dark"] .weather-modal-sunline {

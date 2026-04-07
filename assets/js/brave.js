@@ -109,240 +109,100 @@
         var $modalClose = $('#weather-modal-close');
         var weatherCache = {};
         var activeIndex = null;
+        var refreshDelay = (window.braveData && Number(braveData.weather_refresh_ms)) || (30 * 60 * 1000);
+        var weatherApiUrl = window.braveData && braveData.weather_api_url ? braveData.weather_api_url : '';
 
-        // WMO 天气代码映射
-        var weatherCodes = {
-            0: { icon: '☀️', desc: '晴朗' },
-            1: { icon: '🌤️', desc: '大致晴朗' },
-            2: { icon: '⛅', desc: '局部多云' },
-            3: { icon: '☁️', desc: '阴天' },
-            45: { icon: '🌫️', desc: '雾' },
-            48: { icon: '🌫️', desc: '雾凇' },
-            51: { icon: '🌦️', desc: '毛毛雨' },
-            53: { icon: '🌦️', desc: '小雨' },
-            55: { icon: '🌧️', desc: '中雨' },
-            56: { icon: '🌧️', desc: '冻雨' },
-            57: { icon: '🌧️', desc: '强冻雨' },
-            61: { icon: '🌧️', desc: '阵雨' },
-            63: { icon: '🌧️', desc: '中雨' },
-            65: { icon: '⛈️', desc: '大雨' },
-            66: { icon: '🌧️', desc: '冻雨' },
-            67: { icon: '⛈️', desc: '强冻雨' },
-            71: { icon: '🌨️', desc: '小雪' },
-            73: { icon: '🌨️', desc: '中雪' },
-            75: { icon: '❄️', desc: '大雪' },
-            77: { icon: '❄️', desc: '冰粒' },
-            80: { icon: '🌦️', desc: '阵雨' },
-            81: { icon: '🌧️', desc: '较强阵雨' },
-            82: { icon: '⛈️', desc: '强阵雨' },
-            85: { icon: '🌨️', desc: '阵雪' },
-            86: { icon: '❄️', desc: '强阵雪' },
-            95: { icon: '⛈️', desc: '雷雨' },
-            96: { icon: '⛈️', desc: '雷雨伴冰雹' },
-            99: { icon: '⛈️', desc: '强雷雨伴冰雹' }
-        };
-
-        function getWeatherInfo(code, isDay) {
-            var info = weatherCodes[code] || { icon: '🌡️', desc: '天气未知' };
-
-            if (!isDay && code === 0) {
-                return { icon: '🌙', desc: '晴夜' };
-            }
-
-            if (!isDay && code === 1) {
-                return { icon: '🌙', desc: '夜间少云' };
-            }
-
-            return info;
-        }
-
-        function getWeatherType(code) {
-            if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) {
-                return 'rainy';
-            }
-
-            if ((code >= 71 && code <= 77) || code === 85 || code === 86) {
-                return 'snowy';
-            }
-
-            if (code >= 95) {
-                return 'stormy';
-            }
-
-            if ((code >= 1 && code <= 3) || code === 45 || code === 48) {
-                return 'cloudy';
-            }
-
-            return 'sunny';
-        }
-
-        function roundNumber(value, fallback) {
-            return typeof value === 'number' && !isNaN(value) ? Math.round(value) : fallback;
-        }
-
-        function getArrayValue(list, index, fallback) {
-            return list && typeof list[index] !== 'undefined' ? list[index] : fallback;
+        function escapeHtml(value) {
+            return String(value == null ? '' : value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
         }
 
         function formatClock(value) {
-            if (!value || value.indexOf('T') === -1) {
+            if (!value) {
                 return '--:--';
             }
 
-            return value.split('T')[1].slice(0, 5);
-        }
-
-        function formatUpdateText(value) {
-            if (!value || value.indexOf('T') === -1) {
-                return '更新时间暂不可用';
-            }
-
-            return formatClock(value) + ' 更新';
-        }
-
-        function formatUvIndex(value) {
-            if (typeof value !== 'number' || isNaN(value)) {
-                return '--';
-            }
-
-            var rounded = Math.round(value * 10) / 10;
-            return rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(1);
-        }
-
-        function formatAqi(value) {
-            if (typeof value !== 'number' || isNaN(value)) {
-                return '--';
-            }
-
-            return String(Math.round(value));
-        }
-
-        function getAqiTone(value) {
-            if (typeof value !== 'number' || isNaN(value)) {
-                return 'unknown';
-            }
-
-            if (value <= 50) {
-                return 'good';
-            }
-
-            if (value <= 100) {
-                return 'moderate';
-            }
-
-            if (value <= 150) {
-                return 'sensitive';
-            }
-
-            if (value <= 200) {
-                return 'unhealthy';
-            }
-
-            return 'hazardous';
-        }
-
-        function getAqiLabel(value) {
-            if (typeof value !== 'number' || isNaN(value)) {
-                return '暂无';
-            }
-
-            if (value <= 50) {
-                return '优';
-            }
-
-            if (value <= 100) {
-                return '良';
-            }
-
-            if (value <= 150) {
-                return '敏感';
-            }
-
-            if (value <= 200) {
-                return '较差';
-            }
-
-            return '很差';
-        }
-
-        function getUvLabel(value) {
-            if (typeof value !== 'number' || isNaN(value)) {
-                return '暂无';
-            }
-
-            if (value < 3) {
-                return '低';
-            }
-
-            if (value < 6) {
-                return '中';
-            }
-
-            if (value < 8) {
-                return '较高';
-            }
-
-            if (value < 11) {
-                return '高';
-            }
-
-            return '很高';
-        }
-
-        function getUvTone(value) {
-            if (typeof value !== 'number' || isNaN(value)) {
-                return 'unknown';
-            }
-
-            if (value < 3) {
-                return 'good';
-            }
-
-            if (value < 6) {
-                return 'moderate';
-            }
-
-            if (value < 8) {
-                return 'sensitive';
-            }
-
-            if (value < 11) {
-                return 'unhealthy';
-            }
-
-            return 'hazardous';
-        }
-
-        function buildHourlyTrend(hourlyData, currentTime) {
-            var items = [];
-
-            if (!hourlyData || !hourlyData.time || !hourlyData.time.length) {
-                return items;
-            }
-
-            var currentHour = currentTime && currentTime.indexOf('T') !== -1 ? currentTime.slice(0, 13) + ':00' : hourlyData.time[0];
-            var startIndex = 0;
-
-            for (var i = 0; i < hourlyData.time.length; i++) {
-                if (hourlyData.time[i] >= currentHour) {
-                    startIndex = i;
-                    break;
+            if (value.indexOf('T') !== -1) {
+                var parts = value.split('T');
+                if (parts[1]) {
+                    return parts[1].slice(0, 5);
                 }
             }
 
-            for (var j = startIndex; j < hourlyData.time.length && items.length < 6; j++) {
-                var hourlyCode = getArrayValue(hourlyData.weather_code, j, 0);
-                var hourlyInfo = getWeatherInfo(hourlyCode, true);
+            return /^\d{2}:\d{2}$/.test(value) ? value : '--:--';
+        }
 
-                items.push({
-                    time: formatClock(hourlyData.time[j]),
-                    icon: hourlyInfo.icon,
-                    temp: roundNumber(getArrayValue(hourlyData.temperature_2m, j, null), '--'),
-                    precip: roundNumber(getArrayValue(hourlyData.precipitation_probability, j, 0), 0)
-                });
+        function formatUpdateText(value, stale) {
+            var prefix = formatClock(value);
+            var text = prefix === '--:--' ? '更新时间暂不可用' : prefix + ' 更新';
+
+            if (stale) {
+                text += ' · 稍早缓存';
             }
 
-            return items;
+            return text;
+        }
+
+        function formatAqiValue(value) {
+            return typeof value === 'number' && !isNaN(value) ? String(Math.round(value)) : '--';
+        }
+
+        function formatPrimaryPollutant(data) {
+            var name = data.primaryPollutant || '暂无';
+            var amount = data.primaryPollutantValue ? ' · ' + data.primaryPollutantValue : '';
+            var unit = data.primaryPollutantUnit ? ' ' + data.primaryPollutantUnit : '';
+            return name + amount + unit;
+        }
+
+        function formatWindText(data) {
+            var speed = typeof data.wind === 'number' ? data.wind + ' km/h' : '-- km/h';
+            var extras = [];
+
+            if (data.windDir) {
+                extras.push(data.windDir);
+            }
+
+            if (data.windScale) {
+                extras.push(data.windScale + '级');
+            }
+
+            return extras.length ? speed + ' · ' + extras.join(' ') : speed;
+        }
+
+        function setCardError($card, message) {
+            $card
+                .removeClass('is-loading')
+                .addClass('is-error')
+                .attr('data-weather', 'cloudy');
+
+            $card.find('.weather-card-status').text('暂缺');
+            $card.find('.weather-icon').text('🌫️');
+            $card.find('.weather-temp').text('--°');
+            $card.find('.weather-desc').text(message || '天气暂不可用');
+            $card.find('.weather-range').text('--° ~ --°');
+            $card.find('.weather-precip').text('降水 --%');
+        }
+
+        function updateCard($card, data) {
+            var statusText = data.warning && data.warning.badge ? data.warning.badge : (data.stale ? '稍早数据' : (data.isDay ? '白天' : '夜间'));
+            var tempText = typeof data.temp === 'number' ? data.temp + '°' : '--°';
+            var rangeText = (typeof data.tempMin === 'number' ? data.tempMin : '--') + '° ~ ' + (typeof data.tempMax === 'number' ? data.tempMax : '--') + '°';
+            var precipText = typeof data.precipitationMax === 'number' ? data.precipitationMax : '--';
+
+            $card
+                .removeClass('is-loading is-error')
+                .attr('data-weather', data.weatherType || 'sunny');
+
+            $card.find('.weather-card-status').text(statusText);
+            $card.find('.weather-icon').text(data.icon || '🌤️');
+            $card.find('.weather-temp').text(tempText);
+            $card.find('.weather-desc').text(data.desc || '天气同步中');
+            $card.find('.weather-range').text(rangeText);
+            $card.find('.weather-precip').text('降水 ' + precipText + '%');
         }
 
         function renderHourlyTrend(items) {
@@ -352,18 +212,21 @@
                 return;
             }
 
-            if (!items.length) {
+            if (!items || !items.length) {
                 $hourly.html('<div class="weather-hourly-empty">暂时没有更多短时趋势数据</div>');
                 return;
             }
 
             var html = items.map(function(item) {
+                var temp = typeof item.temp === 'number' ? item.temp : '--';
+                var precip = typeof item.precip === 'number' ? item.precip : '--';
+
                 return [
                     '<div class="weather-hourly-item">',
-                    '<span class="weather-hourly-time">', item.time, '</span>',
-                    '<span class="weather-hourly-icon">', item.icon, '</span>',
-                    '<span class="weather-hourly-temp">', item.temp, '°</span>',
-                    '<span class="weather-hourly-precip">降水 ', item.precip, '%</span>',
+                    '<span class="weather-hourly-time">', escapeHtml(item.time || '--:--'), '</span>',
+                    '<span class="weather-hourly-icon">', escapeHtml(item.icon || '🌤️'), '</span>',
+                    '<span class="weather-hourly-temp">', temp, '°</span>',
+                    '<span class="weather-hourly-precip">降水 ', precip, '%</span>',
                     '</div>'
                 ].join('');
             }).join('');
@@ -371,219 +234,84 @@
             $hourly.html(html);
         }
 
-        function addClothingTag(tags, label, kind) {
-            if (!label) {
-                return;
-            }
+        function renderClothing(data) {
+            var $tagList = $('#modal-clothing');
+            var $copy = $('#modal-clothing-copy');
+            var tags = data.clothing && data.clothing.tags ? data.clothing.tags : [];
 
-            var exists = tags.some(function(item) {
-                return item.label === label;
-            });
-
-            if (!exists) {
-                tags.push({
-                    label: label,
-                    kind: kind || 'wear'
-                });
-            }
-        }
-
-        function getClothingTags(feelsLike, weatherCode, precipitation, windSpeed, uvValue, aqiValue) {
-            var tags = [];
-            var hasRain = precipitation >= 45 || (weatherCode >= 51 && weatherCode <= 82) || weatherCode >= 95;
-
-            if (typeof feelsLike !== 'number' || isNaN(feelsLike)) {
-                return tags;
-            }
-
-            if (feelsLike >= 30) {
-                addClothingTag(tags, '短袖');
-                addClothingTag(tags, '短裤');
-            } else if (feelsLike >= 24) {
-                addClothingTag(tags, '短袖');
-                addClothingTag(tags, '薄裤');
-            } else if (feelsLike >= 18) {
-                addClothingTag(tags, '长袖');
-                addClothingTag(tags, '长裤');
-            } else if (feelsLike >= 12) {
-                addClothingTag(tags, '长袖');
-                addClothingTag(tags, '薄外套');
-                addClothingTag(tags, '长裤');
-            } else if (feelsLike >= 6) {
-                addClothingTag(tags, '卫衣');
-                addClothingTag(tags, '外套');
-                addClothingTag(tags, '长裤');
-            } else {
-                addClothingTag(tags, '羽绒');
-                addClothingTag(tags, '保暖裤');
-            }
-
-            if (hasRain) {
-                addClothingTag(tags, '带伞', 'extra');
-            }
-
-            if (typeof windSpeed === 'number' && !isNaN(windSpeed) && windSpeed >= 25) {
-                addClothingTag(tags, '防风', 'extra');
-            }
-
-            if (typeof uvValue === 'number' && !isNaN(uvValue) && uvValue >= 6) {
-                addClothingTag(tags, '防晒', 'extra');
-            }
-
-            if (typeof aqiValue === 'number' && !isNaN(aqiValue) && aqiValue > 100) {
-                addClothingTag(tags, '口罩', 'extra');
-            }
-
-            return tags;
-        }
-
-        function renderClothingTags(tags) {
-            var $container = $('#modal-clothing');
-
-            if (!$container.length) {
+            if (!$tagList.length) {
                 return;
             }
 
             if (!tags.length) {
-                $container.html('<span class="weather-modal-tag is-muted">待更新</span>');
+                $tagList.html('<span class="weather-modal-tag is-muted">待更新</span>');
+            } else {
+                $tagList.html(tags.map(function(tag) {
+                    var extraClass = tag.kind === 'extra' ? ' is-extra' : '';
+                    return '<span class="weather-modal-tag' + extraClass + '">' + escapeHtml(tag.label || '') + '</span>';
+                }).join(''));
+            }
+
+            if ($copy.length) {
+                $copy.text((data.clothing && data.clothing.copy) || '今天按舒服的节奏穿就很好。');
+            }
+        }
+
+        function renderMinuteHint(data) {
+            var $box = $('#modal-minute');
+            var $text = $('#modal-minute-text');
+            var summary = data.minutely && data.minutely.summary ? data.minutely.summary : '';
+
+            if (!$box.length || !$text.length) {
                 return;
             }
 
-            var html = tags.map(function(item) {
-                return '<span class="weather-modal-tag' + (item.kind === 'extra' ? ' is-extra' : '') + '">' + item.label + '</span>';
-            }).join('');
+            if (!summary) {
+                $box.prop('hidden', true);
+                $text.text('未来 2 小时降雨趋势整理中');
+                return;
+            }
 
-            $container.html(html);
+            $box.prop('hidden', false);
+            $text.text(summary);
         }
 
-        function setCardError($card) {
-            $card
-                .removeClass('is-loading')
-                .addClass('is-error')
-                .attr('data-weather', 'cloudy');
+        function renderAlert(data) {
+            var $alert = $('#modal-alert');
+            var $badge = $('#modal-alert-badge');
+            var $title = $('#modal-alert-title');
+            var $meta = $('#modal-alert-meta');
+            var warning = data.warning || null;
 
-            $card.find('.weather-card-status').text('暂缺');
-            $card.find('.weather-icon').text('🌫️');
-            $card.find('.weather-temp').text('--°');
-            $card.find('.weather-desc').text('天气暂不可用');
-            $card.find('.weather-range').text('--° ~ --°');
-            $card.find('.weather-precip').text('降水 --%');
+            if (!$alert.length || !$badge.length || !$title.length || !$meta.length) {
+                return;
+            }
+
+            if (!warning) {
+                $alert.prop('hidden', true).attr('data-tone', 'unknown');
+                return;
+            }
+
+            var metaParts = [];
+            if (warning.pubTime) {
+                metaParts.push(formatClock(warning.pubTime) + ' 发布');
+            }
+            if (warning.expireTime) {
+                metaParts.push('至 ' + formatClock(warning.expireTime));
+            }
+            if (!metaParts.length) {
+                metaParts.push('请以官方最新提醒为准');
+            }
+
+            $alert.prop('hidden', false).attr('data-tone', warning.tone || 'unknown');
+            $badge.text(warning.badge || '天气预警');
+            $title.text(warning.headline || warning.text || '天气预警');
+            $meta.text(metaParts.join(' · '));
         }
 
-        function updateCard($card, data) {
-            $card
-                .removeClass('is-loading is-error')
-                .attr('data-weather', data.weatherType);
-
-            $card.find('.weather-card-status').text(data.isDay ? '白天' : '夜间');
-            $card.find('.weather-icon').text(data.icon);
-            $card.find('.weather-temp').text(data.temp + '°');
-            $card.find('.weather-desc').text(data.desc);
-            $card.find('.weather-range').text(data.tempMin + '° ~ ' + data.tempMax + '°');
-            $card.find('.weather-precip').text('降水 ' + data.precipitationMax + '%');
-        }
-
-        function fetchCityWeather($card) {
-            var lat = $card.data('lat');
-            var lon = $card.data('lon');
-            var index = String($card.data('index'));
-            var cityName = $card.data('name');
-            var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon +
-                '&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,is_day' +
-                '&hourly=temperature_2m,weather_code,precipitation_probability' +
-                '&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_probability_max' +
-                '&forecast_days=2&timezone=auto';
-
-            $.ajax({
-                url: url,
-                method: 'GET',
-                dataType: 'json',
-                timeout: 10000,
-                success: function(data) {
-                    if (!data || !data.current || !data.daily) {
-                        setCardError($card);
-                        return;
-                    }
-
-                    var current = data.current;
-                    var daily = data.daily;
-                    var code = roundNumber(current.weather_code, 0);
-                    var isDay = Number(current.is_day) === 1;
-                    var weatherInfo = getWeatherInfo(code, isDay);
-                    var weatherType = getWeatherType(code);
-                    var temp = roundNumber(current.temperature_2m, '--');
-                    var feels = roundNumber(current.apparent_temperature, '--');
-                    var humidity = roundNumber(current.relative_humidity_2m, '--');
-                    var wind = roundNumber(current.wind_speed_10m, '--');
-                    var tempMax = roundNumber(getArrayValue(daily.temperature_2m_max, 0, null), '--');
-                    var tempMin = roundNumber(getArrayValue(daily.temperature_2m_min, 0, null), '--');
-                    var precipitationMax = roundNumber(getArrayValue(daily.precipitation_probability_max, 0, 0), 0);
-                    var uvMax = getArrayValue(daily.uv_index_max, 0, null);
-                    var sunrise = getArrayValue(daily.sunrise, 0, '');
-                    var sunset = getArrayValue(daily.sunset, 0, '');
-                    var previousData = weatherCache[index] || {};
-
-                    weatherCache[index] = {
-                        name: cityName,
-                        temp: temp,
-                        feels: feels,
-                        humidity: humidity,
-                        wind: wind,
-                        code: code,
-                        icon: weatherInfo.icon,
-                        desc: weatherInfo.desc,
-                        weatherType: weatherType,
-                        isDay: isDay,
-                        updatedAt: current.time,
-                        tempMax: tempMax,
-                        tempMin: tempMin,
-                        precipitationMax: precipitationMax,
-                        uvValue: uvMax,
-                        uvMax: formatUvIndex(uvMax),
-                        uvLabel: getUvLabel(uvMax),
-                        uvTone: getUvTone(uvMax),
-                        sunrise: sunrise,
-                        sunset: sunset,
-                        hourlyTrend: buildHourlyTrend(data.hourly, current.time),
-                        aqi: typeof previousData.aqi === 'number' ? previousData.aqi : null,
-                        aqiDisplay: previousData.aqiDisplay || '--',
-                        aqiTone: previousData.aqiTone || 'unknown',
-                        aqiLabel: previousData.aqiLabel || '暂无'
-                    };
-
-                    updateCard($card, weatherCache[index]);
-
-                    if (activeIndex === index) {
-                        openModal(index);
-                    }
-                },
-                error: function() {
-                    setCardError($card);
-                }
-            });
-
-            $.ajax({
-                url: 'https://air-quality-api.open-meteo.com/v1/air-quality?latitude=' + lat + '&longitude=' + lon + '&current=us_aqi&timezone=auto',
-                method: 'GET',
-                dataType: 'json',
-                timeout: 10000,
-                success: function(data) {
-                    var current = data && data.current ? data.current : {};
-                    var aqiValue = typeof current.us_aqi === 'number' ? current.us_aqi : null;
-                    var existingData = weatherCache[index] || { name: cityName };
-
-                    existingData.aqi = aqiValue;
-                    existingData.aqiDisplay = formatAqi(aqiValue);
-                    existingData.aqiTone = getAqiTone(aqiValue);
-                    existingData.aqiLabel = getAqiLabel(aqiValue);
-
-                    weatherCache[index] = existingData;
-
-                    if (activeIndex === index) {
-                        openModal(index);
-                    }
-                }
-            });
+        function renderHealthAdvice(data) {
+            $('#modal-health-general').text((data.healthAdvice && data.healthAdvice.general) || '今天的空气和天气提示整理中。');
+            $('#modal-health-sensitive').text((data.healthAdvice && data.healthAdvice.sensitive) || '如果你更容易受天气影响，记得给自己多留一点缓冲。');
         }
 
         function openModal(index) {
@@ -595,30 +323,35 @@
 
             activeIndex = String(index);
 
-            $('#modal-city').text(data.name);
-            $('#modal-time').text(formatUpdateText(data.updatedAt));
-            $('#modal-icon').text(data.icon);
-            $('#modal-temp').text(data.temp + '°');
-            $('#modal-desc').text(data.desc);
-            $('#modal-range').text('今日 ' + data.tempMin + '° ~ ' + data.tempMax + '°');
+            $('#modal-city').text(data.name || '城市');
+            $('#modal-time').text(formatUpdateText(data.updatedAt, data.stale));
+            $('#modal-icon').text(data.icon || '🌤️');
+            $('#modal-temp').text((typeof data.temp === 'number' ? data.temp : '--') + '°');
+            $('#modal-desc').text(data.desc || '--');
+            $('#modal-range').text('今日 ' + (typeof data.tempMin === 'number' ? data.tempMin : '--') + '° ~ ' + (typeof data.tempMax === 'number' ? data.tempMax : '--') + '°');
             $('#modal-sunrise').text(formatClock(data.sunrise));
             $('#modal-sunset').text(formatClock(data.sunset));
             $('#modal-aqi')
                 .attr('data-tone', data.aqiTone || 'unknown')
                 .find('.weather-modal-aside-text')
-                .text((data.aqiLabel || '暂无') + ' · AQI ' + (data.aqiDisplay || '--'));
+                .text((data.aqiLabel || '暂无') + ' · AQI ' + formatAqiValue(data.aqi));
             $('#modal-uv')
                 .attr('data-tone', data.uvTone || 'unknown')
                 .find('.weather-modal-aside-text')
                 .text((data.uvLabel || '暂无') + ' · UV ' + (data.uvMax || '--'));
-            $('#modal-feels').text(data.feels + '°');
-            $('#modal-humidity').text(data.humidity + '%');
-            $('#modal-wind').text(data.wind + ' km/h');
-            $('#modal-precip').text(data.precipitationMax + '%');
-            renderClothingTags(getClothingTags(data.feels, data.code, data.precipitationMax, data.wind, data.uvValue, data.aqi));
-            renderHourlyTrend(data.hourlyTrend);
+            $('#modal-primary-pollutant .weather-modal-aside-text').text(formatPrimaryPollutant(data));
+            $('#modal-feels').text((typeof data.feels === 'number' ? data.feels : '--') + '°');
+            $('#modal-humidity').text((typeof data.humidity === 'number' ? data.humidity : '--') + '%');
+            $('#modal-wind').text(formatWindText(data));
+            $('#modal-precip').text((typeof data.precipitationMax === 'number' ? data.precipitationMax : '--') + '%');
 
-            $modalContent.attr('data-weather', data.weatherType);
+            renderAlert(data);
+            renderClothing(data);
+            renderMinuteHint(data);
+            renderHealthAdvice(data);
+            renderHourlyTrend(data.hourlyTrend || []);
+
+            $modalContent.attr('data-weather', data.weatherType || 'sunny');
             $modal.addClass('active').attr('aria-hidden', 'false');
             $('body').css('overflow', 'hidden');
         }
@@ -629,9 +362,84 @@
             $('body').css('overflow', '');
         }
 
-        $weatherCards.each(function() {
-            fetchCityWeather($(this));
-        });
+        function syncWeatherCards(response) {
+            var seen = {};
+
+            if (!response || !response.enabled) {
+                $weatherCards.each(function() {
+                    setCardError($(this), '天气已关闭');
+                });
+                return;
+            }
+
+            if (!response.configured) {
+                $weatherCards.each(function() {
+                    setCardError($(this), response.message || '天气配置中');
+                });
+                return;
+            }
+
+            (response.cities || []).forEach(function(item) {
+                var key = String(item.index);
+                var $card = $weatherCards.filter('[data-index="' + key + '"]');
+
+                seen[key] = true;
+
+                if (!$card.length) {
+                    return;
+                }
+
+                if (item.status === 'error') {
+                    setCardError($card, item.message || '同步失败');
+                    return;
+                }
+
+                weatherCache[key] = item;
+                updateCard($card, item);
+
+                if (activeIndex === key) {
+                    openModal(key);
+                }
+            });
+
+            $weatherCards.each(function() {
+                var $card = $(this);
+                var key = String($card.data('index'));
+
+                if (!seen[key] && !weatherCache[key]) {
+                    setCardError($card, '同步失败');
+                }
+            });
+        }
+
+        function fetchWeather() {
+            if (!weatherApiUrl) {
+                $weatherCards.each(function() {
+                    setCardError($(this), '天气接口未就绪');
+                });
+                return;
+            }
+
+            $.ajax({
+                url: weatherApiUrl,
+                method: 'GET',
+                dataType: 'json',
+                timeout: 15000,
+                success: function(response) {
+                    syncWeatherCards(response);
+                },
+                error: function() {
+                    $weatherCards.each(function() {
+                        var $card = $(this);
+                        var key = String($card.data('index'));
+
+                        if (!weatherCache[key]) {
+                            setCardError($card, '天气同步失败');
+                        }
+                    });
+                }
+            });
+        }
 
         $weatherCards.on('click', function() {
             var $row = $(this).closest('.weather-scroll');
@@ -661,11 +469,8 @@
             }
         });
 
-        setInterval(function() {
-            $weatherCards.each(function() {
-                fetchCityWeather($(this));
-            });
-        }, 30 * 60 * 1000);
+        fetchWeather();
+        setInterval(fetchWeather, refreshDelay);
     }
 
     // 通用筛选下拉交互

@@ -117,6 +117,14 @@ if ($weather_enabled && !empty($weather_cities)) :
             <button type="button" class="weather-modal-close" id="weather-modal-close" aria-label="关闭天气详情">&times;</button>
         </div>
 
+        <div class="weather-modal-alert" id="modal-alert" hidden>
+            <span class="weather-modal-alert-badge" id="modal-alert-badge">预警</span>
+            <div class="weather-modal-alert-copy">
+                <div class="weather-modal-alert-title" id="modal-alert-title">天气预警</div>
+                <div class="weather-modal-alert-meta" id="modal-alert-meta">请留意官方最新提醒</div>
+            </div>
+        </div>
+
         <div class="weather-modal-main">
             <div class="weather-modal-main-primary">
                 <div class="weather-modal-icon" id="modal-icon">☀️</div>
@@ -153,12 +161,23 @@ if ($weather_enabled && !empty($weather_cities)) :
                             <span class="weather-modal-aside-text">暂无 · UV --</span>
                         </span>
                     </div>
+                    <div class="weather-modal-aside-row">
+                        <span class="weather-modal-aside-label">主污染物</span>
+                        <span class="weather-modal-aside-value weather-modal-aside-plain" id="modal-primary-pollutant">
+                            <span class="weather-modal-aside-text">暂无</span>
+                        </span>
+                    </div>
                 </div>
 
                 <div class="weather-modal-note">
                     <div class="weather-modal-note-label">👔 今日穿搭</div>
                     <div class="weather-modal-tag-list" id="modal-clothing">
                         <span class="weather-modal-tag is-muted">分析中</span>
+                    </div>
+                    <p class="weather-modal-note-copy" id="modal-clothing-copy">正在整理今天更适合的穿搭节奏……</p>
+                    <div class="weather-modal-minute" id="modal-minute" hidden>
+                        <div class="weather-modal-minute-label">☔ 分钟降雨提醒</div>
+                        <div class="weather-modal-minute-text" id="modal-minute-text">未来 2 小时降雨趋势整理中</div>
                     </div>
                 </div>
             </div>
@@ -180,6 +199,18 @@ if ($weather_enabled && !empty($weather_cities)) :
             <div class="weather-modal-item">
                 <span class="weather-modal-label">降水概率</span>
                 <span class="weather-modal-value" id="modal-precip">--%</span>
+            </div>
+        </div>
+
+        <div class="weather-modal-health">
+            <div class="weather-modal-section-title">健康提醒</div>
+            <div class="weather-modal-health-row">
+                <span class="weather-modal-health-label">日常建议</span>
+                <p class="weather-modal-health-text" id="modal-health-general">今天的空气和天气提示整理中。</p>
+            </div>
+            <div class="weather-modal-health-row">
+                <span class="weather-modal-health-label">敏感人群</span>
+                <p class="weather-modal-health-text" id="modal-health-sensitive">如果你更容易受天气影响，稍后这里会有更细的提醒。</p>
             </div>
         </div>
 

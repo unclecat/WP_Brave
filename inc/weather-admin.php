@@ -26,6 +26,17 @@ add_action('admin_menu', 'brave_add_weather_menu');
 /**
  * 天气管理页面
  */
+function brave_weather_mask_secret($value) {
+    $value = (string) $value;
+    $length = strlen($value);
+
+    if ($length <= 8) {
+        return str_repeat('*', max(4, $length));
+    }
+
+    return substr($value, 0, 4) . str_repeat('*', max(4, $length - 8)) . substr($value, -4);
+}
+
 function brave_weather_page() {
     if (!current_user_can('manage_options')) {
         wp_die(__('权限不足', 'brave-love'));
@@ -65,12 +76,37 @@ function brave_weather_page() {
         array('name' => '北京', 'lat' => '39.9042', 'lon' => '116.4074'),
         array('name' => '上海', 'lat' => '31.2304', 'lon' => '121.4737'),
     ));
+    $qweather_config = function_exists('brave_get_qweather_config') ? brave_get_qweather_config() : array('configured' => false);
     ?>
     <div class="wrap">
         <h1><?php _e('天气城市管理', 'brave-love'); ?></h1>
         <p class="description">
             <?php _e('添加任意数量关心的城市，首页将显示这些地区的天气概况。点击天气卡片可查看详细穿衣指南。', 'brave-love'); ?>
         </p>
+
+        <div class="card" style="max-width: 780px; margin-top: 1rem; margin-bottom: 1.5rem;">
+            <h2 style="margin-top: 0;"><?php _e('QWeather API 配置状态', 'brave-love'); ?></h2>
+            <?php if (!empty($qweather_config['configured'])) : ?>
+                <p>
+                    <strong><?php _e('状态：', 'brave-love'); ?></strong>
+                    <span style="color: #2e7d32; font-weight: 700;"><?php _e('已配置', 'brave-love'); ?></span>
+                </p>
+                <p><strong><?php _e('认证方式：', 'brave-love'); ?></strong><code>API Key</code></p>
+                <p><strong>API Host：</strong><code><?php echo esc_html($qweather_config['api_host']); ?></code></p>
+                <p><strong>API Key：</strong><code><?php echo esc_html(brave_weather_mask_secret($qweather_config['api_key'] ?? '')); ?></code></p>
+                <p class="description"><?php _e('当前版本仅使用 API Key。前端不会直接暴露密钥，请继续只在服务端（环境变量或 wp-config.php）里配置。', 'brave-love'); ?></p>
+            <?php else : ?>
+                <p>
+                    <strong><?php _e('状态：', 'brave-love'); ?></strong>
+                    <span style="color: #b3261e; font-weight: 700;"><?php _e('未配置完整', 'brave-love'); ?></span>
+                </p>
+                <p class="description"><?php _e('请在环境变量或 wp-config.php 中配置下面两个值：', 'brave-love'); ?></p>
+                <ul style="list-style: disc; padding-left: 1.2rem;">
+                    <li><code>QWEATHER_API_HOST</code></li>
+                    <li><code>QWEATHER_API_KEY</code></li>
+                </ul>
+            <?php endif; ?>
+        </div>
         
         <form method="post" action="" id="weather-form">
             <?php wp_nonce_field('brave_weather_nonce'); ?>
