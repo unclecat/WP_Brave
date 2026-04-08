@@ -5,17 +5,24 @@
 (function($) {
     'use strict';
 
+    var themeData = window.braveData || {};
+
     // 恋爱计时器（显示天/时/分/秒 - 实时跳动）
     function initLoveTimer() {
         var $timer = $('#love-timer');
         if (!$timer.length) return;
 
+        var $days = $('#timer-days');
+        var $hours = $('#timer-hours');
+        var $minutes = $('#timer-minutes');
+        var $seconds = $('#timer-seconds');
+
         // 解析日期时间（格式：YYYY-MM-DD HH:MM）
-        var datetimeStr = braveData.love_start_datetime || '2020-01-01 00:00';
+        var datetimeStr = themeData.love_start_datetime || '2020-01-01 00:00';
         datetimeStr = datetimeStr.replace(/\//g, '-'); // 将 / 替换为 -
-        
+
         var start = new Date(datetimeStr.replace(' ', 'T') + ':00');
-        
+
         // 检查日期是否有效
         if (isNaN(start.getTime())) {
             $timer.html('请设置正确的恋爱起始时间');
@@ -25,7 +32,7 @@
         function updateTimer() {
             var now = new Date();
             var diff = now - start;
-            
+
             if (diff < 0) {
                 $timer.html('还没开始呢~');
                 return;
@@ -36,10 +43,10 @@
             var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
             var seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-            $('#timer-days').text(days);
-            $('#timer-hours').text(hours);
-            $('#timer-minutes').text(minutes);
-            $('#timer-seconds').text(seconds);
+            $days.text(days);
+            $hours.text(hours);
+            $minutes.text(minutes);
+            $seconds.text(seconds);
         }
 
         updateTimer();
@@ -51,12 +58,16 @@
         var $countdown = $('#anniversary-countdown');
         if (!$countdown.length) return;
 
-        var datetimeStr = braveData.next_anniversary_datetime || '';
+        var $days = $('#countdown-days');
+        var $hours = $('#countdown-hours');
+        var $minutes = $('#countdown-minutes');
+        var $seconds = $('#countdown-seconds');
+        var datetimeStr = themeData.next_anniversary_datetime || '';
         if (!datetimeStr) return;
 
         // 解析日期时间（格式：YYYY-MM-DD HH:MM）
         var target = new Date(datetimeStr.replace(' ', 'T') + ':00');
-        
+
         // 检查日期是否有效
         if (isNaN(target.getTime())) {
             $countdown.html('请设置正确的纪念日时间');
@@ -66,15 +77,13 @@
         function updateCountdown() {
             var now = new Date();
             var diff = target - now;
-            
+
             if (diff <= 0) {
-                // 纪念日已到达
-                $('#countdown-days').text(0);
-                $('#countdown-hours').text(0);
-                $('#countdown-minutes').text(0);
-                $('#countdown-seconds').text(0);
-                
-                // 显示庆祝信息
+                $days.text(0);
+                $hours.text(0);
+                $minutes.text(0);
+                $seconds.text(0);
+
                 if (!$countdown.next('.celebration-message').length) {
                     $('<div class="celebration-message">🎉 今天就是我们的特别日子！</div>').insertAfter($countdown);
                 }
@@ -86,10 +95,10 @@
             var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
             var seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-            $('#countdown-days').text(days);
-            $('#countdown-hours').text(hours);
-            $('#countdown-minutes').text(minutes);
-            $('#countdown-seconds').text(seconds);
+            $days.text(days);
+            $hours.text(hours);
+            $minutes.text(minutes);
+            $seconds.text(seconds);
         }
 
         updateCountdown();
@@ -109,8 +118,8 @@
         var $modalClose = $('#weather-modal-close');
         var weatherCache = {};
         var activeIndex = null;
-        var refreshDelay = (window.braveData && Number(braveData.weather_refresh_ms)) || (30 * 60 * 1000);
-        var weatherApiUrl = window.braveData && braveData.weather_api_url ? braveData.weather_api_url : '';
+        var refreshDelay = Number(themeData.weather_refresh_ms) || (30 * 60 * 1000);
+        var weatherApiUrl = themeData.weather_api_url ? themeData.weather_api_url : '';
 
         function escapeHtml(value) {
             return String(value == null ? '' : value)

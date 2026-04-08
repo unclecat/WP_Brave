@@ -501,23 +501,32 @@ function brave_get_mood_text($mood) {
 }
 
 /**
- * 获取恋爱清单完成进度。
+ * 统计恋爱清单条目数量。
  *
- * @param int $term_id 可选的分类 ID，用于分类页统计。
+ * 使用 found_posts 拿计数，避免把整批文章 ID 全部拉进内存。
+ *
+ * @param int       $term_id   可选的分类 ID，用于分类页统计。
+ * @param bool|null $done_only 传 true 时只统计已完成条目。
+ *
+ * @return int
  */
-function brave_get_list_progress($term_id = 0) {
+function brave_count_love_list_items($term_id = 0, $done_only = null) {
     $term_id = absint($term_id);
 
-    $base_args = array(
+    $args = array(
         'post_type' => 'love_list',
         'post_status' => 'publish',
-        'posts_per_page' => -1,
+        'posts_per_page' => 1,
+        'paged' => 1,
         'fields' => 'ids',
-        'no_found_rows' => true,
+        'ignore_sticky_posts' => true,
+        'no_found_rows' => false,
+        'update_post_meta_cache' => false,
+        'update_post_term_cache' => false,
     );
 
     if ($term_id > 0) {
-        $base_args['tax_query'] = array(
+        $args['tax_query'] = array(
             array(
                 'taxonomy' => 'list_category',
                 'field' => 'term_id',
@@ -526,17 +535,29 @@ function brave_get_list_progress($term_id = 0) {
         );
     }
 
-    $total = count(get_posts($base_args));
+    if (true === $done_only) {
+        $args['meta_query'] = array(
+            array(
+                'key' => '_is_done',
+                'value' => '1',
+                'compare' => '=',
+            ),
+        );
+    }
 
-    $done_args = $base_args;
-    $done_args['meta_query'] = array(
-        array(
-            'key' => '_is_done',
-            'value' => '1',
-            'compare' => '=',
-        ),
-    );
-    $done = count(get_posts($done_args));
+    $query = new WP_Query($args);
+
+    return (int) $query->found_posts;
+}
+
+/**
+ * 获取恋爱清单完成进度。
+ *
+ * @param int $term_id 可选的分类 ID，用于分类页统计。
+ */
+function brave_get_list_progress($term_id = 0) {
+    $total = brave_count_love_list_items($term_id);
+    $done = brave_count_love_list_items($term_id, true);
 
     return array(
         'total' => $total,

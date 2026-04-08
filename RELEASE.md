@@ -1,38 +1,44 @@
-# Brave Love v1.0.9
+# Brave Love v1.0.10
 
-Brave Love `v1.0.9` 是一次聚焦 `首页天气配置体验` 的 patch release。
+Brave Love `v1.0.10` 是一次聚焦 `天气模块结构整理与文案收口` 的 patch release。
 
-这次更新把 QWeather 的配置入口真正搬进了后台。现在你不一定要再去改 `wp-config.php`，直接在 `设置 -> 天气城市` 里就能填写 `QWeather API Host` 和 `QWeather API Key`。如果某个环境仍然希望用服务器级配置，也继续兼容：`wp-config.php / 环境变量` 依然优先，后台保存值则作为兜底。
+这次更新不改已有前台入口，也不需要做数据库迁移，重点是把首页天气这一块的代码结构整理干净，并把后台状态提示和贴心提醒文案再收口一轮。对于后续继续迭代天气能力、排查 QWeather 配置问题，会更轻松一些。
 
 ## 本次发布亮点
 
-### 1) 后台可直接配置 QWeather
-- 在 `设置 -> 天气城市` 中新增 `QWeather API Host`
-- 在 `设置 -> 天气城市` 中新增 `QWeather API Key`
-- 后台保存后即可作为天气服务配置来源，不再强依赖修改 `wp-config.php`
+### 1) 天气服务完成结构拆分
+- 保留 `inc/weather-service.php` 作为原入口文件
+- 具体实现拆到 `inc/weather/config.php`
+- `inc/weather/client.php` 负责接口请求与缓存
+- `inc/weather/support.php` 负责通用格式化与辅助判断
+- `inc/weather/copy.php` 负责贴心提醒与标签文案
+- `inc/weather/payload.php` 负责城市天气数据组装
+- `inc/weather/rest.php` 负责首页 payload 与 REST 输出
 
-### 2) 保留服务器级配置优先级
-- 如果服务器环境里已经配置了 `QWEATHER_API_HOST` / `QWEATHER_API_KEY`
-- 当前版本会优先使用服务器配置
-- 后台保存值不会把服务器级配置覆盖掉，而是作为后备来源
+### 2) 后台配置状态提示更清晰
+- 设置页现在会更明确地区分 `当前实际生效`
+- 同时展示 `Host 当前使用 / Key 当前使用`
+- 也会保留 `后台已保存 Host / Key` 的状态说明
+- 缺少配置时会直接提示缺项，减少排查误判
 
-### 3) 配置状态更直观
-- 设置页会显示当前 `Host` 和 `Key` 的生效来源
-- 已保存的后台 `API Key` 不明文回显
-- 支持“留空保持不变”与“清空后台已保存 Key”
-
-### 4) 保存后自动刷新天气缓存
-- 现在修改天气凭证或城市配置后，会自动刷新缓存
-- 避免刚保存完配置，前台还在继续读旧天气结果
+### 3) 贴心提醒文案统一润色
+- 调整首页天气“贴心提醒”的组合逻辑
+- 减少重复用词、重复语气词和别扭表达
+- 保持现有功能不变，只优化实际展示出来的文案观感
 
 ## 重点变更文件
 
 - `inc/weather-service.php`
+- `inc/weather/config.php`
+- `inc/weather/client.php`
+- `inc/weather/support.php`
+- `inc/weather/copy.php`
+- `inc/weather/payload.php`
+- `inc/weather/rest.php`
 - `inc/weather-admin.php`
-- `style.css`
 - `functions.php`
+- `style.css`
 - `README.md`
-- `docs/USER-GUIDE.md`
 - `CHANGELOG.md`
 - `RELEASE.md`
 - `TEST-REPORT.md`
@@ -41,24 +47,26 @@ Brave Love `v1.0.9` 是一次聚焦 `首页天气配置体验` 的 patch release
 
 以下检查已在本地执行：
 
-- `php -l inc/weather-service.php`
-- `php -l inc/weather-admin.php`
-- 全量 `php -l`
+- `find . -path './tests' -prune -o -name '*.php' -type f -print0 | xargs -0 -n1 php -l`
 - `node --check assets/js/brave.js`
+- `node --check assets/js/admin.js`
+- `node --check assets/js/memory.js`
 - `bash tests/check-theme-simple.sh`
 - `php tests/check-theme.php`
 - `php tests/security-scan.php`
-- 本地接口验证：`http://localhost:8080/wp-json/brave-love/v1/weather`
-- 本地数据库写入测试：后台 QWeather Host / Key 选项可保存并被主题读取
+- 本地运行验证：`http://127.0.0.1:8080/`
+- 本地运行验证：`http://127.0.0.1:8080/about-us/`
+- 本地接口验证：`http://127.0.0.1:8080/wp-json/brave-love/v1/weather`
+- Docker 运行时验证：`brave_get_qweather_config()` / `brave_get_home_weather_payload()`
 
 ## 升级说明
 
-如果你正在使用 `v1.0.8`：
+如果你正在使用 `v1.0.9`：
 
-1. 可以继续沿用 `wp-config.php` / 环境变量配置，不需要迁移
-2. 也可以改成在后台 `设置 -> 天气城市` 中直接填写 Host / Key
-3. 如果同一环境里后台和服务器级配置同时存在，服务器配置仍然优先
-4. `QWeather API Host` 就是和风天气给你的接口域名，例如 `nb7aarhnan.re.qweatherapi.com`
+1. 这次无需做数据库迁移
+2. 后台 `QWeather API Host / API Key` 配置方式保持不变
+3. 原来的 `inc/weather-service.php` 引入路径仍然保留，不会影响主题加载
+4. 如果你后面还要继续扩展天气卡片，建议直接在新的 `inc/weather/*.php` 模块内继续维护
 
 ## 发布资产
 
@@ -67,6 +75,6 @@ Brave Love `v1.0.9` 是一次聚焦 `首页天气配置体验` 的 patch release
 - `CHANGELOG.md`
 - `TEST-REPORT.md`
 
-**版本**: `1.0.9`
+**版本**: `1.0.10`
 **发布日期**: `2026-04-08`
 **更新日志**: `CHANGELOG.md`

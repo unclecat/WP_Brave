@@ -4,7 +4,7 @@ Theme URI: https://github.com/unclecat/WP_Brave
 Author: unclecat
 Author URI: https://www.1ink.ink/
 Description: 一款为情侣记录而生的 WordPress 主题，以杂志感方式呈现关于我们、点点滴滴、恋爱清单、甜蜜相册、随笔说说、祝福留言、天气与纪念日。
-Version: 1.0.9
+Version: 1.0.10
 Requires at least: 6.0
 Tested up to: 6.4
 Requires PHP: 7.4
@@ -1926,97 +1926,8 @@ html[data-theme="dark"] .theme-toggle:hover {
     font-size: 1.25rem;
 }
 
-.comment-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin-bottom: 2rem;
-}
-
-.comment-item {
-    display: flex;
-    gap: 0.75rem;
-}
-
-.comment-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-    flex-shrink: 0;
-}
-
-.comment-body {
-    flex: 1;
-    background: var(--card-bg);
-    border-radius: var(--radius);
-    padding: 0.875rem;
-    box-shadow: var(--shadow);
-}
-
-.comment-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 0.5rem;
-}
-
-.comment-author {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text-color);
-}
-
-.comment-date {
-    font-size: 0.7rem;
-    color: var(--text-muted);
-}
-
-.comment-text {
-    font-size: 0.875rem;
-    line-height: 1.6;
-    color: var(--text-muted);
-}
-
-/* 评论表单 */
-.comment-form {
-    background: var(--card-bg);
-    border-radius: var(--radius);
-    padding: 1rem;
-    box-shadow: var(--shadow);
-}
-
-.comment-form-title {
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    text-align: center;
-}
-
 .form-group {
     margin-bottom: 0.875rem;
-}
-
-.form-control {
-    width: 100%;
-    padding: 0.875rem 1rem;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-size: 16px; /* 防止 iOS 缩放 */
-    font-family: inherit;
-    transition: var(--transition);
-    background: var(--bg-color);
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(255, 81, 98, 0.1);
-}
-
-textarea.form-control {
-    min-height: 100px;
-    resize: vertical;
 }
 
 .btn-submit {

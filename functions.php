@@ -6,7 +6,7 @@
  */
 
 // 定义常量
-define('BRAVE_VERSION', '1.0.9');
+define('BRAVE_VERSION', '1.0.10');
 define('BRAVE_BOOTSTRAP_VERSION', '5.3.2');
 define('BRAVE_PHOTOSWIPE_VERSION', '5.4.2');
 define('BRAVE_DIR', get_template_directory());
@@ -70,19 +70,11 @@ function brave_scripts() {
     $theme_options = array(
         'love_start_datetime' => brave_get_love_start_datetime(),
         'next_anniversary_datetime' => get_theme_mod('brave_next_anniversary_datetime', ''),
-        'next_anniversary_name' => get_theme_mod('brave_next_anniversary_name', ''),
-        'ajax_url' => admin_url('admin-ajax.php'),
-        'home_url' => home_url(),
         'weather_api_url' => rest_url('brave-love/v1/weather'),
         'weather_refresh_ms' => 30 * MINUTE_IN_SECONDS * 1000,
     );
     wp_localize_script('brave-script', 'braveData', $theme_options);
-    
-    // 评论脚本
-    if (is_singular() && comments_open() && get_option('thread_comments')) {
-        wp_enqueue_script('comment-reply');
-    }
-    
+
     // 恋爱清单存档页面样式
     if (is_post_type_archive('love_list') || is_tax('list_category')) {
         wp_enqueue_style('brave-love-list', BRAVE_URI . '/assets/css/love-list.css', array('brave-extra'), BRAVE_VERSION);
@@ -431,80 +423,6 @@ function brave_nav_menu_css_class($classes) {
     return array_intersect($classes, $keep);
 }
 add_filter('nav_menu_css_class', 'brave_nav_menu_css_class', 10, 1);
-
-/**
- * 评论表单字段排序
- */
-function brave_comment_fields($fields) {
-    $commenter = wp_get_current_commenter();
-    $req = get_option('require_name_email');
-    $aria_req = ($req ? " aria-required='true'" : '');
-    
-    $fields['author'] = '<div class="form-group">' .
-        '<input type="text" name="author" id="author" class="form-control" placeholder="' . __('姓名或昵称 *', 'brave-love') . '" value="' . esc_attr($commenter['comment_author']) . '"' . $aria_req . ' />' .
-        '</div>';
-    
-    $fields['email'] = '<div class="form-group">' .
-        '<input type="email" name="email" id="email" class="form-control" placeholder="' . __('邮箱 *', 'brave-love') . '" value="' . esc_attr($commenter['comment_author_email']) . '"' . $aria_req . ' />' .
-        '</div>';
-    
-    $fields['url'] = '<div class="form-group">' .
-        '<input type="url" name="url" id="url" class="form-control" placeholder="' . __('网站（可选）', 'brave-love') . '" value="' . esc_attr($commenter['comment_author_url']) . '" />' .
-        '</div>';
-    
-    return $fields;
-}
-add_filter('comment_form_default_fields', 'brave_comment_fields');
-
-/**
- * 评论表单主体
- */
-function brave_comment_form_defaults($defaults) {
-    $defaults['comment_field'] = '<div class="form-group">' .
-        '<textarea name="comment" id="comment" class="form-control" placeholder="' . __('写下对我们的祝福...', 'brave-love') . '" rows="4" required></textarea>' .
-        '</div>';
-    
-    $defaults['submit_button'] = '<button type="submit" class="btn-submit">' . __('发送祝福', 'brave-love') . '</button>';
-    $defaults['title_reply'] = '';
-    $defaults['title_reply_to'] = '';
-    $defaults['cancel_reply_link'] = __('取消回复', 'brave-love');
-    $defaults['label_submit'] = __('发送祝福', 'brave-love');
-    $defaults['class_form'] = 'comment-form';
-    $defaults['class_submit'] = 'btn-submit';
-    
-    return $defaults;
-}
-add_filter('comment_form_defaults', 'brave_comment_form_defaults');
-
-/**
- * 评论列表回调
- */
-function brave_comment_callback($comment, $args, $depth) {
-    $GLOBALS['comment'] = $comment;
-    $avatar_url = brave_get_comment_avatar_url($comment, 40);
-    ?>
-    <div id="comment-<?php comment_ID(); ?>" <?php comment_class('comment-item'); ?>>
-        <img src="<?php echo brave_esc_avatar_url($avatar_url); ?>" alt="" class="comment-avatar" width="40" height="40">
-        <div class="comment-body">
-            <div class="comment-header">
-                <span class="comment-author"><?php comment_author(); ?></span>
-                <span class="comment-date"><?php echo human_time_diff(get_comment_time('U'), current_time('timestamp')) . __('前', 'brave-love'); ?></span>
-            </div>
-            <div class="comment-text"><?php comment_text(); ?></div>
-        </div>
-    </div>
-    <?php
-}
-
-/**
- * 获取恋爱天数
- */
-function brave_get_love_days() {
-    $start = strtotime(brave_get_love_start_datetime());
-    $now = current_time('timestamp');
-    $days = floor(($now - $start) / 86400);
-    return max(0, $days);
-}
 
 /**
  * 获取纪念日数据

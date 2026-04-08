@@ -1,4 +1,4 @@
-# Brave Love 1.0.9 Test Report
+# Brave Love 1.0.10 Test Report
 
 Generated: 2026-04-08
 Project: `brave-love`
@@ -7,22 +7,21 @@ Environment: local WordPress Docker runtime + local PHP CLI
 
 ## Scope
 
-This patch-release check focused on the new backend QWeather credential configuration flow for `v1.0.9`.
+This patch-release check focused on the weather module structure split and the latest wording cleanup for `v1.0.10`.
 
 This run covered:
 
-- PHP syntax lint for the changed weather service and weather admin files
-- full PHP syntax lint for the theme
-- front-end JavaScript syntax check
+- full PHP syntax lint for 33 theme PHP files
+- front-end JavaScript syntax check for `assets/js/brave.js`, `assets/js/admin.js`, and `assets/js/memory.js`
 - local static theme checklist and security scan
-- local weather REST endpoint verification
-- local option persistence verification for backend-stored QWeather host/key values
-- release metadata consistency for `style.css`, `functions.php`, `README.md`, `RELEASE.md`, and `CHANGELOG.md`
+- runtime verification for `brave_get_qweather_config()` and `brave_get_home_weather_payload()`
+- local HTTP verification for `/`, `/about-us/`, and `/wp-json/brave-love/v1/weather`
+- release metadata consistency for `style.css`, `functions.php`, `README.md`, `CHANGELOG.md`, `RELEASE.md`, and `TEST-REPORT.md`
 
 This run did not cover:
 
 - authenticated manual clicking inside the WordPress admin screen
-- full browser-driven regression across all templates
+- screenshot-based visual regression across all responsive breakpoints
 - production environment verification
 
 ## Environment
@@ -30,75 +29,74 @@ This run did not cover:
 - `php`: available
 - `node`: available
 - `docker`: available
-- local WordPress: `http://localhost:8080`
-- local phpMyAdmin: `http://localhost:8081`
-- theme runtime version target: `1.0.9`
+- local WordPress: `http://127.0.0.1:8080`
+- local phpMyAdmin: `http://127.0.0.1:8081`
+- theme runtime version target: `1.0.10`
 
 ## Review Findings And Fixes
 
-### 1. Added backend-stored QWeather credential fallback
+### 1. Split the large weather service file
 
 Risk:
 
-- 原实现只能从 `wp-config.php` 或环境变量读取 QWeather 配置
-- 对不想改服务器文件的站点，日常维护成本偏高
+- `inc/weather-service.php` 同时承载配置、请求、文案、payload 和 REST 输出，继续迭代时维护成本偏高
+- 同一个大文件里改动天气逻辑，更容易把无关逻辑一起带坏
 
 Fix:
 
-- added backend option storage for `QWeather API Host` and `QWeather API Key`
-- updated config resolution order to prefer server config and fall back to admin-saved values
+- 保留 `inc/weather-service.php` 作为兼容入口
+- 将实现拆分到 `inc/weather/config.php`、`client.php`、`support.php`、`copy.php`、`payload.php`、`rest.php`
 
-### 2. Improved weather settings page status feedback
+### 2. Improved weather config status feedback
 
 Risk:
 
-- 管理员在后台无法判断当前到底是服务器配置生效，还是后台保存值生效
-- 已保存 Key 的维护方式也不够直观
+- 后台已有保存值时，管理员仍然可能误判当前到底是服务器配置还是后台配置在生效
 
 Fix:
 
-- added config source labels for Host and Key
-- added masked key behavior, keep-existing behavior, and clear-key support
+- 明确展示 `当前实际生效`
+- 分开展示 `Host 当前使用 / Key 当前使用`
+- 对缺失项和混合来源给出更直接的排查提示
 
-### 3. Refreshed caches after weather setting changes
+### 3. Unified the weather reminder wording
 
 Risk:
 
-- 修改天气凭证或城市后，旧缓存可能继续生效一段时间
-- 管理员会误以为新配置没有生效
+- 首页天气“贴心提醒”在多指数组合时，个别句子容易出现重复词或语义不够顺的问题
 
 Fix:
 
-- added weather cache flush on credential or city updates
-- refreshed in-memory config cache after saving
+- 统一收口提醒文案
+- 保持原有提醒点不变，只调整最终展示文本的自然度
 
 ## Executed Tests
 
 ### 1. PHP syntax lint
 
-Commands:
+Command:
 
 ```bash
-php -l inc/weather-service.php
-php -l inc/weather-admin.php
-find . -name '*.php' -not -path './tests/wordpress/*' -print0 | xargs -0 -n1 php -l
+find . -path './tests' -prune -o -name '*.php' -type f -print0 | xargs -0 -n1 php -l
 ```
 
 Result: passed.
 
 Observed summary:
 
-- both changed files linted successfully
 - full theme PHP lint completed without syntax errors
+- new `inc/weather/*.php` modules all linted successfully
 
 Status: passed.
 
 ### 2. Front-end JavaScript syntax check
 
-Command:
+Commands:
 
 ```bash
 node --check assets/js/brave.js
+node --check assets/js/admin.js
+node --check assets/js/memory.js
 ```
 
 Result: passed.
@@ -119,45 +117,52 @@ Result: passed.
 
 Observed summary:
 
-- required files remained present
-- metadata remained valid
-- security scan reported no warnings and no errors
+- required theme files remained present
+- theme metadata remained valid
+- security scan reported `9 passed / 0 warnings / 0 errors`
 
 Status: passed.
 
-### 4. Weather REST verification
+### 4. Runtime helper verification
 
-Checks executed:
+Check executed:
 
-- requested `http://localhost:8080/wp-json/brave-love/v1/weather`
-- verified the endpoint still returned configured weather payloads after the config fallback change
+```bash
+docker exec brave_wp_app php -r 'require "/var/www/html/wp-load.php"; $config=brave_get_qweather_config(true); $payload=brave_get_home_weather_payload(); ...'
+```
+
+Result: passed.
 
 Observed summary:
 
-- provider remained `qweather`
-- payload remained configured and returned the expected city list
+- `configured=true`
+- `host_source=database`
+- `key_source=database`
+- `provider=qweather`
+- `city_count=10`
+- first city status remained `ok`
 
 Status: passed.
 
-### 5. Backend option persistence verification
+### 5. Local HTTP verification
 
 Checks executed:
 
-- wrote temporary backend `QWeather API Host` and `QWeather API Key` values into local WordPress options
-- verified the stored values could be read back by the theme helpers
-- verified the current local environment still preferred server-level constants when both existed
-- cleaned up the temporary test values afterwards
+- requested `http://127.0.0.1:8080/wp-json/brave-love/v1/weather`
+- requested `http://127.0.0.1:8080/`
+- requested `http://127.0.0.1:8080/about-us/`
 
 Observed summary:
 
-- backend-stored host and key values were saved successfully
-- helper functions read the stored values successfully
-- source resolution correctly remained `server` in the local environment because `wp-config.php` constants are currently present
+- weather endpoint returned `configured=true` and `provider=qweather`
+- endpoint returned 10 city payloads and the first city remained `ok`
+- homepage returned `braveData` and weather modal markup
+- about page responded successfully and retained timeline-related markup keywords
 
 Status: passed.
 
 ## Overall Assessment
 
-Release candidate `v1.0.9` is ready for tagging.
+Release candidate `v1.0.10` is ready for tagging.
 
-Residual risk is low and mainly limited to authenticated manual admin-page clicking, which was not part of this run.
+Residual risk is low and mainly limited to authenticated admin clicking and full visual regression, which were not part of this run.

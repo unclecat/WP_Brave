@@ -201,12 +201,6 @@
     color: var(--primary-color);
 }
 
-/* 表单焦点样式 */
-.form-control:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(255, 81, 98, 0.15);
-}
-
 /* 提交按钮点击反馈 */
 .btn-submit:active {
     transform: scale(0.98);
@@ -221,13 +215,6 @@
 /* 说说卡片的时间 */
 .note-header {
     margin-bottom: 0.5rem;
-}
-
-/* 评论表单单列布局 */
-.comment-form .form-row {
-    display: flex;
-    flex-direction: column;
-    gap: 0.875rem;
 }
 
 /* 屏幕阅读器隐藏 */
