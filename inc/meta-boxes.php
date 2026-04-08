@@ -139,7 +139,7 @@ function brave_moment_meta_box($post) {
         </select>
     </p>
     <p class="description" style="color: #666; font-size: 12px; margin-top: 15px; padding: 10px; background: #f0f0f0; border-radius: 4px;">
-        💡 <strong>提示：</strong>在编辑器中上传的照片会自动显示在<a href="<?php echo esc_url(home_url('/memories/')); ?>" target="_blank" rel="noopener noreferrer">甜蜜相册</a>页面
+        💡 <strong>提示：</strong>在编辑器中上传的照片会自动显示在<a href="<?php echo esc_url(brave_get_page_link('memories')); ?>" target="_blank" rel="noopener noreferrer">甜蜜相册</a>页面
     </p>
     <?php
 }
@@ -215,6 +215,9 @@ function brave_story_milestone_meta_box($post) {
         'orderby' => 'meta_value',
         'meta_key' => '_meet_date',
         'order' => 'DESC',
+        'no_found_rows' => true,
+        'update_post_meta_cache' => false,
+        'update_post_term_cache' => false,
     ));
     ?>
     <p>

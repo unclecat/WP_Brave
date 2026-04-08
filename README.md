@@ -1,6 +1,6 @@
 # Brave Love
 
-[![Version](https://img.shields.io/badge/version-1.1.0-ff5162.svg)](https://github.com/unclecat/WP_Brave/releases)
+[![Version](https://img.shields.io/badge/version-1.1.1-ff5162.svg)](https://github.com/unclecat/WP_Brave/releases)
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg)](https://wordpress.org/)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg)](https://www.php.net/)
 [![License](https://img.shields.io/badge/license-GPL%20v2%20or%20later-2ea44f.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
@@ -9,7 +9,7 @@
 
 ![Brave Love Theme Preview](./screenshot.png)
 
-当前稳定版：`v1.1.0`
+当前稳定版：`v1.1.1`
 
 完整用户手册：[`docs/USER-GUIDE.md`](./docs/USER-GUIDE.md)
 
@@ -424,7 +424,7 @@ brave-love/
 ├── inc/                     # CPT、Customizer、Meta Box、后台页、工具函数
 ├── page-templates/          # 首页与主要内容页模板
 ├── template-parts/          # 通用模板片段
-├── style.css                # 主题头信息与全局样式
+├── style.css                # 主题头信息（前端样式由 assets/css/* 注册）
 ├── functions.php            # 主题入口与资源注册
 ├── screenshot.png           # WordPress 后台主题截图
 ├── README.md                # 项目说明
@@ -444,12 +444,14 @@ brave-love/
 
 ## 版本说明
 
-当前 `v1.1.0` 已包含：
+当前 `v1.1.1` 已包含：
 
 - 首页天气已切换到 QWeather API Key 方案，详情弹窗支持空气质量、空气预报、贴心提醒与今日降雨概率
 - 首页天气城市后台支持拖拽排序，保存后前台按拖拽顺序展示
 - 首页天气后台现已支持直接填写 `QWeather API Host / API Key`，不必强依赖修改 `wp-config.php`
 - 天气模块已拆分为 `inc/weather/*.php` 多文件结构，后续维护配置、接口、文案和 REST 输出更清晰
+- 主题主样式已拆分为 `assets/css/theme-core.css` + `assets/css/brave.css`，`style.css` 仅保留主题头信息，便于后续维护
+- `Customizer` 与通用 helper 已拆分为多个 `inc/*` 子模块，后续排查和扩展更清晰
 - 恋爱清单前台支持按完成状态与完成日期自动排序，后台管理列表默认同步相同逻辑
 - 最近几个 patch 还额外清理了旧分钟降雨链路，并把天气请求坐标精度恢复到 4 位小数
 

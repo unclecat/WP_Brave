@@ -1,21 +1,21 @@
-# Brave Love 1.1.0 Test Report
+# Brave Love 1.1.1 Test Report
 
 Generated: 2026-04-08
 Project: `brave-love`
 Tester: Codex CLI
-Environment: local WordPress Docker runtime + local PHP CLI
+Environment: local WordPress runtime + local PHP CLI
 
 ## Scope
 
-This minor-release check focused on the latest homepage Hero visual polish for `v1.1.0`.
+This release-candidate check focused on the `v1.1.1` maintenance release.
 
 This run covered:
 
-- full PHP syntax lint for theme PHP files (excluding `tests/`)
-- front-end JavaScript syntax check for `assets/js/brave.js`, `assets/js/admin.js`, and `assets/js/memory.js`
-- local static theme checklist and security scan
-- cleanup review for the current Hero iteration, including removal of the unused 12th comet-star node and CSS rule
-- local HTTP health check for the WordPress runtime at `http://127.0.0.1:8080/`
+- full PHP syntax lint for all theme PHP files
+- JavaScript syntax checks for `assets/js/brave.js`, `assets/js/admin.js`, and `assets/js/memory.js`
+- static theme structure check and security scan
+- review of the current refactor diff for `style.css`, `functions.php`, `inc/customizer*.php`, `inc/helpers*.php`, `inc/meta-boxes.php`, and `single-moment.php`
+- local front-end smoke test for homepage, about page, and moments page
 - release metadata consistency for `style.css`, `functions.php`, `README.md`, `CHANGELOG.md`, `RELEASE.md`, and `TEST-REPORT.md`
 
 This run did not cover:
@@ -28,50 +28,19 @@ This run did not cover:
 
 - `php`: available
 - `node`: available
-- `docker`: available
-- local WordPress containers: running (`brave_wp_app`, `brave_wp_db`, `brave_wp_pma`)
-- local WordPress health check: `HTTP/1.1 301 Moved Permanently` from `http://127.0.0.1:8080/` to configured site URL
-- theme runtime version target: `1.1.0`
+- local WordPress runtime: available
+- theme runtime version target: `1.1.1`
 
-## Review Findings And Fixes
+## Review Summary
 
-### 1. Hero comet stars were still carrying an unused hidden tail node
+This round did not find a P0 / P1 release blocker.
 
-Risk:
+Checked重点：
 
-- The 12th star node had already been visually removed by CSS only, but the extra DOM node and selector were still present
-- Keeping hidden dead nodes around makes later visual tuning noisier than necessary
-
-Fix:
-
-- Removed the unused 12th `orbit-star` node from both avatar orbit containers
-- Removed the matching `.orbit-star:nth-child(12)` CSS rule
-
-### 2. Hero heart / ECG relationship needed a cleaner visual hierarchy
-
-Risk:
-
-- The previous heart style felt heavier than the star-orbit and ECG language around it
-- The ECG path did not yet read as naturally passing through the lower half of the heart
-
-Fix:
-
-- Reworked the center heart into a lighter glass-heart treatment
-- Tuned heart size and vertical offset so the ECG reads through the lower half more naturally
-- Added more waveform variation on both sides of the heart
-
-### 3. Comet stars needed stronger star identity and closer orbit spacing
-
-Risk:
-
-- The orbit particles could still read as glowing dots instead of starry comet fragments
-- Orbit spacing was slightly too far from the avatars for the intended intimate feel
-
-Fix:
-
-- Strengthened star-shaped particles and cross-star flares
-- Pulled the orbit closer to the avatars across mobile, tablet, and desktop breakpoints
-- Increased brightness / shimmer so the orbit reads more clearly without adding new elements
+- `style.css` 退回到主题头信息职责，前端改由 `assets/css/theme-core.css` + `assets/css/brave.css` 加载，资源注册关系正确
+- `Customizer` / `Helpers` 拆分后的 require 链路正常，PHP lint 全量通过
+- 页面链接相关逻辑已统一到 `brave_get_page_link()`，减少页面 slug 调整后的失效风险
+- PV 手动覆盖计数不会再被当前请求重复加 1
 
 ## Executed Tests
 
@@ -80,10 +49,10 @@ Fix:
 Command:
 
 ```bash
-find . -path './tests' -prune -o -name '*.php' -type f -print0 | xargs -0 -n1 php -l
+find . -name '*.php' -print0 | xargs -0 -n1 php -l
 ```
 
-Result: pass. No syntax errors detected in theme PHP files, including `header.php` and the split weather modules.
+Result: pass. No syntax errors detected in theme PHP files.
 
 ### 2. JavaScript syntax checks
 
@@ -99,13 +68,14 @@ Result: pass. No syntax errors reported.
 
 ### 3. Static theme checklist
 
-Command:
+Commands:
 
 ```bash
+php tests/check-theme.php
 bash tests/check-theme-simple.sh
 ```
 
-Result: pass. Required files exist, style header metadata is present, no dangerous PHP functions were detected.
+Result: pass. Required files exist, metadata is present, and theme structure is valid.
 
 ### 4. Security scan
 
@@ -127,16 +97,18 @@ git diff --check
 
 Result: pass. No whitespace or patch formatting issues detected.
 
-### 6. Local runtime health check
+### 6. Local page smoke test
 
-Command:
+Commands:
 
 ```bash
-curl -I http://127.0.0.1:8080/
+curl http://127.0.0.1:8080/
+curl http://127.0.0.1:8080/about-us/
+curl http://127.0.0.1:8080/%E7%82%B9%E7%82%B9%E6%BB%B4%E6%BB%B4/
 ```
 
-Result: pass. The local WordPress runtime responded and redirected to the configured site URL.
+Result: pass. Local homepage, about page, and moments page all returned expected HTML and loaded `theme-core.css` + `brave.css`.
 
 ## Conclusion
 
-Release candidate `v1.1.0` is ready for tagging.
+Release candidate `v1.1.1` is ready for tagging.

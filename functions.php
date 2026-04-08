@@ -6,7 +6,7 @@
  */
 
 // 定义常量
-define('BRAVE_VERSION', '1.1.0');
+define('BRAVE_VERSION', '1.1.1');
 define('BRAVE_BOOTSTRAP_VERSION', '5.3.2');
 define('BRAVE_PHOTOSWIPE_VERSION', '5.4.2');
 define('BRAVE_DIR', get_template_directory());
@@ -56,7 +56,7 @@ function brave_scripts() {
     wp_enqueue_style('brave-fonts', BRAVE_URI . '/assets/css/fonts.css', array(), BRAVE_VERSION);
     
     // 主题样式
-    wp_enqueue_style('brave-style', get_stylesheet_uri(), array('bootstrap', 'brave-fonts'), BRAVE_VERSION);
+    wp_enqueue_style('brave-style', BRAVE_URI . '/assets/css/theme-core.css', array('bootstrap', 'brave-fonts'), BRAVE_VERSION);
     
     // 额外样式
     wp_enqueue_style('brave-extra', BRAVE_URI . '/assets/css/brave.css', array('brave-style'), BRAVE_VERSION);
@@ -491,11 +491,8 @@ function brave_get_avatar_url($email, $name = '', $size = 100, $background = 'ff
  */
 function brave_page_template_redirect() {
     if (is_post_type_archive('moment')) {
-        $page = get_page_by_path('moments');
-        if ($page) {
-            wp_safe_redirect(get_permalink($page));
-            exit;
-        }
+        wp_safe_redirect(brave_get_page_link('moments'));
+        exit;
     }
 }
 add_action('template_redirect', 'brave_page_template_redirect');
@@ -628,31 +625,37 @@ function brave_update_pv_stats() {
         'total_count' => 0,
     ));
     
-    // 检查手动覆盖（使用单独的option标记已应用）
-    $manual_today = get_theme_mod('brave_pv_today_manual');
-    $manual_total = get_theme_mod('brave_pv_total_manual');
-    
-    if ($manual_today !== '' && $manual_today !== false && $manual_today !== null) {
-        $stats['today_count'] = intval($manual_today);
-        // 应用后清空
-        remove_theme_mod('brave_pv_today_manual');
-    }
-    
-    if ($manual_total !== '' && $manual_total !== false && $manual_total !== null) {
-        $stats['total_count'] = intval($manual_total);
-        // 应用后清空
-        remove_theme_mod('brave_pv_total_manual');
-    }
-    
     // 检查是否跨天，重置当日计数
     if ($stats['today_date'] !== $today) {
         $stats['today_date'] = $today;
         $stats['today_count'] = 0;
     }
-    
-    // 增加计数
-    $stats['today_count']++;
-    $stats['total_count']++;
+
+    // 检查手动覆盖，并确保本次请求不会再额外自增对应计数。
+    $manual_today = get_theme_mod('brave_pv_today_manual');
+    $manual_total = get_theme_mod('brave_pv_total_manual');
+    $skip_today_increment = false;
+    $skip_total_increment = false;
+
+    if ($manual_today !== '' && $manual_today !== false && $manual_today !== null) {
+        $stats['today_count'] = intval($manual_today);
+        $skip_today_increment = true;
+        remove_theme_mod('brave_pv_today_manual');
+    }
+
+    if ($manual_total !== '' && $manual_total !== false && $manual_total !== null) {
+        $stats['total_count'] = intval($manual_total);
+        $skip_total_increment = true;
+        remove_theme_mod('brave_pv_total_manual');
+    }
+
+    if (!$skip_today_increment) {
+        $stats['today_count']++;
+    }
+
+    if (!$skip_total_increment) {
+        $stats['total_count']++;
+    }
     
     // 保存
     update_option('brave_pv_stats', $stats);

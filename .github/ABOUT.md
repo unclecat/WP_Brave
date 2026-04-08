@@ -29,4 +29,4 @@ https://www.1ink.ink/
 
 ## Social Preview Alt
 
-Brave Love 1.0 WordPress theme preview showing an editorial-style romantic homepage, story timeline, and mobile-friendly content cards.
+Brave Love WordPress theme preview showing an editorial-style romantic homepage, story timeline, and mobile-friendly content cards.

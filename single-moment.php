@@ -101,7 +101,7 @@ while (have_posts()) :
                     <div class="nav-placeholder"></div>
                 <?php endif; ?>
                 
-                <a href="<?php echo esc_url(get_permalink(get_page_by_path('moments'))); ?>" class="nav-back">
+                <a href="<?php echo esc_url(brave_get_page_link('moments')); ?>" class="nav-back">
                     <span>📖 返回列表</span>
                 </a>
                 
