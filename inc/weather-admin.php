@@ -37,15 +37,66 @@ function brave_weather_mask_secret($value) {
     return substr($value, 0, 4) . str_repeat('*', max(4, $length - 8)) . substr($value, -4);
 }
 
+function brave_weather_get_qweather_source_label($source) {
+    if ('server' === $source) {
+        return __('wp-config.php / 环境变量', 'brave-love');
+    }
+
+    if ('database' === $source) {
+        return __('后台设置', 'brave-love');
+    }
+
+    return __('未提供', 'brave-love');
+}
+
 function brave_weather_page() {
     if (!current_user_can('manage_options')) {
         wp_die(__('权限不足', 'brave-love'));
     }
 
+    $notice_message = '';
+
     // 保存数据
     if (isset($_POST['brave_save_weather']) && check_admin_referer('brave_weather_nonce')) {
         $enabled = isset($_POST['brave_weather_enabled']) ? true : false;
         update_option('brave_weather_enabled', $enabled);
+
+        $stored_host_before = function_exists('brave_get_qweather_option_setting') ? brave_get_qweather_option_setting('QWEATHER_API_HOST') : '';
+        $stored_key_before = function_exists('brave_get_qweather_option_setting') ? brave_get_qweather_option_setting('QWEATHER_API_KEY') : '';
+        $cache_should_refresh = false;
+
+        $api_host_input = isset($_POST['brave_qweather_api_host']) ? wp_unslash($_POST['brave_qweather_api_host']) : '';
+        $api_host = function_exists('brave_normalize_qweather_api_host')
+            ? brave_normalize_qweather_api_host($api_host_input)
+            : trim((string) $api_host_input);
+
+        if ('' === $api_host) {
+            if ('' !== $stored_host_before) {
+                delete_option('brave_qweather_api_host');
+                $cache_should_refresh = true;
+            }
+        } else {
+            update_option('brave_qweather_api_host', $api_host, false);
+            if ($stored_host_before !== $api_host) {
+                $cache_should_refresh = true;
+            }
+        }
+
+        $clear_api_key = !empty($_POST['brave_qweather_api_key_clear']);
+        $api_key_input = isset($_POST['brave_qweather_api_key']) ? trim((string) wp_unslash($_POST['brave_qweather_api_key'])) : '';
+
+        if ($clear_api_key) {
+            if ('' !== $stored_key_before) {
+                delete_option('brave_qweather_api_key');
+                $cache_should_refresh = true;
+            }
+        } elseif ('' !== $api_key_input) {
+            $api_key = sanitize_text_field($api_key_input);
+            update_option('brave_qweather_api_key', $api_key, false);
+            if ($stored_key_before !== $api_key) {
+                $cache_should_refresh = true;
+            }
+        }
 
         $cities = array();
         if (isset($_POST['city_name']) && is_array($_POST['city_name'])) {
@@ -67,8 +118,22 @@ function brave_weather_page() {
                 }
             }
         }
+        $stored_cities_before = get_option('brave_weather_cities', array());
         update_option('brave_weather_cities', $cities);
-        echo '<div class="notice notice-success"><p>' . __('已保存', 'brave-love') . '</p></div>';
+
+        if ($stored_cities_before !== $cities) {
+            $cache_should_refresh = true;
+        }
+
+        if ($cache_should_refresh && function_exists('brave_qweather_flush_cached_responses')) {
+            brave_qweather_flush_cached_responses();
+        }
+
+        if (function_exists('brave_get_qweather_config')) {
+            brave_get_qweather_config(true);
+        }
+
+        $notice_message = __('已保存。天气凭证或城市变更后，会自动刷新天气缓存。', 'brave-love');
     }
 
     $enabled = get_option('brave_weather_enabled', false);
@@ -77,12 +142,18 @@ function brave_weather_page() {
         array('name' => '上海', 'lat' => '31.2304', 'lon' => '121.4737'),
     ));
     $qweather_config = function_exists('brave_get_qweather_config') ? brave_get_qweather_config() : array('configured' => false);
+    $stored_api_host = $qweather_config['stored_api_host'] ?? '';
+    $stored_api_key = $qweather_config['stored_api_key'] ?? '';
     ?>
     <div class="wrap">
         <h1><?php _e('天气城市管理', 'brave-love'); ?></h1>
         <p class="description">
             <?php _e('添加任意数量关心的城市，首页将显示这些地区的天气概况。点击天气卡片可查看详细穿衣指南。', 'brave-love'); ?>
         </p>
+
+        <?php if ('' !== $notice_message) : ?>
+            <div class="notice notice-success"><p><?php echo esc_html($notice_message); ?></p></div>
+        <?php endif; ?>
 
         <div class="card" style="max-width: 780px; margin-top: 1rem; margin-bottom: 1.5rem;">
             <h2 style="margin-top: 0;"><?php _e('QWeather API 配置状态', 'brave-love'); ?></h2>
@@ -94,13 +165,17 @@ function brave_weather_page() {
                 <p><strong><?php _e('认证方式：', 'brave-love'); ?></strong><code>API Key</code></p>
                 <p><strong>API Host：</strong><code><?php echo esc_html($qweather_config['api_host']); ?></code></p>
                 <p><strong>API Key：</strong><code><?php echo esc_html(brave_weather_mask_secret($qweather_config['api_key'] ?? '')); ?></code></p>
-                <p class="description"><?php _e('当前版本仅使用 API Key。前端不会直接暴露密钥，请继续只在服务端（环境变量或 wp-config.php）里配置。', 'brave-love'); ?></p>
+                <p><strong><?php _e('Host 来源：', 'brave-love'); ?></strong><?php echo esc_html(brave_weather_get_qweather_source_label($qweather_config['host_source'] ?? '')); ?></p>
+                <p><strong><?php _e('Key 来源：', 'brave-love'); ?></strong><?php echo esc_html(brave_weather_get_qweather_source_label($qweather_config['key_source'] ?? '')); ?></p>
+                <p class="description"><?php _e('当前版本仅使用 API Key。前端不会直接暴露密钥。若同时配置了服务器级和后台值，将优先使用 wp-config.php / 环境变量，后台配置作为兜底。', 'brave-love'); ?></p>
             <?php else : ?>
                 <p>
                     <strong><?php _e('状态：', 'brave-love'); ?></strong>
                     <span style="color: #b3261e; font-weight: 700;"><?php _e('未配置完整', 'brave-love'); ?></span>
                 </p>
-                <p class="description"><?php _e('请在环境变量或 wp-config.php 中配置下面两个值：', 'brave-love'); ?></p>
+                <p><strong><?php _e('Host 来源：', 'brave-love'); ?></strong><?php echo esc_html(brave_weather_get_qweather_source_label($qweather_config['host_source'] ?? '')); ?></p>
+                <p><strong><?php _e('Key 来源：', 'brave-love'); ?></strong><?php echo esc_html(brave_weather_get_qweather_source_label($qweather_config['key_source'] ?? '')); ?></p>
+                <p class="description"><?php _e('你现在可以直接在下面的后台表单里填写 API Host 和 API Key；如果服务器环境中也配置了同名值，服务器配置仍然优先。', 'brave-love'); ?></p>
                 <ul style="list-style: disc; padding-left: 1.2rem;">
                     <li><code>QWEATHER_API_HOST</code></li>
                     <li><code>QWEATHER_API_KEY</code></li>
@@ -112,6 +187,49 @@ function brave_weather_page() {
             <?php wp_nonce_field('brave_weather_nonce'); ?>
             
             <table class="form-table">
+                <tr>
+                    <th scope="row"><?php _e('QWeather API Host', 'brave-love'); ?></th>
+                    <td>
+                        <input
+                            type="text"
+                            name="brave_qweather_api_host"
+                            value="<?php echo esc_attr($stored_api_host); ?>"
+                            class="regular-text code"
+                            placeholder="nb7aarhnan.re.qweatherapi.com"
+                        >
+                        <p class="description">
+                            <?php _e('这是 QWeather 给你的接口域名，例如 `nb7aarhnan.re.qweatherapi.com`。可直接填写域名，系统会自动补上 `https://`。', 'brave-love'); ?>
+                        </p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><?php _e('QWeather API Key', 'brave-love'); ?></th>
+                    <td>
+                        <input
+                            type="password"
+                            name="brave_qweather_api_key"
+                            value=""
+                            class="regular-text code"
+                            autocomplete="new-password"
+                            placeholder="<?php echo esc_attr($stored_api_key ? brave_weather_mask_secret($stored_api_key) : __('留空表示暂不设置', 'brave-love')); ?>"
+                        >
+                        <p class="description">
+                            <?php
+                            echo esc_html(
+                                $stored_api_key
+                                    ? __('后台已保存 API Key。这里留空表示保持不变；如果输入新值，会覆盖后台当前保存的 Key。', 'brave-love')
+                                    : __('如果当前没有服务器级配置，可以直接把 QWeather 控制台里的 API Key 粘贴到这里。', 'brave-love')
+                            );
+                            ?>
+                        </p>
+                        <?php if ($stored_api_key) : ?>
+                            <label style="display: inline-flex; align-items: center; gap: 6px; margin-top: 6px;">
+                                <input type="checkbox" name="brave_qweather_api_key_clear" value="1">
+                                <?php _e('清空后台已保存的 API Key', 'brave-love'); ?>
+                            </label>
+                        <?php endif; ?>
+                    </td>
+                </tr>
                 <tr>
                     <th scope="row"><?php _e('启用天气', 'brave-love'); ?></th>
                     <td>

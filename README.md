@@ -320,7 +320,8 @@ Brave Love 不是单独的某一个页面模板，而是一套完整的情侣纪
 
 填写建议：
 - 坐标格式使用十进制度，例如 `31.2304` / `121.4737`
-- 主题天气数据使用 QWeather API Key，需要在服务端额外配置 `QWEATHER_API_HOST` 和 `QWEATHER_API_KEY`
+- 主题天气数据使用 QWeather API Key，可直接在 `设置 -> 天气城市` 中填写 `QWeather API Host` 和 `QWeather API Key`
+- 如果服务器环境里也配置了 `QWEATHER_API_HOST` 和 `QWEATHER_API_KEY`，服务器配置优先，后台保存值作为兜底
 - 如果天气不显示，优先检查坐标是否填写正确
 
 ### 设置 -> 纪念日
@@ -443,12 +444,13 @@ brave-love/
 
 ## 版本说明
 
-当前 `v1.0.8` 已包含：
+当前 `v1.0.9` 已包含：
 
 - 首页天气已切换到 QWeather API Key 方案，详情弹窗支持空气质量、空气预报、贴心提醒与今日降雨概率
 - 首页天气城市后台支持拖拽排序，保存后前台按拖拽顺序展示
+- 首页天气后台现已支持直接填写 `QWeather API Host / API Key`，不必强依赖修改 `wp-config.php`
 - 恋爱清单前台支持按完成状态与完成日期自动排序，后台管理列表默认同步相同逻辑
-- 本次 patch 额外清理了旧分钟降雨链路，并把天气请求坐标精度恢复到 4 位小数
+- 最近两个 patch 还额外清理了旧分钟降雨链路，并把天气请求坐标精度恢复到 4 位小数
 
 如果你推送新的 tag，仓库中的 GitHub Actions 发布流程会自动构建 Release 资产。
 
