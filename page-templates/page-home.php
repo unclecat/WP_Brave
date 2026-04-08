@@ -129,7 +129,16 @@ if ($weather_enabled && !empty($weather_cities)) :
             <div class="weather-modal-main-primary">
                 <div class="weather-modal-icon" id="modal-icon">☀️</div>
                 <div class="weather-modal-main-copy">
-                    <div class="weather-modal-temp" id="modal-temp">--°</div>
+                    <div class="weather-modal-temp-row">
+                        <div class="weather-modal-temp" id="modal-temp">--°</div>
+                        <div class="weather-modal-feels-badge">
+                            <div class="weather-modal-feels-head">
+                                <span class="weather-modal-feels-label">体感</span>
+                                <span class="weather-modal-feels-value" id="modal-feels">--°</span>
+                            </div>
+                            <div class="weather-modal-feels-note" id="modal-feels-note">和当前差不多</div>
+                        </div>
+                    </div>
                     <div class="weather-modal-desc" id="modal-desc">--</div>
                     <div class="weather-modal-range" id="modal-range">今日 --° ~ --°</div>
                     <div class="weather-modal-sunline">
@@ -142,42 +151,51 @@ if ($weather_enabled && !empty($weather_cities)) :
                             <span id="modal-sunset">--:--</span>
                         </span>
                     </div>
+
+                    <div class="weather-modal-main-insights">
+                        <div class="weather-modal-main-metric">
+                            <div class="weather-modal-aside-row">
+                                <span class="weather-modal-aside-label">空气质量</span>
+                                <span class="weather-modal-aside-value" id="modal-aqi" data-tone="unknown">
+                                    <span class="weather-modal-aside-dot" aria-hidden="true"></span>
+                                    <span class="weather-modal-aside-text">暂无 · AQI --</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="weather-modal-main-metric">
+                            <div class="weather-modal-aside-row">
+                                <span class="weather-modal-aside-label">紫外线</span>
+                                <span class="weather-modal-aside-value" id="modal-uv" data-tone="unknown">
+                                    <span class="weather-modal-aside-dot" aria-hidden="true"></span>
+                                    <span class="weather-modal-aside-text">暂无 · UV --</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="weather-modal-main-metric">
+                            <div class="weather-modal-aside-row">
+                                <span class="weather-modal-aside-label">主污染物</span>
+                                <span class="weather-modal-aside-value weather-modal-aside-plain" id="modal-primary-pollutant">
+                                    <span class="weather-modal-aside-text">暂无</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="weather-modal-aside">
-                <div class="weather-modal-aside-summary">
-                    <div class="weather-modal-aside-row">
-                        <span class="weather-modal-aside-label">空气质量</span>
-                        <span class="weather-modal-aside-value" id="modal-aqi" data-tone="unknown">
-                            <span class="weather-modal-aside-dot" aria-hidden="true"></span>
-                            <span class="weather-modal-aside-text">暂无 · AQI --</span>
-                        </span>
-                    </div>
-                    <div class="weather-modal-aside-row">
-                        <span class="weather-modal-aside-label">紫外线</span>
-                        <span class="weather-modal-aside-value" id="modal-uv" data-tone="unknown">
-                            <span class="weather-modal-aside-dot" aria-hidden="true"></span>
-                            <span class="weather-modal-aside-text">暂无 · UV --</span>
-                        </span>
-                    </div>
-                    <div class="weather-modal-aside-row">
-                        <span class="weather-modal-aside-label">主污染物</span>
-                        <span class="weather-modal-aside-value weather-modal-aside-plain" id="modal-primary-pollutant">
-                            <span class="weather-modal-aside-text">暂无</span>
-                        </span>
-                    </div>
-                </div>
-
                 <div class="weather-modal-note">
-                    <div class="weather-modal-note-label">👔 今日穿搭</div>
+                    <div class="weather-modal-note-label">
+                        <span class="weather-modal-note-emoji" aria-hidden="true">💡</span>
+                        <span>贴心提醒</span>
+                    </div>
                     <div class="weather-modal-tag-list" id="modal-clothing">
                         <span class="weather-modal-tag is-muted">分析中</span>
                     </div>
                     <p class="weather-modal-note-copy" id="modal-clothing-copy">正在整理今天更适合的穿搭节奏……</p>
-                    <div class="weather-modal-minute" id="modal-minute" hidden>
-                        <div class="weather-modal-minute-label">☔ 分钟降雨提醒</div>
-                        <div class="weather-modal-minute-text" id="modal-minute-text">未来 2 小时降雨趋势整理中</div>
+                    <div class="weather-modal-note-meta">
+                        <span class="weather-modal-note-meta-label">☔ 今日降雨概率</span>
+                        <span class="weather-modal-note-meta-value" id="modal-precip">--%</span>
                     </div>
                 </div>
             </div>
@@ -185,32 +203,19 @@ if ($weather_enabled && !empty($weather_cities)) :
 
         <div class="weather-modal-details">
             <div class="weather-modal-item">
-                <span class="weather-modal-label">体感温度</span>
-                <span class="weather-modal-value" id="modal-feels">--°</span>
-            </div>
-            <div class="weather-modal-item">
                 <span class="weather-modal-label">湿度</span>
                 <span class="weather-modal-value" id="modal-humidity">--%</span>
+                <span class="weather-modal-subvalue" id="modal-humidity-note">空气湿度整理中</span>
             </div>
             <div class="weather-modal-item">
                 <span class="weather-modal-label">风速</span>
                 <span class="weather-modal-value" id="modal-wind">-- km/h</span>
+                <span class="weather-modal-subvalue" id="modal-wind-note">风向信息整理中</span>
             </div>
-            <div class="weather-modal-item">
-                <span class="weather-modal-label">降水概率</span>
-                <span class="weather-modal-value" id="modal-precip">--%</span>
-            </div>
-        </div>
-
-        <div class="weather-modal-health">
-            <div class="weather-modal-section-title">健康提醒</div>
-            <div class="weather-modal-health-row">
-                <span class="weather-modal-health-label">日常建议</span>
-                <p class="weather-modal-health-text" id="modal-health-general">今天的空气和天气提示整理中。</p>
-            </div>
-            <div class="weather-modal-health-row">
-                <span class="weather-modal-health-label">敏感人群</span>
-                <p class="weather-modal-health-text" id="modal-health-sensitive">如果你更容易受天气影响，稍后这里会有更细的提醒。</p>
+            <div class="weather-modal-item" id="modal-air-forecast-item" data-tone="unknown">
+                <span class="weather-modal-label">空气预报</span>
+                <span class="weather-modal-value" id="modal-air-forecast" data-tone="unknown">--</span>
+                <span class="weather-modal-subvalue" id="modal-air-forecast-note">AQI 整理中</span>
             </div>
         </div>
 

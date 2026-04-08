@@ -1,141 +1,187 @@
-# Brave Love 1.0.6 Test Report
+# Brave Love 1.0.8 Test Report
 
-Generated: 2026-04-06  
+Generated: 2026-04-08
 Project: `brave-love`  
 Tester: Codex CLI  
-Environment: local WordPress Docker runtime + local PHP CLI
+Environment: local WordPress Docker runtime + local PHP CLI + local headless browser
 
 ## Scope
 
-This patch-release check focused on the new ordering behavior for the `love_list` archive and the matching default ordering in the admin `love_list` table for `v1.0.6`.
+This patch-release check focused on the homepage weather stack for `v1.0.8`, especially the recent modal UI polish, stale-state cleanup, and release-readiness validation.
 
 This run covered:
 
-- PHP syntax lint for the changed theme source
-- local front-end ordering verification for the love list archive query
-- local admin ordering verification for the default love list management query
-- explicit admin `orderby` override verification
+- PHP syntax lint for the changed theme source and the full PHP file set
+- JavaScript syntax check for the changed front-end bundle
+- local security scan and theme checklist scripts
+- local weather REST endpoint verification
+- desktop and mobile browser-based smoke check for the homepage weather modal
 - release metadata consistency for `style.css`, `functions.php`, `README.md`, `RELEASE.md`, and `CHANGELOG.md`
 
 This run did not cover:
 
-- browser-driven authenticated admin UI checks
-- full regression across unrelated templates or settings pages
+- authenticated WordPress admin interaction flows
+- full visual regression for all six front-end templates
+- dark-mode-specific manual review
 - production data validation beyond the local test site
 
 ## Environment
 
 - `php`: available
+- `node`: available
 - `docker`: available
 - local WordPress: `http://localhost:8080`
 - local phpMyAdmin: `http://localhost:8081`
-- theme runtime version target: `1.0.6`
+- theme runtime version target: `1.0.8`
 
 ## Review Findings And Fixes
 
-### 1. Love list archive lacked a user-oriented default order
+### 1. Removed the unused minutely weather chain
 
 Risk:
 
-- 前台恋爱清单没有明确的完成状态优先级时，待完成事项会被已完成事项打散
-- 用户打开页面后，最想先看的“还没完成的事”不一定能排在最前面
+- 首页天气弹窗已经不再展示分钟降雨，但后端仍在继续请求 `minutely`
+- 这会额外增加每个城市的一次 API 请求，并可能让旧链路继续影响 `stale` 状态
 
 Fix:
 
-- added a unified love-list ordering clause in `functions.php`
-- grouped pending items first and done items second
-- sorted done items by `_done_date` descending with publish date as a fallback
+- removed the `minutely` request in `inc/weather-service.php`
+- removed the returned `minutely` payload
+- removed the stale-state dependency on the retired minute-rain response
 
-### 2. Admin maintenance order did not match the front end
+### 2. Restored 4-decimal coordinate precision for QWeather requests
 
 Risk:
 
-- 后台列表和前台展示顺序不一致，会增加维护时的判断成本
-- 站长在后台处理事项时，需要额外筛选才能先看到待完成项
+- 后台保存的是 4 位经纬度，但请求前被裁成 2 位小数
+- 这会降低天气、空气质量和降雨数据的定位精度
 
 Fix:
 
-- applied the same default ordering rule to the admin `love_list` list table
-- limited the admin hook to the default `edit.php?post_type=love_list` main query
-- preserved explicit admin sorting when the user clicks another sortable column
+- updated weather and air endpoint coordinate formatting to 4 decimal places
+- kept existing saved city data compatible with no migration required
 
-### 3. Release metadata needed to reflect the new patch release
+### 3. Cleaned up dead CSS after the health block removal
 
 Risk:
 
-- 版本号和发布说明如果不更新，会让安装包、GitHub 项目页和实际代码状态不一致
+- 首页天气弹窗的“健康提醒”模块已经移除，但样式文件中仍保留了整套相关选择器
+- 这些残留样式会增加维护噪音，也容易误导后续迭代
 
 Fix:
 
-- bumped release metadata to `1.0.6`
-- updated `README.md`, `docs/USER-GUIDE.md`, `RELEASE.md`, and `CHANGELOG.md`
+- removed `.weather-modal-health*` related CSS
+- removed matching mobile and dark-theme residual selectors
 
 ## Executed Tests
 
-### 1. PHP syntax lint
+### 1. Full PHP syntax lint
 
 Command:
 
 ```bash
-php -l functions.php
+find . -name '*.php' -not -path './tests/wordpress/*' -print0 | xargs -0 -n1 php -l
 ```
 
 Result: passed.
 
 Observed summary:
 
-- `functions.php` linted successfully
-- no syntax errors were introduced by the shared sorting helper or admin hook
+- all theme PHP files linted successfully
+- no syntax errors were introduced by the weather service cleanup or modal template changes
 
 Status: passed.
 
-### 2. Front-end love list ordering verification
+### 2. Front-end JavaScript syntax check
 
-Checks executed:
+Command:
 
-- loaded the local WordPress runtime inside Docker
-- executed the archive query with the theme hook applied
-- verified pending items render first
-- verified done items render after pending items and are ordered by `_done_date` descending
+```bash
+node --check assets/js/brave.js
+```
+
+Result: passed.
 
 Observed summary:
 
-- pending items were grouped first
-- done items were ordered `2025-04-01 -> 2025-03-20 -> 2025-03-01 -> 2025-02-14`
-- items sharing the same done date fell back to publish date ordering
+- `assets/js/brave.js` parsed successfully
+- no syntax regressions were introduced by the modal rendering updates
 
 Status: passed.
 
-### 3. Admin default ordering verification
+### 3. Theme checklist script
 
-Checks executed:
+Command:
 
-- simulated the `edit.php?post_type=love_list` admin screen in the local runtime
-- executed the default main query with the new admin hook applied
-- compared the resulting order with the front-end archive order
+```bash
+bash tests/check-theme-simple.sh
+php tests/check-theme.php
+```
+
+Result: passed.
 
 Observed summary:
 
-- admin default order matched the front-end logic
-- pending items appeared first and done items followed by done date descending
+- required theme files were present
+- theme metadata remained valid
+- local static checks completed without errors
 
 Status: passed.
 
-### 4. Admin explicit orderby override verification
+### 4. Security scan
 
-Checks executed:
+Command:
 
-- simulated `orderby=title&order=ASC` for the admin love list screen
-- verified the custom default sort flag was not enabled
-- confirmed the returned results followed title ordering instead of the default status/date ordering
+```bash
+php tests/security-scan.php
+```
+
+Result: passed.
 
 Observed summary:
 
-- explicit admin sorting was preserved
-- the default hook did not override user-selected ordering
+- direct access protection, nonce usage, sanitization, and dangerous-function checks all passed
+- no warnings or errors were reported by the local security scan
 
 Status: passed.
 
-## Conclusion
+### 5. Weather REST verification
 
-Current state is suitable for a `v1.0.6` patch release.
+Checks executed:
+
+- requested `http://localhost:8080/wp-json/brave-love/v1/weather`
+- verified the first city payload after the cleanup
+- confirmed `minutely` was no longer present
+
+Observed summary:
+
+- the endpoint returned valid weather data
+- `stale` was `false` for the sampled city
+- `airDailyForecast` and `precipitationMax` were present
+- `minutely` was no longer included in the payload
+
+Status: passed.
+
+### 6. Browser-based homepage weather modal smoke check
+
+Checks executed:
+
+- opened the local homepage in a headless browser
+- opened the first weather card modal in desktop viewport
+- opened the first weather card modal in mobile viewport
+- captured screenshots and checked the modal for hidden overflow
+
+Observed summary:
+
+- desktop modal layout rendered normally
+- mobile modal layout rendered normally
+- reminder copy, tags, and weather metrics wrapped correctly
+- no hidden overflow was detected in the checked modal elements
+
+Status: passed.
+
+## Overall Assessment
+
+Release candidate `v1.0.8` is ready for tagging.
+
+Residual risk is low and mainly limited to areas not covered in this run, such as dark-mode visual review and broader regression across unrelated pages.

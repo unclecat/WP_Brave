@@ -25,7 +25,7 @@ https://www.1ink.ink/
 - diary
 - bootstrap
 - photoswipe
-- open-meteo
+- qweather
 
 ## Social Preview Alt
 

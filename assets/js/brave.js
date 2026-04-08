@@ -158,8 +158,54 @@
             return name + amount + unit;
         }
 
-        function formatWindText(data) {
-            var speed = typeof data.wind === 'number' ? data.wind + ' km/h' : '-- km/h';
+        function formatWindSpeed(data) {
+            return typeof data.wind === 'number' ? data.wind + ' km/h' : '-- km/h';
+        }
+
+        function formatFeelsNote(data) {
+            if (typeof data.feels !== 'number' || typeof data.temp !== 'number') {
+                return '和当前差不多';
+            }
+
+            var diff = data.feels - data.temp;
+            var absDiff = Math.abs(diff);
+
+            if (absDiff <= 1) {
+                return '和当前差不多';
+            }
+
+            if (diff < 0) {
+                return '比当前低' + absDiff + '° · 稍凉';
+            }
+
+            return '比当前高' + absDiff + '° · 稍暖';
+        }
+
+        function formatHumidityNote(data) {
+            if (typeof data.humidity !== 'number') {
+                return '整理中';
+            }
+
+            if (data.humidity <= 30) {
+                return '偏干';
+            }
+
+            if (data.humidity <= 55) {
+                return '刚刚好';
+            }
+
+            if (data.humidity <= 70) {
+                return '还算舒服';
+            }
+
+            if (data.humidity <= 85) {
+                return '有点潮';
+            }
+
+            return '偏湿闷';
+        }
+
+        function formatWindNote(data) {
             var extras = [];
 
             if (data.windDir) {
@@ -170,7 +216,56 @@
                 extras.push(data.windScale + '级');
             }
 
-            return extras.length ? speed + ' · ' + extras.join(' ') : speed;
+            if (extras.length) {
+                return extras.join(' · ');
+            }
+
+            if (typeof data.wind === 'number') {
+                if (data.wind >= 25) {
+                    return '风较明显';
+                }
+
+                if (data.wind >= 13) {
+                    return '有点风';
+                }
+
+                return '风很轻';
+            }
+
+            return '整理中';
+        }
+
+        function formatTodayPrecipValue(data) {
+            return typeof data.precipitationMax === 'number' ? data.precipitationMax + '%' : '--%';
+        }
+
+        function formatAirForecastValue(data) {
+            var forecast = data.airDailyForecast || {};
+
+            if (forecast.category) {
+                return forecast.category;
+            }
+
+            if (forecast.aqiDisplay) {
+                return 'AQI ' + forecast.aqiDisplay;
+            }
+
+            return '--';
+        }
+
+        function formatAirForecastNote(data) {
+            var forecast = data.airDailyForecast || {};
+            var parts = [];
+
+            if (forecast.dayLabel) {
+                parts.push(forecast.dayLabel);
+            }
+
+            if (forecast.aqiDisplay) {
+                parts.push('AQI ' + forecast.aqiDisplay);
+            }
+
+            return parts.length ? parts.join(' · ') : 'AQI 整理中';
         }
 
         function setCardError($card, message) {
@@ -257,23 +352,14 @@
             }
         }
 
-        function renderMinuteHint(data) {
-            var $box = $('#modal-minute');
-            var $text = $('#modal-minute-text');
-            var summary = data.minutely && data.minutely.summary ? data.minutely.summary : '';
+        function renderTodayPrecip(data) {
+            var $value = $('#modal-precip');
 
-            if (!$box.length || !$text.length) {
+            if (!$value.length) {
                 return;
             }
 
-            if (!summary) {
-                $box.prop('hidden', true);
-                $text.text('未来 2 小时降雨趋势整理中');
-                return;
-            }
-
-            $box.prop('hidden', false);
-            $text.text(summary);
+            $value.text(formatTodayPrecipValue(data));
         }
 
         function renderAlert(data) {
@@ -309,11 +395,6 @@
             $meta.text(metaParts.join(' · '));
         }
 
-        function renderHealthAdvice(data) {
-            $('#modal-health-general').text((data.healthAdvice && data.healthAdvice.general) || '今天的空气和天气提示整理中。');
-            $('#modal-health-sensitive').text((data.healthAdvice && data.healthAdvice.sensitive) || '如果你更容易受天气影响，记得给自己多留一点缓冲。');
-        }
-
         function openModal(index) {
             var data = weatherCache[String(index)];
 
@@ -341,14 +422,20 @@
                 .text((data.uvLabel || '暂无') + ' · UV ' + (data.uvMax || '--'));
             $('#modal-primary-pollutant .weather-modal-aside-text').text(formatPrimaryPollutant(data));
             $('#modal-feels').text((typeof data.feels === 'number' ? data.feels : '--') + '°');
+            $('#modal-feels-note').text(formatFeelsNote(data));
             $('#modal-humidity').text((typeof data.humidity === 'number' ? data.humidity : '--') + '%');
-            $('#modal-wind').text(formatWindText(data));
-            $('#modal-precip').text((typeof data.precipitationMax === 'number' ? data.precipitationMax : '--') + '%');
+            $('#modal-humidity-note').text(formatHumidityNote(data));
+            $('#modal-wind').text(formatWindSpeed(data));
+            $('#modal-wind-note').text(formatWindNote(data));
+            $('#modal-air-forecast-item').attr('data-tone', (data.airDailyForecast && data.airDailyForecast.tone) || 'unknown');
+            $('#modal-air-forecast')
+                .attr('data-tone', (data.airDailyForecast && data.airDailyForecast.tone) || 'unknown')
+                .text(formatAirForecastValue(data));
+            $('#modal-air-forecast-note').text(formatAirForecastNote(data));
 
             renderAlert(data);
             renderClothing(data);
-            renderMinuteHint(data);
-            renderHealthAdvice(data);
+            renderTodayPrecip(data);
             renderHourlyTrend(data.hourlyTrend || []);
 
             $modalContent.attr('data-weather', data.weatherType || 'sunny');
