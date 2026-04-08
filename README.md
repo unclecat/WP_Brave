@@ -1,6 +1,6 @@
 # Brave Love
 
-[![Version](https://img.shields.io/badge/version-1.0.10-ff5162.svg)](https://github.com/unclecat/WP_Brave/releases)
+[![Version](https://img.shields.io/badge/version-1.1.0-ff5162.svg)](https://github.com/unclecat/WP_Brave/releases)
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg)](https://wordpress.org/)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg)](https://www.php.net/)
 [![License](https://img.shields.io/badge/license-GPL%20v2%20or%20later-2ea44f.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
@@ -9,7 +9,7 @@
 
 ![Brave Love Theme Preview](./screenshot.png)
 
-当前稳定版：`v1.0.10`
+当前稳定版：`v1.1.0`
 
 完整用户手册：[`docs/USER-GUIDE.md`](./docs/USER-GUIDE.md)
 
@@ -444,7 +444,7 @@ brave-love/
 
 ## 版本说明
 
-当前 `v1.0.10` 已包含：
+当前 `v1.1.0` 已包含：
 
 - 首页天气已切换到 QWeather API Key 方案，详情弹窗支持空气质量、空气预报、贴心提醒与今日降雨概率
 - 首页天气城市后台支持拖拽排序，保存后前台按拖拽顺序展示

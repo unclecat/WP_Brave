@@ -1,4 +1,4 @@
-# Brave Love 1.0.10 Test Report
+# Brave Love 1.1.0 Test Report
 
 Generated: 2026-04-08
 Project: `brave-love`
@@ -7,15 +7,15 @@ Environment: local WordPress Docker runtime + local PHP CLI
 
 ## Scope
 
-This patch-release check focused on the weather module structure split and the latest wording cleanup for `v1.0.10`.
+This minor-release check focused on the latest homepage Hero visual polish for `v1.1.0`.
 
 This run covered:
 
-- full PHP syntax lint for 33 theme PHP files
+- full PHP syntax lint for theme PHP files (excluding `tests/`)
 - front-end JavaScript syntax check for `assets/js/brave.js`, `assets/js/admin.js`, and `assets/js/memory.js`
 - local static theme checklist and security scan
-- runtime verification for `brave_get_qweather_config()` and `brave_get_home_weather_payload()`
-- local HTTP verification for `/`, `/about-us/`, and `/wp-json/brave-love/v1/weather`
+- cleanup review for the current Hero iteration, including removal of the unused 12th comet-star node and CSS rule
+- local HTTP health check for the WordPress runtime at `http://127.0.0.1:8080/`
 - release metadata consistency for `style.css`, `functions.php`, `README.md`, `CHANGELOG.md`, `RELEASE.md`, and `TEST-REPORT.md`
 
 This run did not cover:
@@ -29,46 +29,49 @@ This run did not cover:
 - `php`: available
 - `node`: available
 - `docker`: available
-- local WordPress: `http://127.0.0.1:8080`
-- local phpMyAdmin: `http://127.0.0.1:8081`
-- theme runtime version target: `1.0.10`
+- local WordPress containers: running (`brave_wp_app`, `brave_wp_db`, `brave_wp_pma`)
+- local WordPress health check: `HTTP/1.1 301 Moved Permanently` from `http://127.0.0.1:8080/` to configured site URL
+- theme runtime version target: `1.1.0`
 
 ## Review Findings And Fixes
 
-### 1. Split the large weather service file
+### 1. Hero comet stars were still carrying an unused hidden tail node
 
 Risk:
 
-- `inc/weather-service.php` 同时承载配置、请求、文案、payload 和 REST 输出，继续迭代时维护成本偏高
-- 同一个大文件里改动天气逻辑，更容易把无关逻辑一起带坏
+- The 12th star node had already been visually removed by CSS only, but the extra DOM node and selector were still present
+- Keeping hidden dead nodes around makes later visual tuning noisier than necessary
 
 Fix:
 
-- 保留 `inc/weather-service.php` 作为兼容入口
-- 将实现拆分到 `inc/weather/config.php`、`client.php`、`support.php`、`copy.php`、`payload.php`、`rest.php`
+- Removed the unused 12th `orbit-star` node from both avatar orbit containers
+- Removed the matching `.orbit-star:nth-child(12)` CSS rule
 
-### 2. Improved weather config status feedback
+### 2. Hero heart / ECG relationship needed a cleaner visual hierarchy
 
 Risk:
 
-- 后台已有保存值时，管理员仍然可能误判当前到底是服务器配置还是后台配置在生效
+- The previous heart style felt heavier than the star-orbit and ECG language around it
+- The ECG path did not yet read as naturally passing through the lower half of the heart
 
 Fix:
 
-- 明确展示 `当前实际生效`
-- 分开展示 `Host 当前使用 / Key 当前使用`
-- 对缺失项和混合来源给出更直接的排查提示
+- Reworked the center heart into a lighter glass-heart treatment
+- Tuned heart size and vertical offset so the ECG reads through the lower half more naturally
+- Added more waveform variation on both sides of the heart
 
-### 3. Unified the weather reminder wording
+### 3. Comet stars needed stronger star identity and closer orbit spacing
 
 Risk:
 
-- 首页天气“贴心提醒”在多指数组合时，个别句子容易出现重复词或语义不够顺的问题
+- The orbit particles could still read as glowing dots instead of starry comet fragments
+- Orbit spacing was slightly too far from the avatars for the intended intimate feel
 
 Fix:
 
-- 统一收口提醒文案
-- 保持原有提醒点不变，只调整最终展示文本的自然度
+- Strengthened star-shaped particles and cross-star flares
+- Pulled the orbit closer to the avatars across mobile, tablet, and desktop breakpoints
+- Increased brightness / shimmer so the orbit reads more clearly without adding new elements
 
 ## Executed Tests
 
@@ -80,16 +83,9 @@ Command:
 find . -path './tests' -prune -o -name '*.php' -type f -print0 | xargs -0 -n1 php -l
 ```
 
-Result: passed.
+Result: pass. No syntax errors detected in theme PHP files, including `header.php` and the split weather modules.
 
-Observed summary:
-
-- full theme PHP lint completed without syntax errors
-- new `inc/weather/*.php` modules all linted successfully
-
-Status: passed.
-
-### 2. Front-end JavaScript syntax check
+### 2. JavaScript syntax checks
 
 Commands:
 
@@ -99,70 +95,48 @@ node --check assets/js/admin.js
 node --check assets/js/memory.js
 ```
 
-Result: passed.
+Result: pass. No syntax errors reported.
 
-Status: passed.
+### 3. Static theme checklist
 
-### 3. Theme checklist and security scan
-
-Commands:
+Command:
 
 ```bash
 bash tests/check-theme-simple.sh
-php tests/check-theme.php
+```
+
+Result: pass. Required files exist, style header metadata is present, no dangerous PHP functions were detected.
+
+### 4. Security scan
+
+Command:
+
+```bash
 php tests/security-scan.php
 ```
 
-Result: passed.
+Result: pass. Report summary shows `9` checks passed, `0` warnings, `0` errors.
 
-Observed summary:
+### 5. Diff sanity check
 
-- required theme files remained present
-- theme metadata remained valid
-- security scan reported `9 passed / 0 warnings / 0 errors`
-
-Status: passed.
-
-### 4. Runtime helper verification
-
-Check executed:
+Command:
 
 ```bash
-docker exec brave_wp_app php -r 'require "/var/www/html/wp-load.php"; $config=brave_get_qweather_config(true); $payload=brave_get_home_weather_payload(); ...'
+git diff --check
 ```
 
-Result: passed.
+Result: pass. No whitespace or patch formatting issues detected.
 
-Observed summary:
+### 6. Local runtime health check
 
-- `configured=true`
-- `host_source=database`
-- `key_source=database`
-- `provider=qweather`
-- `city_count=10`
-- first city status remained `ok`
+Command:
 
-Status: passed.
+```bash
+curl -I http://127.0.0.1:8080/
+```
 
-### 5. Local HTTP verification
+Result: pass. The local WordPress runtime responded and redirected to the configured site URL.
 
-Checks executed:
+## Conclusion
 
-- requested `http://127.0.0.1:8080/wp-json/brave-love/v1/weather`
-- requested `http://127.0.0.1:8080/`
-- requested `http://127.0.0.1:8080/about-us/`
-
-Observed summary:
-
-- weather endpoint returned `configured=true` and `provider=qweather`
-- endpoint returned 10 city payloads and the first city remained `ok`
-- homepage returned `braveData` and weather modal markup
-- about page responded successfully and retained timeline-related markup keywords
-
-Status: passed.
-
-## Overall Assessment
-
-Release candidate `v1.0.10` is ready for tagging.
-
-Residual risk is low and mainly limited to authenticated admin clicking and full visual regression, which were not part of this run.
+Release candidate `v1.1.0` is ready for tagging.

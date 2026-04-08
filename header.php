@@ -104,17 +104,49 @@ $has_primary_menu = has_nav_menu('primary');
                 <?php else : ?>
                     <div class="lover-avatar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
                 <?php endif; ?>
-                <!-- 星星旋转动画 -->
-                <div class="stars-orbit">
-                    <span class="star" style="--delay:0s;--size:3px;"></span>
-                    <span class="star" style="--delay:0.5s;--size:2px;"></span>
-                    <span class="star" style="--delay:1s;--size:4px;"></span>
-                    <span class="star" style="--delay:1.5s;--size:2px;"></span>
-                    <span class="star" style="--delay:2s;--size:3px;"></span>
-                    <span class="star" style="--delay:2.5s;--size:2px;"></span>
+                <div class="stars-orbit" aria-hidden="true">
+                    <span class="orbit-star"></span>
+                    <span class="orbit-star"></span>
+                    <span class="orbit-star"></span>
+                    <span class="orbit-star"></span>
+                    <span class="orbit-star"></span>
+                    <span class="orbit-star"></span>
+                    <span class="orbit-star"></span>
+                    <span class="orbit-star"></span>
+                    <span class="orbit-star"></span>
+                    <span class="orbit-star"></span>
+                    <span class="orbit-star"></span>
                 </div>
             </div>
             <span class="lover-name"><?php echo esc_html($boy_name); ?></span>
+        </div>
+
+        <div class="lover-connector" aria-hidden="true">
+            <svg class="lover-connector-svg" viewBox="0 0 260 60" preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="lover-connector-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#fff7fb" stop-opacity="0"></stop>
+                        <stop offset="24%" stop-color="#ffe2ec" stop-opacity="0.54"></stop>
+                        <stop offset="50%" stop-color="#fffafc" stop-opacity="0.96"></stop>
+                        <stop offset="76%" stop-color="#ffe2ec" stop-opacity="0.54"></stop>
+                        <stop offset="100%" stop-color="#fff7fb" stop-opacity="0"></stop>
+                    </linearGradient>
+                    <filter id="lover-connector-dot-glow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="2.4" result="blur"></feGaussianBlur>
+                        <feMerge>
+                            <feMergeNode in="blur"></feMergeNode>
+                            <feMergeNode in="SourceGraphic"></feMergeNode>
+                        </feMerge>
+                    </filter>
+                </defs>
+                <path id="lover-connector-path" class="lover-connector-base" d="M6 32H64L78 32L88 24L98 38L108 28L116 32L124 26L132 34L140 16L152 44L164 18L172 32L180 24L190 38L200 28L208 32L216 26L226 32H254"></path>
+                <path class="lover-connector-pulse" d="M6 32H64L78 32L88 24L98 38L108 28L116 32L124 26L132 34L140 16L152 44L164 18L172 32L180 24L190 38L200 28L208 32L216 26L226 32H254"></path>
+                <circle class="lover-connector-dot" cx="0" cy="0" r="3.2" filter="url(#lover-connector-dot-glow)">
+                    <animateMotion dur="3.2s" repeatCount="indefinite" rotate="auto" calcMode="spline" keyTimes="0;1" keySplines="0.38 0 0.62 1">
+                        <mpath href="#lover-connector-path"></mpath>
+                    </animateMotion>
+                </circle>
+            </svg>
         </div>
         
         <div class="heart-container">
@@ -128,14 +160,18 @@ $has_primary_menu = has_nav_menu('primary');
                 <?php else : ?>
                     <div class="lover-avatar" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
                 <?php endif; ?>
-                <!-- 星星旋转动画 -->
-                <div class="stars-orbit">
-                    <span class="star" style="--delay:0.3s;--size:2px;"></span>
-                    <span class="star" style="--delay:0.8s;--size:3px;"></span>
-                    <span class="star" style="--delay:1.3s;--size:2px;"></span>
-                    <span class="star" style="--delay:1.8s;--size:4px;"></span>
-                    <span class="star" style="--delay:2.3s;--size:2px;"></span>
-                    <span class="star" style="--delay:2.8s;--size:3px;"></span>
+                <div class="stars-orbit" aria-hidden="true">
+                    <span class="orbit-star"></span>
+                    <span class="orbit-star"></span>
+                    <span class="orbit-star"></span>
+                    <span class="orbit-star"></span>
+                    <span class="orbit-star"></span>
+                    <span class="orbit-star"></span>
+                    <span class="orbit-star"></span>
+                    <span class="orbit-star"></span>
+                    <span class="orbit-star"></span>
+                    <span class="orbit-star"></span>
+                    <span class="orbit-star"></span>
                 </div>
             </div>
             <span class="lover-name"><?php echo esc_html($girl_name); ?></span>
