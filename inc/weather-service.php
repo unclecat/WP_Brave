@@ -17,4 +17,5 @@ require_once __DIR__ . '/weather/client.php';
 require_once __DIR__ . '/weather/support.php';
 require_once __DIR__ . '/weather/copy.php';
 require_once __DIR__ . '/weather/payload.php';
+require_once __DIR__ . '/weather/snapshot.php';
 require_once __DIR__ . '/weather/rest.php';

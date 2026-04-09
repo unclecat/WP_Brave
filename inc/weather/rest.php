@@ -11,38 +11,34 @@ if (!defined('ABSPATH')) {
 
 function brave_get_home_weather_payload() {
     if (!function_exists('brave_is_weather_enabled') || !brave_is_weather_enabled()) {
-        return array(
-            'enabled' => false,
-            'provider' => 'qweather',
-            'cities' => array(),
-        );
+        return brave_qweather_build_home_weather_payload();
     }
 
     $config = brave_get_qweather_config();
     if (empty($config['configured'])) {
-        return array(
-            'enabled' => true,
-            'provider' => 'qweather',
-            'configured' => false,
-            'cities' => array(),
-            'message' => __('QWeather 尚未完成配置。', 'brave-love'),
+        return brave_qweather_build_home_weather_payload();
+    }
+
+    $cached = brave_qweather_get_home_snapshot_record();
+    if (!empty($cached['data'])) {
+        return $cached['data'];
+    }
+
+    $payload = brave_qweather_build_home_weather_payload();
+    if (!brave_qweather_home_payload_has_errors($payload)) {
+        brave_qweather_store_home_snapshot($payload);
+        return $payload;
+    }
+
+    $backup = brave_qweather_get_home_snapshot_record(true);
+    if (!empty($backup['data'])) {
+        return brave_qweather_mark_home_snapshot_stale(
+            $backup['data'],
+            __('天气接口短时波动，已回退到稍早缓存。', 'brave-love')
         );
     }
 
-    $cities = function_exists('brave_get_weather_cities') ? brave_get_weather_cities() : array();
-    $payloads = array();
-
-    foreach ($cities as $index => $city) {
-        $payloads[] = brave_qweather_normalize_city_weather($city, $index);
-    }
-
-    return array(
-        'enabled' => true,
-        'configured' => true,
-        'provider' => 'qweather',
-        'generatedAt' => gmdate(DateTime::ATOM),
-        'cities' => $payloads,
-    );
+    return $payload;
 }
 
 function brave_register_weather_rest_routes() {

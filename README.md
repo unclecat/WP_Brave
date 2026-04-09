@@ -1,6 +1,6 @@
 # Brave Love
 
-[![Version](https://img.shields.io/badge/version-1.1.1-ff5162.svg)](https://github.com/unclecat/WP_Brave/releases)
+[![Version](https://img.shields.io/badge/version-1.1.2-ff5162.svg)](https://github.com/unclecat/WP_Brave/releases)
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg)](https://wordpress.org/)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg)](https://www.php.net/)
 [![License](https://img.shields.io/badge/license-GPL%20v2%20or%20later-2ea44f.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
@@ -9,7 +9,7 @@
 
 ![Brave Love Theme Preview](./screenshot.png)
 
-当前稳定版：`v1.1.1`
+当前稳定版：`v1.1.2`
 
 完整用户手册：[`docs/USER-GUIDE.md`](./docs/USER-GUIDE.md)
 
@@ -444,9 +444,10 @@ brave-love/
 
 ## 版本说明
 
-当前 `v1.1.1` 已包含：
+当前 `v1.1.2` 已包含：
 
 - 首页天气已切换到 QWeather API Key 方案，详情弹窗支持空气质量、空气预报、贴心提醒与今日降雨概率
+- 首页天气 REST 新增 5 分钟“整包快照缓存”，前台优先读服务器快照，短时接口波动时会优先回退到上一份成功快照
 - 首页天气城市后台支持拖拽排序，保存后前台按拖拽顺序展示
 - 首页天气后台现已支持直接填写 `QWeather API Host / API Key`，不必强依赖修改 `wp-config.php`
 - 天气模块已拆分为 `inc/weather/*.php` 多文件结构，后续维护配置、接口、文案和 REST 输出更清晰
