@@ -48,8 +48,55 @@
         });
     }
 
+    function initTravelPlanDays() {
+        var $daysList = $('#brave-travel-days');
+
+        if (!$daysList.length) {
+            return;
+        }
+
+        var template = $('#tmpl-brave-travel-day-card').html() || '';
+
+        function refreshDayLabels() {
+            $daysList.find('.brave-travel-day-card').each(function(index) {
+                $(this)
+                    .attr('data-day-index', index)
+                    .find('.brave-travel-day-badge')
+                    .text('Day ' + (index + 1));
+            });
+        }
+
+        $(document).on('click', '.brave-travel-day-add', function(e) {
+            e.preventDefault();
+
+            if (!template) {
+                return;
+            }
+
+            $daysList.append(template);
+            refreshDayLabels();
+        });
+
+        $(document).on('click', '.brave-travel-day-remove', function(e) {
+            e.preventDefault();
+
+            var $cards = $daysList.find('.brave-travel-day-card');
+
+            if ($cards.length <= 1) {
+                $cards.find('input[type="text"], input[type="date"], textarea').val('');
+                return;
+            }
+
+            $(this).closest('.brave-travel-day-card').remove();
+            refreshDayLabels();
+        });
+
+        refreshDayLabels();
+    }
+
     $(document).ready(function() {
         initMediaField();
+        initTravelPlanDays();
     });
 
 })(jQuery);

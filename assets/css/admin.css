@@ -18,6 +18,11 @@
     font-family: inherit;
 }
 
+#menu-posts-travel_plan .wp-menu-image::before {
+    content: '🧳';
+    font-family: inherit;
+}
+
 .brave-media-actions {
     display: flex;
     align-items: center;
@@ -94,4 +99,113 @@
     background: rgba(255, 81, 98, 0.06);
     border-top: 2px dashed rgba(255, 81, 98, 0.4);
     border-bottom: 2px dashed rgba(255, 81, 98, 0.4);
+}
+
+.brave-travel-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 18px;
+}
+
+.brave-travel-meta-grid p,
+.brave-travel-day-grid p {
+    margin: 0;
+}
+
+.brave-travel-meta-note {
+    margin: 14px 0 18px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #fff6f7;
+    color: #7a4d55;
+}
+
+.brave-travel-prep-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 18px;
+    margin-bottom: 18px;
+}
+
+.brave-travel-prep-grid p {
+    margin: 0;
+}
+
+.brave-travel-field-subtitle {
+    display: block;
+    margin-top: 10px;
+}
+
+.brave-travel-prep-grid-full {
+    grid-column: 1 / -1;
+}
+
+.brave-travel-days-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.brave-travel-days-header h3 {
+    margin: 0 0 4px;
+}
+
+.brave-travel-days-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.brave-travel-day-card {
+    padding: 18px;
+    border: 1px solid #f0d7dc;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #fff9fa 0%, #ffffff 100%);
+    box-shadow: 0 10px 24px rgba(255, 81, 98, 0.08);
+}
+
+.brave-travel-day-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.brave-travel-day-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(255, 81, 98, 0.12);
+    color: #d1495b;
+}
+
+.brave-travel-day-caption {
+    margin: 8px 0 0;
+}
+
+.brave-travel-day-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 18px;
+}
+
+.brave-travel-day-grid-full {
+    grid-column: 1 / -1;
+}
+
+@media (max-width: 782px) {
+    .brave-travel-meta-grid,
+    .brave-travel-prep-grid,
+    .brave-travel-day-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .brave-travel-days-header,
+    .brave-travel-day-card-head {
+        flex-direction: column;
+    }
 }

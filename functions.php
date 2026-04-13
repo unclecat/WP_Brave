@@ -6,7 +6,7 @@
  */
 
 // 定义常量
-define('BRAVE_VERSION', '1.1.2');
+define('BRAVE_VERSION', '1.1.3');
 define('BRAVE_BOOTSTRAP_VERSION', '5.3.2');
 define('BRAVE_PHOTOSWIPE_VERSION', '5.4.2');
 define('BRAVE_DIR', get_template_directory());
@@ -88,6 +88,11 @@ function brave_scripts() {
     // 关于我们页面样式
     if (is_page_template('page-templates/page-about.php')) {
         wp_enqueue_style('brave-about', BRAVE_URI . '/assets/css/about.css', array('brave-extra'), BRAVE_VERSION);
+    }
+
+    // 旅行计划页面样式
+    if (is_page_template('page-templates/page-travel-plans.php') || is_singular('travel_plan')) {
+        wp_enqueue_style('brave-travel', BRAVE_URI . '/assets/css/travel.css', array('brave-extra'), BRAVE_VERSION);
     }
 
     // 甜蜜相册页面样式和脚本

@@ -23,6 +23,15 @@ function brave_add_meta_boxes() {
         'default'
     );
 
+    add_meta_box(
+        'travel_page_footprint_settings',
+        __('旅行足迹补充', 'brave-love'),
+        'brave_travel_page_footprint_meta_box',
+        'page',
+        'normal',
+        'default'
+    );
+
     // 点点滴滴字段
     add_meta_box(
         'moment_details',
@@ -59,6 +68,16 @@ function brave_add_meta_boxes() {
         __('故事节点详情', 'brave-love'),
         'brave_story_milestone_meta_box',
         'story_milestone',
+        'normal',
+        'high'
+    );
+
+    // 旅行计划字段
+    add_meta_box(
+        'travel_plan_details',
+        __('旅行计划详情', 'brave-love'),
+        'brave_travel_plan_meta_box',
+        'travel_plan',
         'normal',
         'high'
     );
@@ -100,7 +119,32 @@ function brave_page_hero_meta_box($post) {
     </div>
 
     <p class="description">
-        <?php _e('适用于点点滴滴、甜蜜相册、随笔说说、祝福留言等页面模板。恋爱清单归档页请在「自定义 > Hero 区域」中设置。', 'brave-love'); ?>
+        <?php _e('适用于点点滴滴、旅行计划、甜蜜相册、随笔说说、祝福留言等页面模板。恋爱清单归档页请在「自定义 > Hero 区域」中设置。', 'brave-love'); ?>
+    </p>
+    <?php
+}
+
+/**
+ * 旅行计划页面足迹补充 Meta Box
+ */
+function brave_travel_page_footprint_meta_box($post) {
+    $page_template = get_page_template_slug($post->ID);
+
+    if ('page-templates/page-travel-plans.php' !== $page_template) {
+        echo '<p class="description">' . esc_html__('只在使用“旅行计划”模板的页面生效。', 'brave-love') . '</p>';
+        return;
+    }
+
+    wp_nonce_field('brave_travel_page_footprint_meta', 'brave_travel_page_footprint_nonce');
+
+    $manual_footprints = get_post_meta($post->ID, '_travel_manual_footprints', true);
+    ?>
+    <p>
+        <label for="travel_manual_footprints"><strong><?php esc_html_e('手动点亮城市', 'brave-love'); ?></strong></label>
+        <textarea id="travel_manual_footprints" name="travel_manual_footprints" class="widefat" rows="5" placeholder="<?php esc_attr_e('一行一个城市，例如：青岛', 'brave-love'); ?>"><?php echo esc_textarea($manual_footprints); ?></textarea>
+    </p>
+    <p class="description">
+        <?php esc_html_e('这里填写的城市会直接加入“我们的足迹”，并按“已点亮”处理；如果和旅行计划里的目的地重名，也会自动合并成已点亮。', 'brave-love'); ?>
     </p>
     <?php
 }
@@ -251,6 +295,161 @@ function brave_story_milestone_meta_box($post) {
     <?php
 }
 
+function brave_render_travel_day_fields($index, $day = array()) {
+    $day = wp_parse_args($day, brave_get_travel_day_empty_template());
+    ?>
+    <div class="brave-travel-day-card" data-day-index="<?php echo esc_attr($index); ?>">
+        <div class="brave-travel-day-card-head">
+            <div>
+                <strong class="brave-travel-day-badge"><?php echo esc_html(sprintf(__('Day %d', 'brave-love'), $index + 1)); ?></strong>
+                <p class="description brave-travel-day-caption"><?php esc_html_e('可以理解成当天手账页，按顺序展示在前台详情页。', 'brave-love'); ?></p>
+            </div>
+            <button type="button" class="button-link-delete brave-travel-day-remove"><?php esc_html_e('删除这一天', 'brave-love'); ?></button>
+        </div>
+
+        <div class="brave-travel-day-grid">
+            <p>
+                <label><strong><?php esc_html_e('当天标题', 'brave-love'); ?></strong></label>
+                <input type="text" name="travel_day_title[]" value="<?php echo esc_attr($day['title']); ?>" class="widefat" placeholder="<?php esc_attr_e('例如：抵达 + 城市散步', 'brave-love'); ?>">
+            </p>
+            <p>
+                <label><strong><?php esc_html_e('日期', 'brave-love'); ?></strong></label>
+                <input type="date" name="travel_day_date[]" value="<?php echo esc_attr($day['date']); ?>" class="widefat">
+            </p>
+            <p>
+                <label><strong><?php esc_html_e('当天城市 / 区域', 'brave-love'); ?></strong></label>
+                <input type="text" name="travel_day_city[]" value="<?php echo esc_attr($day['city']); ?>" class="widefat" placeholder="<?php esc_attr_e('例如：东京 · 新宿', 'brave-love'); ?>">
+            </p>
+            <p>
+                <label><strong><?php esc_html_e('天气预估', 'brave-love'); ?></strong></label>
+                <input type="text" name="travel_day_weather[]" value="<?php echo esc_attr($day['weather']); ?>" class="widefat" placeholder="<?php esc_attr_e('例如：多云 18°~25°', 'brave-love'); ?>">
+            </p>
+            <p class="brave-travel-day-grid-full">
+                <label><strong><?php esc_html_e('穿衣建议', 'brave-love'); ?></strong></label>
+                <textarea name="travel_day_outfit[]" class="widefat" rows="2" placeholder="<?php esc_attr_e('例如：早晚微凉，带一件薄外套更稳妥。', 'brave-love'); ?>"><?php echo esc_textarea($day['outfit']); ?></textarea>
+            </p>
+            <p>
+                <label><strong><?php esc_html_e('入住酒店', 'brave-love'); ?></strong></label>
+                <textarea name="travel_day_hotel[]" class="widefat" rows="3" placeholder="<?php esc_attr_e('酒店名 / 地址 / 入住备注', 'brave-love'); ?>"><?php echo esc_textarea($day['hotel']); ?></textarea>
+            </p>
+            <p>
+                <label><strong><?php esc_html_e('交通安排', 'brave-love'); ?></strong></label>
+                <textarea name="travel_day_transport[]" class="widefat" rows="3" placeholder="<?php esc_attr_e('航班 / 地铁 / 打车 / 步行安排', 'brave-love'); ?>"><?php echo esc_textarea($day['transport']); ?></textarea>
+            </p>
+            <p>
+                <label><strong><?php esc_html_e('景点安排', 'brave-love'); ?></strong></label>
+                <textarea name="travel_day_spots[]" class="widefat" rows="4" placeholder="<?php esc_attr_e('一行一个景点，前台会自动排成列表', 'brave-love'); ?>"><?php echo esc_textarea($day['spots']); ?></textarea>
+            </p>
+            <p>
+                <label><strong><?php esc_html_e('餐厅安排', 'brave-love'); ?></strong></label>
+                <textarea name="travel_day_restaurants[]" class="widefat" rows="4" placeholder="<?php esc_attr_e('一行一家餐厅，前台会自动排成列表', 'brave-love'); ?>"><?php echo esc_textarea($day['restaurants']); ?></textarea>
+            </p>
+            <p class="brave-travel-day-grid-full">
+                <label><strong><?php esc_html_e('补充备注', 'brave-love'); ?></strong></label>
+                <textarea name="travel_day_notes[]" class="widefat" rows="3" placeholder="<?php esc_attr_e('预约提醒、门票、注意事项、想说的话都可以写这里', 'brave-love'); ?>"><?php echo esc_textarea($day['notes']); ?></textarea>
+            </p>
+        </div>
+    </div>
+    <?php
+}
+
+/**
+ * 旅行计划 Meta Box
+ */
+function brave_travel_plan_meta_box($post) {
+    wp_nonce_field('brave_travel_plan_meta', 'brave_travel_plan_nonce');
+
+    $travel_meta = brave_get_travel_plan_meta($post->ID);
+    $travel_days = brave_get_travel_plan_days($post->ID);
+    $status_options = brave_get_travel_status_options();
+
+    if (empty($travel_days)) {
+        $travel_days[] = brave_get_travel_day_empty_template();
+    }
+    ?>
+    <div class="brave-travel-meta-box">
+        <div class="brave-travel-meta-grid">
+            <p>
+                <label for="travel_destination"><strong><?php esc_html_e('目的地', 'brave-love'); ?></strong></label><br>
+                <input type="text" id="travel_destination" name="travel_destination" value="<?php echo esc_attr($travel_meta['destination']); ?>" class="widefat" placeholder="<?php esc_attr_e('例如：东京 / 成都 / 上海 + 苏州', 'brave-love'); ?>">
+            </p>
+            <p>
+                <label for="travel_status"><strong><?php esc_html_e('当前状态', 'brave-love'); ?></strong></label><br>
+                <select id="travel_status" name="travel_status" class="widefat">
+                    <?php foreach ($status_options as $status_key => $status_label) : ?>
+                        <option value="<?php echo esc_attr($status_key); ?>" <?php selected($travel_meta['status'], $status_key); ?>><?php echo esc_html($status_label); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </p>
+            <p>
+                <label for="travel_keyword"><strong><?php esc_html_e('关键词', 'brave-love'); ?></strong></label><br>
+                <input type="text" id="travel_keyword" name="travel_keyword" value="<?php echo esc_attr($travel_meta['keyword']); ?>" class="widefat" placeholder="<?php esc_attr_e('例如：第一次 / 浪漫 / 樱花季', 'brave-love'); ?>">
+            </p>
+            <p>
+                <label for="travel_start_date"><strong><?php esc_html_e('开始日期', 'brave-love'); ?></strong></label><br>
+                <input type="date" id="travel_start_date" name="travel_start_date" value="<?php echo esc_attr($travel_meta['start_date']); ?>" class="widefat">
+            </p>
+            <p>
+                <label for="travel_end_date"><strong><?php esc_html_e('结束日期', 'brave-love'); ?></strong></label><br>
+                <input type="date" id="travel_end_date" name="travel_end_date" value="<?php echo esc_attr($travel_meta['end_date']); ?>" class="widefat">
+            </p>
+        </div>
+
+        <p class="description brave-travel-meta-note">
+            <?php esc_html_e('摘要请继续使用编辑器自带的“摘要”面板；正文适合写整趟旅行的前言、预算提醒、预约信息或整体说明。', 'brave-love'); ?>
+        </p>
+
+        <div class="brave-travel-prep-grid">
+            <p class="brave-travel-prep-grid-full">
+                <label for="travel_departure_note"><strong><?php esc_html_e('出发前提醒', 'brave-love'); ?></strong></label>
+                <textarea id="travel_departure_note" name="travel_departure_note" class="widefat" rows="3" placeholder="<?php esc_attr_e('例如：提前留出足够交通时间，返程当天尽量不排远处行程。', 'brave-love'); ?>"><?php echo esc_textarea($travel_meta['departure_note']); ?></textarea>
+                <span class="description"><?php esc_html_e('会显示在详情页左侧主内容区，适合写整趟行前提醒。', 'brave-love'); ?></span>
+            </p>
+
+            <p>
+                <label for="travel_tips_title"><strong><?php esc_html_e('出行 Tips 标题', 'brave-love'); ?></strong></label>
+                <input type="text" id="travel_tips_title" name="travel_tips_title" value="<?php echo esc_attr($travel_meta['tips_title']); ?>" class="widefat" placeholder="<?php esc_attr_e('留空则显示“出行 Tips”', 'brave-love'); ?>">
+                <label for="travel_tips" class="brave-travel-field-subtitle"><strong><?php esc_html_e('出行 Tips 内容', 'brave-love'); ?></strong></label>
+                <textarea id="travel_tips" name="travel_tips" class="widefat" rows="5" placeholder="<?php esc_attr_e('一行一条，例如：证件和酒店订单提前截图保存', 'brave-love'); ?>"><?php echo esc_textarea($travel_meta['tips']); ?></textarea>
+                <span class="description"><?php esc_html_e('前台会自动排成提示列表。', 'brave-love'); ?></span>
+            </p>
+
+            <p>
+                <label for="travel_checklist_title"><strong><?php esc_html_e('出发 Checklist 标题', 'brave-love'); ?></strong></label>
+                <input type="text" id="travel_checklist_title" name="travel_checklist_title" value="<?php echo esc_attr($travel_meta['checklist_title']); ?>" class="widefat" placeholder="<?php esc_attr_e('留空则显示“出发 Checklist”', 'brave-love'); ?>">
+                <label for="travel_checklist" class="brave-travel-field-subtitle"><strong><?php esc_html_e('出发 Checklist 内容', 'brave-love'); ?></strong></label>
+                <textarea id="travel_checklist" name="travel_checklist" class="widefat" rows="5" placeholder="<?php esc_attr_e('一行一项，例如：身份证 / 充电器 / 常备药', 'brave-love'); ?>"><?php echo esc_textarea($travel_meta['checklist']); ?></textarea>
+                <span class="description"><?php esc_html_e('前台会自动排成清单样式。', 'brave-love'); ?></span>
+            </p>
+        </div>
+
+        <hr>
+
+        <div class="brave-travel-days-header">
+            <div>
+                <h3><?php esc_html_e('每日行程', 'brave-love'); ?></h3>
+                <p class="description"><?php esc_html_e('一趟旅行可以添加多天安排，前台会按这里的顺序展示 Day 1、Day 2……', 'brave-love'); ?></p>
+            </div>
+            <button type="button" class="button button-secondary brave-travel-day-add"><?php esc_html_e('新增一天', 'brave-love'); ?></button>
+        </div>
+
+        <div class="brave-travel-days-list" id="brave-travel-days">
+            <?php foreach ($travel_days as $index => $day) : ?>
+                <?php brave_render_travel_day_fields($index, $day); ?>
+            <?php endforeach; ?>
+        </div>
+
+        <script type="text/template" id="tmpl-brave-travel-day-card">
+            <?php
+            ob_start();
+            brave_render_travel_day_fields(0, brave_get_travel_day_empty_template());
+            echo str_replace(array("\r", "\n"), '', ob_get_clean()); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+            ?>
+        </script>
+    </div>
+    <?php
+}
+
 /**
  * 保存 Meta Box 数据
  */
@@ -277,6 +476,17 @@ function brave_save_meta_boxes($post_id) {
         }
         if (isset($_POST['brave_page_hero_bg'])) {
             update_post_meta($post_id, '_brave_page_hero_bg', esc_url_raw(wp_unslash($_POST['brave_page_hero_bg'])));
+        }
+    }
+
+    // 旅行计划页面足迹补充
+    if (isset($_POST['brave_travel_page_footprint_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['brave_travel_page_footprint_nonce'])), 'brave_travel_page_footprint_meta')) {
+        $manual_footprints = isset($_POST['travel_manual_footprints']) ? sanitize_textarea_field(wp_unslash($_POST['travel_manual_footprints'])) : '';
+
+        if ('' !== $manual_footprints) {
+            update_post_meta($post_id, '_travel_manual_footprints', $manual_footprints);
+        } else {
+            delete_post_meta($post_id, '_travel_manual_footprints');
         }
     }
 
@@ -349,6 +559,133 @@ function brave_save_meta_boxes($post_id) {
         }
         update_post_meta($post_id, '_related_moment_id', $related_moment_id);
     }
+
+    // 旅行计划
+    if (isset($_POST['brave_travel_plan_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['brave_travel_plan_nonce'])), 'brave_travel_plan_meta')) {
+        $destination = isset($_POST['travel_destination']) ? sanitize_text_field(wp_unslash($_POST['travel_destination'])) : '';
+        $status = isset($_POST['travel_status']) ? sanitize_key(wp_unslash($_POST['travel_status'])) : 'planning';
+        $status = array_key_exists($status, brave_get_travel_status_options()) ? $status : 'planning';
+        $keyword = isset($_POST['travel_keyword']) ? sanitize_text_field(wp_unslash($_POST['travel_keyword'])) : '';
+        $start_date = isset($_POST['travel_start_date']) ? brave_sanitize_iso_date(wp_unslash($_POST['travel_start_date'])) : '';
+        $end_date = isset($_POST['travel_end_date']) ? brave_sanitize_iso_date(wp_unslash($_POST['travel_end_date'])) : '';
+
+        if ('' !== $start_date && '' !== $end_date && strtotime($end_date) < strtotime($start_date)) {
+            $end_date = $start_date;
+        }
+
+        if ('' !== $destination) {
+            update_post_meta($post_id, '_travel_destination', $destination);
+        } else {
+            delete_post_meta($post_id, '_travel_destination');
+        }
+
+        update_post_meta($post_id, '_travel_status', $status);
+
+        if ('' !== $keyword) {
+            update_post_meta($post_id, '_travel_keyword', $keyword);
+        } else {
+            delete_post_meta($post_id, '_travel_keyword');
+        }
+
+        if ('' !== $start_date) {
+            update_post_meta($post_id, '_travel_start_date', $start_date);
+        } else {
+            delete_post_meta($post_id, '_travel_start_date');
+        }
+
+        if ('' !== $end_date) {
+            update_post_meta($post_id, '_travel_end_date', $end_date);
+        } else {
+            delete_post_meta($post_id, '_travel_end_date');
+        }
+
+        $departure_note = isset($_POST['travel_departure_note']) ? sanitize_textarea_field(wp_unslash($_POST['travel_departure_note'])) : '';
+        $travel_tips_title = isset($_POST['travel_tips_title']) ? sanitize_text_field(wp_unslash($_POST['travel_tips_title'])) : '';
+        $travel_tips = isset($_POST['travel_tips']) ? sanitize_textarea_field(wp_unslash($_POST['travel_tips'])) : '';
+        $travel_checklist_title = isset($_POST['travel_checklist_title']) ? sanitize_text_field(wp_unslash($_POST['travel_checklist_title'])) : '';
+        $travel_checklist = isset($_POST['travel_checklist']) ? sanitize_textarea_field(wp_unslash($_POST['travel_checklist'])) : '';
+
+        if ('' !== $departure_note) {
+            update_post_meta($post_id, '_travel_departure_note', $departure_note);
+        } else {
+            delete_post_meta($post_id, '_travel_departure_note');
+        }
+
+        if ('' !== $travel_tips_title) {
+            update_post_meta($post_id, '_travel_tips_title', $travel_tips_title);
+        } else {
+            delete_post_meta($post_id, '_travel_tips_title');
+        }
+
+        if ('' !== $travel_tips) {
+            update_post_meta($post_id, '_travel_tips', $travel_tips);
+        } else {
+            delete_post_meta($post_id, '_travel_tips');
+        }
+
+        if ('' !== $travel_checklist_title) {
+            update_post_meta($post_id, '_travel_checklist_title', $travel_checklist_title);
+        } else {
+            delete_post_meta($post_id, '_travel_checklist_title');
+        }
+
+        if ('' !== $travel_checklist) {
+            update_post_meta($post_id, '_travel_checklist', $travel_checklist);
+        } else {
+            delete_post_meta($post_id, '_travel_checklist');
+        }
+
+        $day_field_map = array(
+            'title' => 'travel_day_title',
+            'date' => 'travel_day_date',
+            'city' => 'travel_day_city',
+            'weather' => 'travel_day_weather',
+            'outfit' => 'travel_day_outfit',
+            'hotel' => 'travel_day_hotel',
+            'transport' => 'travel_day_transport',
+            'spots' => 'travel_day_spots',
+            'restaurants' => 'travel_day_restaurants',
+            'notes' => 'travel_day_notes',
+        );
+
+        $raw_days = array();
+
+        foreach ($day_field_map as $field_key => $field_name) {
+            $raw_days[$field_key] = isset($_POST[$field_name]) && is_array($_POST[$field_name]) ? wp_unslash($_POST[$field_name]) : array();
+        }
+
+        $max_rows = 0;
+        foreach ($raw_days as $field_rows) {
+            $max_rows = max($max_rows, count($field_rows));
+        }
+
+        $saved_days = array();
+
+        for ($index = 0; $index < $max_rows; $index++) {
+            $day = brave_get_travel_day_empty_template();
+            $day['title'] = sanitize_text_field($raw_days['title'][$index] ?? '');
+            $day['date'] = brave_sanitize_iso_date($raw_days['date'][$index] ?? '');
+            $day['city'] = sanitize_text_field($raw_days['city'][$index] ?? '');
+            $day['weather'] = sanitize_text_field($raw_days['weather'][$index] ?? '');
+            $day['outfit'] = sanitize_textarea_field($raw_days['outfit'][$index] ?? '');
+            $day['hotel'] = sanitize_textarea_field($raw_days['hotel'][$index] ?? '');
+            $day['transport'] = sanitize_textarea_field($raw_days['transport'][$index] ?? '');
+            $day['spots'] = sanitize_textarea_field($raw_days['spots'][$index] ?? '');
+            $day['restaurants'] = sanitize_textarea_field($raw_days['restaurants'][$index] ?? '');
+            $day['notes'] = sanitize_textarea_field($raw_days['notes'][$index] ?? '');
+
+            if (array_filter($day, static function ($value) {
+                return '' !== trim((string) $value);
+            })) {
+                $saved_days[] = $day;
+            }
+        }
+
+        if (!empty($saved_days)) {
+            update_post_meta($post_id, '_travel_days', $saved_days);
+        } else {
+            delete_post_meta($post_id, '_travel_days');
+        }
+    }
 }
 add_action('save_post', 'brave_save_meta_boxes');
-

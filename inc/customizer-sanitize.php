@@ -19,29 +19,6 @@ function brave_sanitize_pv_number($value) {
     return intval($value);
 }
 
-/**
- * 页脚导航链接 sanitize，支持相对路径和完整 URL。
- *
- * @param string $value 原始值
- * @return string
- */
-function brave_sanitize_footer_nav_url($value) {
-    $value = trim((string) $value);
-
-    if ('' === $value) {
-        return '';
-    }
-
-    if (0 === strpos($value, '/')) {
-        return esc_url_raw(home_url($value));
-    }
-
-    if (!preg_match('#^[a-z][a-z0-9+\-.]*://#i', $value)) {
-        $value = home_url('/' . ltrim($value, '/'));
-    }
-
-    return esc_url_raw($value, array('http', 'https'));
-}
 
 /**
  * Customizer 复选框 sanitize。
@@ -67,6 +44,30 @@ function brave_sanitize_custom_css($value) {
     $value = str_ireplace('</style', '<\\/style', $value);
 
     return trim($value);
+}
+
+/**
+ * 页脚导航链接 sanitize，支持相对路径和完整 URL。
+ *
+ * @param string $value 原始值
+ * @return string
+ */
+function brave_sanitize_footer_nav_url($value) {
+    $value = trim((string) $value);
+
+    if ('' === $value) {
+        return '';
+    }
+
+    if (0 === strpos($value, '/')) {
+        return esc_url_raw(home_url($value));
+    }
+
+    if (!preg_match('#^[a-z][a-z0-9+\-.]*://#i', $value)) {
+        $value = home_url('/' . ltrim($value, '/'));
+    }
+
+    return esc_url_raw($value, array('http', 'https'));
 }
 
 /**

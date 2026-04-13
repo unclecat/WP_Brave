@@ -184,6 +184,45 @@ function brave_register_story_post_type() {
 add_action('init', 'brave_register_story_post_type');
 
 /**
+ * 注册旅行计划 CPT
+ */
+function brave_register_travel_plan_post_type() {
+    $labels = array(
+        'name'                  => __('旅行计划', 'brave-love'),
+        'singular_name'         => __('旅行', 'brave-love'),
+        'menu_name'             => __('旅行计划', 'brave-love'),
+        'add_new'               => __('添加旅行', 'brave-love'),
+        'add_new_item'          => __('添加新旅行计划', 'brave-love'),
+        'edit_item'             => __('编辑旅行计划', 'brave-love'),
+        'new_item'              => __('新旅行计划', 'brave-love'),
+        'view_item'             => __('查看旅行计划', 'brave-love'),
+        'search_items'          => __('搜索旅行计划', 'brave-love'),
+        'not_found'             => __('暂无旅行计划', 'brave-love'),
+        'not_found_in_trash'    => __('回收站中没有旅行计划', 'brave-love'),
+    );
+
+    $args = array(
+        'labels'                => $labels,
+        'public'                => true,
+        'publicly_queryable'    => true,
+        'show_ui'               => true,
+        'show_in_menu'          => true,
+        'menu_position'         => 9,
+        'menu_icon'             => 'dashicons-location-alt',
+        'query_var'             => true,
+        'rewrite'               => array('slug' => 'travel'),
+        'capability_type'       => 'post',
+        'has_archive'           => false,
+        'hierarchical'          => false,
+        'supports'              => array('title', 'editor', 'thumbnail', 'excerpt'),
+        'show_in_rest'          => true,
+    );
+
+    register_post_type('travel_plan', $args);
+}
+add_action('init', 'brave_register_travel_plan_post_type');
+
+/**
  * 修改 CPT 列表显示列
  */
 function brave_moment_columns($columns) {
@@ -277,6 +316,39 @@ function brave_story_milestone_custom_column($column, $post_id) {
     }
 }
 add_action('manage_story_milestone_posts_custom_column', 'brave_story_milestone_custom_column', 10, 2);
+
+function brave_travel_plan_columns($columns) {
+    $new_columns = array();
+
+    foreach ($columns as $key => $value) {
+        $new_columns[$key] = $value;
+        if ('title' === $key) {
+            $new_columns['travel_destination'] = __('目的地', 'brave-love');
+            $new_columns['travel_dates'] = __('出发日期', 'brave-love');
+            $new_columns['travel_status'] = __('状态', 'brave-love');
+        }
+    }
+
+    return $new_columns;
+}
+add_filter('manage_travel_plan_posts_columns', 'brave_travel_plan_columns');
+
+function brave_travel_plan_custom_column($column, $post_id) {
+    $meta = brave_get_travel_plan_meta($post_id);
+
+    switch ($column) {
+        case 'travel_destination':
+            echo '' !== $meta['destination'] ? esc_html($meta['destination']) : '—';
+            break;
+        case 'travel_dates':
+            echo esc_html(brave_format_travel_date_range($meta['start_date'], $meta['end_date']));
+            break;
+        case 'travel_status':
+            echo esc_html(brave_get_travel_status_label($meta['status']));
+            break;
+    }
+}
+add_action('manage_travel_plan_posts_custom_column', 'brave_travel_plan_custom_column', 10, 2);
 
 /**
  * 使相册支持按日期排序

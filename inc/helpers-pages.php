@@ -59,6 +59,7 @@ function brave_get_page_link($type) {
     }
 
     $template_map = array(
+        'travels' => 'page-templates/page-travel-plans.php',
         'moments' => 'page-templates/page-moments.php',
         'memories' => 'page-templates/page-memories.php',
         'notes' => 'page-templates/page-notes.php',
@@ -76,6 +77,7 @@ function brave_get_page_link($type) {
 
     $fallback_path_map = array(
         'about' => 'about-us',
+        'travels' => 'travel-plans',
     );
 
     $path = isset($fallback_path_map[$type]) ? $fallback_path_map[$type] : $type;
@@ -97,6 +99,10 @@ function brave_get_footer_nav_defaults() {
         'about' => array(
             'label' => __('关于我们', 'brave-love'),
             'url' => brave_get_page_link('about'),
+        ),
+        'travels' => array(
+            'label' => __('旅行计划', 'brave-love'),
+            'url' => brave_get_page_link('travels'),
         ),
         'moments' => array(
             'label' => __('点点滴滴', 'brave-love'),
@@ -149,6 +155,7 @@ function brave_get_footer_nav_items() {
 
     return $items;
 }
+
 
 /**
  * 获取恋爱起始日期时间
