@@ -50,3 +50,45 @@ if (class_exists('WP_Customize_Control')) {
         }
     }
 }
+
+/**
+ * 自定义控制类 - 拖拽排序
+ */
+if (class_exists('WP_Customize_Control')) {
+    class Brave_Sortable_Control extends WP_Customize_Control {
+        public $type = 'brave-sortable';
+
+        public function render_content() {
+            $choices = is_array($this->choices) ? $this->choices : array();
+            $order = function_exists('brave_normalize_footer_nav_order')
+                ? brave_normalize_footer_nav_order($this->value(), array_keys($choices))
+                : array_keys($choices);
+            ?>
+            <div class="brave-sortable-control">
+                <?php if (!empty($this->label)) : ?>
+                    <span class="customize-control-title"><?php echo esc_html($this->label); ?></span>
+                <?php endif; ?>
+
+                <?php if (!empty($this->description)) : ?>
+                    <span class="description customize-control-description"><?php echo esc_html($this->description); ?></span>
+                <?php endif; ?>
+
+                <input type="hidden" class="brave-sortable-input" value="<?php echo esc_attr(implode(',', $order)); ?>" <?php $this->link(); ?>>
+
+                <ul class="brave-sortable-list">
+                    <?php foreach ($order as $index => $key) : ?>
+                        <?php if (!isset($choices[$key])) { continue; } ?>
+                        <li class="brave-sortable-item" data-value="<?php echo esc_attr($key); ?>">
+                            <span class="brave-sortable-handle" title="<?php esc_attr_e('拖拽排序', 'brave-love'); ?>" aria-hidden="true">
+                                <span class="dashicons dashicons-move"></span>
+                            </span>
+                            <strong class="brave-sortable-order"><?php echo esc_html((string) ($index + 1)); ?></strong>
+                            <span class="brave-sortable-label"><?php echo esc_html($choices[$key]); ?></span>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+            <?php
+        }
+    }
+}

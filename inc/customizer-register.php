@@ -401,6 +401,18 @@ function brave_customize_register($wp_customize) {
         'type' => 'dropdown-pages',
     ));
 
+    // 旅行计划页面
+    $wp_customize->add_setting('brave_page_travels', array(
+        'default' => '',
+        'sanitize_callback' => 'absint',
+        'transport' => 'refresh',
+    ));
+    $wp_customize->add_control('brave_page_travels', array(
+        'label' => __('旅行计划页面', 'brave-love'),
+        'section' => 'brave_pages',
+        'type' => 'dropdown-pages',
+    ));
+
     // ==================== 页脚导航 ====================
     $wp_customize->add_section('brave_footer_nav', array(
         'title' => __('页脚导航', 'brave-love'),
@@ -408,15 +420,30 @@ function brave_customize_register($wp_customize) {
         'panel' => 'brave_settings',
     ));
 
-    $footer_nav_fields = array(
-        'home' => __('首页', 'brave-love'),
-        'about' => __('关于我们', 'brave-love'),
-        'moments' => __('点点滴滴', 'brave-love'),
-        'lists' => __('恋爱清单', 'brave-love'),
-        'memories' => __('甜蜜相册', 'brave-love'),
-        'notes' => __('随笔说说', 'brave-love'),
-        'blessing' => __('祝福留言', 'brave-love'),
-    );
+    $footer_nav_defaults = brave_get_footer_nav_defaults();
+    $footer_nav_fields = array();
+
+    foreach (brave_get_footer_nav_order() as $key) {
+        if (!isset($footer_nav_defaults[$key]['label'])) {
+            continue;
+        }
+
+        $custom_label = trim((string) get_theme_mod("brave_footer_nav_{$key}_label", ''));
+        $footer_nav_fields[$key] = '' !== $custom_label ? $custom_label : $footer_nav_defaults[$key]['label'];
+    }
+
+    $wp_customize->add_setting('brave_footer_nav_order', array(
+        'default' => implode(',', brave_get_footer_nav_default_order()),
+        'sanitize_callback' => 'brave_sanitize_footer_nav_order',
+        'transport' => 'refresh',
+    ));
+    $wp_customize->add_control(new Brave_Sortable_Control($wp_customize, 'brave_footer_nav_order', array(
+        'label' => __('页脚导航顺序', 'brave-love'),
+        'description' => __('拖拽排序，保存后页脚会按这里的顺序展示。', 'brave-love'),
+        'section' => 'brave_footer_nav',
+        'choices' => $footer_nav_fields,
+        'priority' => 5,
+    )));
 
     $priority = 10;
 

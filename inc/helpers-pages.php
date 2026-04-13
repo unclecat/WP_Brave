@@ -86,6 +86,59 @@ function brave_get_page_link($type) {
 }
 
 /**
+ * 获取页脚导航默认顺序。
+ *
+ * @return array
+ */
+function brave_get_footer_nav_default_order() {
+    return array('home', 'about', 'travels', 'moments', 'lists', 'memories', 'notes', 'blessing');
+}
+
+/**
+ * 规范化页脚导航顺序。
+ *
+ * @param string|array $value 原始值
+ * @param array|null   $allowed_keys 允许的导航 key
+ * @return array
+ */
+function brave_normalize_footer_nav_order($value, $allowed_keys = null) {
+    $allowed_keys = is_array($allowed_keys) ? array_values($allowed_keys) : brave_get_footer_nav_default_order();
+    $allowed_map = array_fill_keys($allowed_keys, true);
+    $requested = is_array($value) ? $value : preg_split('/[\s,]+/', (string) $value, -1, PREG_SPLIT_NO_EMPTY);
+    $normalized = array();
+
+    foreach ($requested as $item) {
+        $key = sanitize_key((string) $item);
+
+        if (isset($allowed_map[$key]) && !in_array($key, $normalized, true)) {
+            $normalized[] = $key;
+        }
+    }
+
+    foreach ($allowed_keys as $key) {
+        if (!in_array($key, $normalized, true)) {
+            $normalized[] = $key;
+        }
+    }
+
+    return $normalized;
+}
+
+/**
+ * 获取当前页脚导航顺序。
+ *
+ * @param string|array|null $value 原始值
+ * @return array
+ */
+function brave_get_footer_nav_order($value = null) {
+    if (null === $value) {
+        $value = get_theme_mod('brave_footer_nav_order', implode(',', brave_get_footer_nav_default_order()));
+    }
+
+    return brave_normalize_footer_nav_order($value);
+}
+
+/**
  * 获取页脚导航默认配置。
  *
  * @return array
@@ -136,7 +189,14 @@ function brave_get_footer_nav_items() {
     $defaults = brave_get_footer_nav_defaults();
     $items = array();
 
-    foreach ($defaults as $key => $default) {
+    $ordered_keys = brave_get_footer_nav_order();
+
+    foreach ($ordered_keys as $key) {
+        if (!isset($defaults[$key])) {
+            continue;
+        }
+
+        $default = $defaults[$key];
         $custom_label = trim((string) get_theme_mod("brave_footer_nav_{$key}_label", ''));
         $custom_url = trim((string) get_theme_mod("brave_footer_nav_{$key}_url", ''));
         $label = '' !== $custom_label ? $custom_label : $default['label'];

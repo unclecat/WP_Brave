@@ -1,0 +1,66 @@
+.customize-control-brave-sortable .brave-sortable-list {
+    margin: 12px 0 0;
+    padding: 0;
+}
+
+.customize-control-brave-sortable .brave-sortable-item,
+.customize-control-brave-sortable .brave-sortable-placeholder {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    margin: 0 0 8px;
+    padding: 10px 12px;
+    border: 1px solid #dcdcde;
+    border-radius: 12px;
+    background: #fff;
+    box-sizing: border-box;
+}
+
+.customize-control-brave-sortable .brave-sortable-item.is-sorting {
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.1);
+}
+
+.customize-control-brave-sortable .brave-sortable-placeholder {
+    border-style: dashed;
+    border-color: rgba(255, 81, 98, 0.35);
+    background: rgba(255, 81, 98, 0.08);
+}
+
+.customize-control-brave-sortable .brave-sortable-handle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    color: #646970;
+    cursor: grab;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.customize-control-brave-sortable .brave-sortable-handle:hover {
+    background: rgba(255, 81, 98, 0.08);
+    color: #ff5162;
+}
+
+.customize-control-brave-sortable .brave-sortable-handle:active {
+    cursor: grabbing;
+}
+
+.customize-control-brave-sortable .brave-sortable-order {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    background: #f6f7f7;
+    color: #50575e;
+    font-size: 12px;
+}
+
+.customize-control-brave-sortable .brave-sortable-label {
+    font-size: 13px;
+    color: #1d2327;
+}

@@ -71,6 +71,16 @@ function brave_sanitize_footer_nav_url($value) {
 }
 
 /**
+ * 页脚导航顺序 sanitize。
+ *
+ * @param string|array $value 原始值
+ * @return string
+ */
+function brave_sanitize_footer_nav_order($value) {
+    return implode(',', brave_normalize_footer_nav_order($value));
+}
+
+/**
  * 底部代码 sanitize。
  *
  * 拥有 unfiltered_html 的管理员允许保存原始统计代码，
