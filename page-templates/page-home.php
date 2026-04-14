@@ -329,8 +329,9 @@ $home_entries = array(
 foreach ($home_entries as &$entry) {
     $entry['desc'] = $entry['desc_fallback'];
 
-    if (!empty($entry['template'])) {
-        $entry_page_id = brave_get_page_id_by_template($entry['template']);
+    if (!empty($entry['page']) && 'lists' !== $entry['page']) {
+        // 首页入口卡片优先跟随“页面绑定”里选中的页面，再回退到模板页。
+        $entry_page_id = brave_get_bound_page_id($entry['page']);
 
         if ($entry_page_id) {
             $entry_hero = brave_resolve_page_hero_args(

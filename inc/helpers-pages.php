@@ -44,18 +44,21 @@ function brave_get_page_id_by_template($template) {
 }
 
 /**
- * 获取主题页面链接
+ * 获取主题绑定页面 ID。
+ *
+ * @param string $type 模块类型
+ * @return int
  */
-function brave_get_page_link($type) {
-    // 恋爱清单使用 CPT archive
-    if ($type === 'lists') {
-        return get_post_type_archive_link('love_list');
+function brave_get_bound_page_id($type) {
+    $type = sanitize_key((string) $type);
+
+    if ('lists' === $type || '' === $type) {
+        return 0;
     }
 
-    // 其他页面使用设置的页面或默认链接
-    $page_id = get_theme_mod("brave_page_{$type}");
-    if ($page_id) {
-        return get_permalink($page_id);
+    $page_id = absint(get_theme_mod("brave_page_{$type}"));
+    if ($page_id > 0 && 'page' === get_post_type($page_id)) {
+        return $page_id;
     }
 
     $template_map = array(
@@ -68,11 +71,25 @@ function brave_get_page_link($type) {
     );
 
     if (isset($template_map[$type])) {
-        $page_id = brave_get_page_id_by_template($template_map[$type]);
+        return brave_get_page_id_by_template($template_map[$type]);
+    }
 
-        if ($page_id) {
-            return get_permalink($page_id);
-        }
+    return 0;
+}
+
+/**
+ * 获取主题页面链接
+ */
+function brave_get_page_link($type) {
+    // 恋爱清单使用 CPT archive
+    if ($type === 'lists') {
+        return get_post_type_archive_link('love_list');
+    }
+
+    // 其他页面使用设置的页面或默认链接
+    $page_id = brave_get_bound_page_id($type);
+    if ($page_id) {
+        return get_permalink($page_id);
     }
 
     $fallback_path_map = array(

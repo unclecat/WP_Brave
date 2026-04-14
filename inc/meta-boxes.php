@@ -12,25 +12,59 @@ if (!defined('ABSPATH')) {
 /**
  * 添加 Meta Boxes
  */
-function brave_add_meta_boxes() {
-    // 页面 Hero 字段
-    add_meta_box(
-        'page_hero_settings',
-        __('页面 Hero 设置', 'brave-love'),
-        'brave_page_hero_meta_box',
-        'page',
-        'side',
-        'default'
+function brave_get_page_hero_supported_templates() {
+    return array(
+        'page-templates/page-about.php',
+        'page-templates/page-moments.php',
+        'page-templates/page-memories.php',
+        'page-templates/page-notes.php',
+        'page-templates/page-blessing.php',
+        'page-templates/page-travel-plans.php',
     );
+}
 
-    add_meta_box(
-        'travel_page_footprint_settings',
-        __('旅行足迹补充', 'brave-love'),
-        'brave_travel_page_footprint_meta_box',
-        'page',
-        'normal',
-        'default'
-    );
+/**
+ * 页面模板是否支持当前页面 Hero 设置。
+ *
+ * @param int $post_id 页面 ID
+ * @return bool
+ */
+function brave_page_supports_page_hero_meta($post_id) {
+    $page_template = get_page_template_slug($post_id);
+
+    return in_array($page_template, brave_get_page_hero_supported_templates(), true);
+}
+
+/**
+ * 添加 Meta Boxes
+ *
+ * @param string       $post_type 当前文章类型
+ * @param WP_Post|null $post      当前文章对象
+ */
+function brave_add_meta_boxes($post_type, $post = null) {
+    if ('page' === $post_type && $post instanceof WP_Post) {
+        if (brave_page_supports_page_hero_meta($post->ID)) {
+            add_meta_box(
+                'page_hero_settings',
+                __('当前页面 Hero', 'brave-love'),
+                'brave_page_hero_meta_box',
+                'page',
+                'side',
+                'default'
+            );
+        }
+
+        if ('page-templates/page-travel-plans.php' === get_page_template_slug($post->ID)) {
+            add_meta_box(
+                'travel_page_footprint_settings',
+                __('旅行足迹补充', 'brave-love'),
+                'brave_travel_page_footprint_meta_box',
+                'page',
+                'normal',
+                'default'
+            );
+        }
+    }
 
     // 点点滴滴字段
     add_meta_box(
@@ -82,7 +116,7 @@ function brave_add_meta_boxes() {
         'high'
     );
 }
-add_action('add_meta_boxes', 'brave_add_meta_boxes');
+add_action('add_meta_boxes', 'brave_add_meta_boxes', 10, 2);
 
 /**
  * 页面 Hero Meta Box
@@ -119,7 +153,7 @@ function brave_page_hero_meta_box($post) {
     </div>
 
     <p class="description">
-        <?php _e('适用于点点滴滴、旅行计划、甜蜜相册、随笔说说、祝福留言等页面模板。恋爱清单归档页请在「自定义 > Hero 区域」中设置。', 'brave-love'); ?>
+        <?php _e('这里只影响当前页面；留空时会回退到模板默认文案和主题里的默认页面 Hero 背景。恋爱清单归档页请前往「自定义 > 恋爱清单归档」设置。', 'brave-love'); ?>
     </p>
     <?php
 }

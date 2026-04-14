@@ -17,7 +17,7 @@ if (class_exists('WP_Customize_Control')) {
         public function render_content() {
             ?>
             <div class="brave-anniversary-note">
-                <p><?php _e('纪念日管理请前往：后台 → 设置 → 纪念日管理', 'brave-love'); ?></p>
+                <p><?php _e('首页“特别的日子”列表请前往：后台 → 设置 → 纪念日管理；顶部倒计时请在当前分组里单独填写。', 'brave-love'); ?></p>
                 <a href="<?php echo esc_url(admin_url('options-general.php?page=brave-anniversary')); ?>" class="button">
                     <?php _e('管理纪念日', 'brave-love'); ?>
                 </a>

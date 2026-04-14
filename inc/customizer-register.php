@@ -19,9 +19,10 @@ function brave_customize_register($wp_customize) {
         'priority' => 30,
     ));
 
-    // ==================== 基本信息 ====================
+    // ==================== 首页与情侣 ====================
     $wp_customize->add_section('brave_basic', array(
-        'title' => __('基本信息', 'brave-love'),
+        'title' => __('首页与情侣', 'brave-love'),
+        'description' => __('管理首页计时、顶部导航副标题、默认页面 Hero 背景，以及情侣头像昵称。', 'brave-love'),
         'panel' => 'brave_settings',
     ));
 
@@ -32,7 +33,7 @@ function brave_customize_register($wp_customize) {
         'transport' => 'refresh',
     ));
     $wp_customize->add_control('brave_love_start_datetime', array(
-        'label' => __('恋爱起始日期时间', 'brave-love'),
+        'label' => __('恋爱起始时间', 'brave-love'),
         'description' => __('格式：YYYY-MM-DD HH:MM，例如：2020-05-20 20:00（精确到分钟）', 'brave-love'),
         'section' => 'brave_basic',
         'type' => 'text',
@@ -45,10 +46,17 @@ function brave_customize_register($wp_customize) {
         'transport' => 'refresh',
     ));
     $wp_customize->add_control('brave_timer_text', array(
-        'label' => __('恋爱计时器文字', 'brave-love'),
-        'description' => __('显示在计时器上方的文字', 'brave-love'),
+        'label' => __('首页计时器文案', 'brave-love'),
+        'description' => __('显示在首页恋爱计时器上方的文字。', 'brave-love'),
         'section' => 'brave_basic',
         'type' => 'text',
+    ));
+
+    // ==================== 纪念日与倒计时 ====================
+    $wp_customize->add_section('brave_anniversary', array(
+        'title' => __('纪念日与倒计时', 'brave-love'),
+        'description' => __('首页“特别的日子”列表与顶部倒计时是两套独立内容：列表请前往“设置 > 纪念日管理”，倒计时请在这里单独填写。', 'brave-love'),
+        'panel' => 'brave_settings',
     ));
 
     // 下一个纪念日日期时间（精确到分钟）
@@ -58,9 +66,9 @@ function brave_customize_register($wp_customize) {
         'transport' => 'refresh',
     ));
     $wp_customize->add_control('brave_next_anniversary_datetime', array(
-        'label' => __('下一个纪念日日期时间', 'brave-love'),
+        'label' => __('下一个倒计时时间', 'brave-love'),
         'description' => __('格式：YYYY-MM-DD HH:MM，例如：2024-12-25 20:00（精确到分钟）', 'brave-love'),
-        'section' => 'brave_basic',
+        'section' => 'brave_anniversary',
         'type' => 'text',
     ));
 
@@ -71,9 +79,9 @@ function brave_customize_register($wp_customize) {
         'transport' => 'refresh',
     ));
     $wp_customize->add_control('brave_next_anniversary_name', array(
-        'label' => __('下一个纪念日名称', 'brave-love'),
+        'label' => __('下一个倒计时名称', 'brave-love'),
         'description' => __('例如：恋爱一周年、100天纪念日等', 'brave-love'),
-        'section' => 'brave_basic',
+        'section' => 'brave_anniversary',
         'type' => 'text',
     ));
 
@@ -84,9 +92,9 @@ function brave_customize_register($wp_customize) {
         'transport' => 'refresh',
     ));
     $wp_customize->add_control('brave_countdown_text', array(
-        'label' => __('倒计时文字', 'brave-love'),
-        'description' => __('显示在倒计时上方的文字', 'brave-love'),
-        'section' => 'brave_basic',
+        'label' => __('首页倒计时文案', 'brave-love'),
+        'description' => __('显示在首页倒计时上方的文字。', 'brave-love'),
+        'section' => 'brave_anniversary',
         'type' => 'text',
     ));
 
@@ -97,17 +105,11 @@ function brave_customize_register($wp_customize) {
         'transport' => 'refresh',
     ));
     $wp_customize->add_control('brave_nav_text', array(
-        'label' => __('导航栏右侧文字', 'brave-love'),
+        'label' => __('顶部导航副标题', 'brave-love'),
         'section' => 'brave_basic',
         'type' => 'text',
     ));
 
-    // ==================== 纪念日设置 ====================
-    $wp_customize->add_section('brave_anniversary', array(
-        'title' => __('纪念日', 'brave-love'),
-        'panel' => 'brave_settings',
-    ));
-    
     // 纪念日列表标题
     $wp_customize->add_setting('brave_anniversary_section_title', array(
         'default' => '💕 特别的日子',
@@ -115,8 +117,8 @@ function brave_customize_register($wp_customize) {
         'transport' => 'refresh',
     ));
     $wp_customize->add_control('brave_anniversary_section_title', array(
-        'label' => __('纪念日列表标题', 'brave-love'),
-        'description' => __('显示在纪念日列表上方的标题', 'brave-love'),
+        'label' => __('首页特别日子标题', 'brave-love'),
+        'description' => __('显示在首页“特别的日子”列表上方的标题。', 'brave-love'),
         'section' => 'brave_anniversary',
         'type' => 'text',
     ));
@@ -129,22 +131,23 @@ function brave_customize_register($wp_customize) {
         'section' => 'brave_anniversary',
     )));
 
-    // ==================== Hero 区域 ====================
+    // ==================== 恋爱清单归档 ====================
     $wp_customize->add_section('brave_hero', array(
-        'title' => __('Hero 区域', 'brave-love'),
+        'title' => __('恋爱清单归档', 'brave-love'),
+        'description' => __('恋爱清单是文章归档页，不是普通页面，所以它的 Hero 在这里单独维护；其他内容页面请到对应页面编辑器右侧的“页面 Hero 设置”中配置。', 'brave-love'),
         'panel' => 'brave_settings',
     ));
 
-    // 背景图片
+    // 默认页面 Hero 背景
     $wp_customize->add_setting('brave_hero_bg', array(
         'default' => '',
         'sanitize_callback' => 'esc_url_raw',
         'transport' => 'refresh',
     ));
     $wp_customize->add_control(new WP_Customize_Image_Control($wp_customize, 'brave_hero_bg', array(
-        'label' => __('Hero 背景图片', 'brave-love'),
-        'description' => __('建议尺寸：1920×1080，浪漫风格的照片', 'brave-love'),
-        'section' => 'brave_hero',
+        'label' => __('默认页面 Hero 背景', 'brave-love'),
+        'description' => __('建议尺寸：1920×1080。未在页面编辑器里单独设置 Hero 背景的内容页，会回退到这里。', 'brave-love'),
+        'section' => 'brave_basic',
     )));
 
     // 男生头像
@@ -155,7 +158,7 @@ function brave_customize_register($wp_customize) {
     ));
     $wp_customize->add_control(new WP_Customize_Image_Control($wp_customize, 'brave_boy_avatar', array(
         'label' => __('男生头像', 'brave-love'),
-        'section' => 'brave_hero',
+        'section' => 'brave_basic',
     )));
 
     // 男生昵称
@@ -166,7 +169,7 @@ function brave_customize_register($wp_customize) {
     ));
     $wp_customize->add_control('brave_boy_name', array(
         'label' => __('男生昵称', 'brave-love'),
-        'section' => 'brave_hero',
+        'section' => 'brave_basic',
         'type' => 'text',
     ));
 
@@ -178,7 +181,7 @@ function brave_customize_register($wp_customize) {
     ));
     $wp_customize->add_control(new WP_Customize_Image_Control($wp_customize, 'brave_girl_avatar', array(
         'label' => __('女生头像', 'brave-love'),
-        'section' => 'brave_hero',
+        'section' => 'brave_basic',
     )));
 
     // 女生昵称
@@ -189,7 +192,7 @@ function brave_customize_register($wp_customize) {
     ));
     $wp_customize->add_control('brave_girl_name', array(
         'label' => __('女生昵称', 'brave-love'),
-        'section' => 'brave_hero',
+        'section' => 'brave_basic',
         'type' => 'text',
     ));
 
@@ -202,8 +205,8 @@ function brave_customize_register($wp_customize) {
     ));
     $wp_customize->add_control('brave_boy_user_id', array(
         'label' => __('男生关联 WordPress 用户ID', 'brave-love'),
-        'description' => __('填写用户ID（如果上传了头像则优先使用上传的）。用户ID在 用户 → 所有用户 中查看', 'brave-love'),
-        'section' => 'brave_hero',
+        'description' => __('填写用户 ID。若已上传自定义头像，则头像仍优先使用上传版本；这里主要用于作者头像与昵称映射。', 'brave-love'),
+        'section' => 'brave_basic',
         'type' => 'text',
     ));
 
@@ -215,8 +218,8 @@ function brave_customize_register($wp_customize) {
     ));
     $wp_customize->add_control('brave_girl_user_id', array(
         'label' => __('女生关联 WordPress 用户ID', 'brave-love'),
-        'description' => __('填写用户ID（如果上传了头像则优先使用上传的）。用户ID在 用户 → 所有用户 中查看', 'brave-love'),
-        'section' => 'brave_hero',
+        'description' => __('填写用户 ID。若已上传自定义头像，则头像仍优先使用上传版本；这里主要用于作者头像与昵称映射。', 'brave-love'),
+        'section' => 'brave_basic',
         'type' => 'text',
     ));
 
@@ -227,8 +230,8 @@ function brave_customize_register($wp_customize) {
         'transport' => 'refresh',
     ));
     $wp_customize->add_control('brave_love_list_hero_title', array(
-        'label' => __('恋爱清单 Hero 标题', 'brave-love'),
-        'description' => __('恋爱清单是文章类型归档页，单独在这里设置 Hero 文案。其他页面请到各自页面编辑页右侧的「页面 Hero 设置」中配置。', 'brave-love'),
+        'label' => __('Hero 标题', 'brave-love'),
+        'description' => __('这里只影响恋爱清单归档页。', 'brave-love'),
         'section' => 'brave_hero',
         'type' => 'text',
     ));
@@ -240,7 +243,7 @@ function brave_customize_register($wp_customize) {
         'transport' => 'refresh',
     ));
     $wp_customize->add_control('brave_love_list_hero_subtitle', array(
-        'label' => __('恋爱清单 Hero 副标题', 'brave-love'),
+        'label' => __('Hero 副标题', 'brave-love'),
         'section' => 'brave_hero',
         'type' => 'textarea',
     ));
@@ -252,14 +255,15 @@ function brave_customize_register($wp_customize) {
         'transport' => 'refresh',
     ));
     $wp_customize->add_control(new WP_Customize_Image_Control($wp_customize, 'brave_love_list_hero_bg', array(
-        'label' => __('恋爱清单 Hero 背景图', 'brave-love'),
-        'description' => __('留空则回退到全局 Hero 背景图。', 'brave-love'),
+        'label' => __('Hero 背景图', 'brave-love'),
+        'description' => __('留空则回退到“首页与情侣”里的默认页面 Hero 背景。', 'brave-love'),
         'section' => 'brave_hero',
     )));
 
-    // ==================== 入口图标 ====================
+    // ==================== 首页入口卡片 ====================
     $wp_customize->add_section('brave_icons', array(
-        'title' => __('入口图标', 'brave-love'),
+        'title' => __('首页入口卡片', 'brave-love'),
+        'description' => __('这里只影响首页“继续逛逛”入口卡片的图标，不影响页脚导航。', 'brave-love'),
         'panel' => 'brave_settings',
     ));
 
@@ -335,9 +339,10 @@ function brave_customize_register($wp_customize) {
         'type' => 'text',
     ));
 
-    // ==================== 页面链接 ====================
+    // ==================== 页面绑定 ====================
     $wp_customize->add_section('brave_pages', array(
-        'title' => __('页面链接', 'brave-love'),
+        'title' => __('页面绑定', 'brave-love'),
+        'description' => __('为主题模块绑定实际使用的页面。首页入口、页脚默认链接和主题内部跳转都会优先使用这里。', 'brave-love'),
         'panel' => 'brave_settings',
     ));
 
@@ -416,7 +421,7 @@ function brave_customize_register($wp_customize) {
     // ==================== 页脚导航 ====================
     $wp_customize->add_section('brave_footer_nav', array(
         'title' => __('页脚导航', 'brave-love'),
-        'description' => __('可单独自定义页脚导航名称和链接。链接留空时，会自动跟随当前页面配置。', 'brave-love'),
+        'description' => __('这里只覆盖页脚导航本身：可单独调整顺序、名称和链接。链接留空时，会自动继承“页面绑定”里的目标页面。', 'brave-love'),
         'panel' => 'brave_settings',
     ));
 
@@ -476,9 +481,10 @@ function brave_customize_register($wp_customize) {
         $priority += 5;
     }
 
-    // ==================== 分页设置 ====================
+    // ==================== 内容展示 ====================
     $wp_customize->add_section('brave_pagination', array(
-        'title' => __('分页设置', 'brave-love'),
+        'title' => __('内容展示', 'brave-love'),
+        'description' => __('控制点点滴滴与甜蜜相册的列表展示规则。', 'brave-love'),
         'panel' => 'brave_settings',
     ));
 
@@ -489,8 +495,8 @@ function brave_customize_register($wp_customize) {
         'transport' => 'refresh',
     ));
     $wp_customize->add_control('brave_moments_per_page', array(
-        'label' => __('点点滴滴每页文章数', 'brave-love'),
-        'description' => __('设置点点滴滴页面每页显示的文章数量', 'brave-love'),
+        'label' => __('点点滴滴每页数量', 'brave-love'),
+        'description' => __('设置点点滴滴页面每页显示的文章数量。', 'brave-love'),
         'section' => 'brave_pagination',
         'type' => 'number',
         'input_attrs' => array(
@@ -500,12 +506,6 @@ function brave_customize_register($wp_customize) {
         ),
     ));
 
-    // ==================== 相册设置 ====================
-    $wp_customize->add_section('brave_gallery', array(
-        'title' => __('相册设置', 'brave-love'),
-        'panel' => 'brave_settings',
-    ));
-
     // 相册每页照片数
     $wp_customize->add_setting('brave_gallery_per_page', array(
         'default' => 12,
@@ -513,9 +513,9 @@ function brave_customize_register($wp_customize) {
         'transport' => 'refresh',
     ));
     $wp_customize->add_control('brave_gallery_per_page', array(
-        'label' => __('相册每页照片数', 'brave-love'),
-        'description' => __('设置相册页面每页显示的照片数量', 'brave-love'),
-        'section' => 'brave_gallery',
+        'label' => __('甜蜜相册每页数量', 'brave-love'),
+        'description' => __('设置甜蜜相册页面每页显示的照片数量。', 'brave-love'),
+        'section' => 'brave_pagination',
         'type' => 'number',
         'input_attrs' => array(
             'min' => 4,
@@ -531,15 +531,16 @@ function brave_customize_register($wp_customize) {
         'transport' => 'refresh',
     ));
     $wp_customize->add_control('brave_gallery_show_info', array(
-        'label' => __('显示照片信息', 'brave-love'),
-        'description' => __('在照片悬停时显示日期、地点和心情', 'brave-love'),
-        'section' => 'brave_gallery',
+        'label' => __('显示照片附加信息', 'brave-love'),
+        'description' => __('在照片悬停时显示日期、地点和心情。', 'brave-love'),
+        'section' => 'brave_pagination',
         'type' => 'checkbox',
     ));
 
-    // ==================== 自定义代码 ====================
+    // ==================== 高级 ====================
     $wp_customize->add_section('brave_custom_code', array(
-        'title' => __('自定义代码', 'brave-love'),
+        'title' => __('高级', 'brave-love'),
+        'description' => __('放置自定义 CSS 与页脚代码。建议只在明确知道用途时再修改。', 'brave-love'),
         'panel' => 'brave_settings',
     ));
 
@@ -575,9 +576,10 @@ function brave_customize_register($wp_customize) {
         ),
     ));
 
-    // ==================== 访问统计 ====================
+    // ==================== 页脚访客统计 ====================
     $wp_customize->add_section('brave_pv_stats', array(
-        'title' => __('访问统计', 'brave-love'),
+        'title' => __('页脚访客统计', 'brave-love'),
+        'description' => __('控制页脚访客信息的显示文案；本组下方的手动计数仍会直接覆盖当前统计值。', 'brave-love'),
         'panel' => 'brave_settings',
     ));
 
