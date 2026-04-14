@@ -28,6 +28,45 @@ if (class_exists('WP_Customize_Control')) {
 }
 
 /**
+ * 自定义控制类 - 通用说明
+ */
+if (class_exists('WP_Customize_Control')) {
+    class Brave_Inline_Note_Control extends WP_Customize_Control {
+        public $type = 'brave-note';
+        public $notice = '';
+        public $button_text = '';
+        public $button_url = '';
+
+        public function render_content() {
+            $notice = trim((string) $this->notice);
+            $button_text = trim((string) $this->button_text);
+            $button_url = trim((string) $this->button_url);
+
+            if ('' === $notice && ('' === $button_text || '' === $button_url)) {
+                return;
+            }
+            ?>
+            <div class="brave-inline-note">
+                <?php if (!empty($this->label)) : ?>
+                    <span class="customize-control-title"><?php echo esc_html($this->label); ?></span>
+                <?php endif; ?>
+
+                <?php if ('' !== $notice) : ?>
+                    <p class="description customize-control-description"><?php echo esc_html($notice); ?></p>
+                <?php endif; ?>
+
+                <?php if ('' !== $button_text && '' !== $button_url) : ?>
+                    <p class="brave-inline-note-actions">
+                        <a href="<?php echo esc_url($button_url); ?>" class="button button-secondary"><?php echo esc_html($button_text); ?></a>
+                    </p>
+                <?php endif; ?>
+            </div>
+            <?php
+        }
+    }
+}
+
+/**
  * 自定义控制类 - PV 统计当前数值显示
  */
 if (class_exists('WP_Customize_Control')) {
