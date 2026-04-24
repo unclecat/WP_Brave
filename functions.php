@@ -6,7 +6,7 @@
  */
 
 // 定义常量
-define('BRAVE_VERSION', '1.2.1');
+define('BRAVE_VERSION', '1.2.2');
 define('BRAVE_BOOTSTRAP_VERSION', '5.3.2');
 define('BRAVE_PHOTOSWIPE_VERSION', '5.4.2');
 define('BRAVE_REWRITE_VERSION', 'travel-plan-v1');
