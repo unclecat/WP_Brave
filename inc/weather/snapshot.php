@@ -21,6 +21,10 @@ function brave_qweather_home_snapshot_ttl() {
     return (int) apply_filters('brave_qweather_home_snapshot_ttl', 5 * MINUTE_IN_SECONDS);
 }
 
+function brave_qweather_home_snapshot_backup_max_age() {
+    return max(0, (int) apply_filters('brave_qweather_home_snapshot_backup_max_age', brave_qweather_backup_max_age()));
+}
+
 function brave_qweather_get_home_snapshot_record($use_backup = false) {
     $record = $use_backup
         ? get_option(brave_qweather_home_snapshot_backup_option_key(), array())
@@ -30,10 +34,14 @@ function brave_qweather_get_home_snapshot_record($use_backup = false) {
         return array();
     }
 
+    if ($use_backup && !brave_qweather_is_backup_record_usable($record, brave_qweather_home_snapshot_backup_max_age())) {
+        return array();
+    }
+
     return $record;
 }
 
-function brave_qweather_store_home_snapshot($payload) {
+function brave_qweather_store_home_snapshot($payload, $persist_backup = true) {
     if (!is_array($payload)) {
         return array();
     }
@@ -44,7 +52,10 @@ function brave_qweather_store_home_snapshot($payload) {
     );
 
     set_transient(brave_qweather_home_snapshot_cache_key(), $record, brave_qweather_home_snapshot_ttl());
-    update_option(brave_qweather_home_snapshot_backup_option_key(), $record, false);
+
+    if ($persist_backup) {
+        update_option(brave_qweather_home_snapshot_backup_option_key(), $record, false);
+    }
 
     return $record;
 }
@@ -63,6 +74,99 @@ function brave_qweather_home_payload_has_errors($payload) {
     }
 
     return false;
+}
+
+function brave_qweather_home_payload_has_successful_cities($payload) {
+    $cities = $payload['cities'] ?? array();
+
+    if (!is_array($cities)) {
+        return false;
+    }
+
+    foreach ($cities as $city) {
+        if (is_array($city) && 'error' !== ($city['status'] ?? '')) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function brave_qweather_fill_home_payload_city_errors($payload, $backup_payload, $message = '') {
+    if (!is_array($payload) || empty($payload['cities']) || !is_array($payload['cities'])) {
+        return $payload;
+    }
+
+    $backup_cities = $backup_payload['cities'] ?? array();
+    if (!is_array($backup_cities) || empty($backup_cities)) {
+        return $payload;
+    }
+
+    $backup_by_index = array();
+    $backup_by_name = array();
+
+    foreach ($backup_cities as $backup_city) {
+        if (!is_array($backup_city) || 'error' === ($backup_city['status'] ?? '')) {
+            continue;
+        }
+
+        $backup_index = isset($backup_city['index']) ? (string) $backup_city['index'] : '';
+        if ('' !== $backup_index) {
+            $backup_by_index[$backup_index] = $backup_city;
+        }
+
+        $backup_name = sanitize_title((string) ($backup_city['name'] ?? ''));
+        if ('' !== $backup_name) {
+            $backup_by_name[$backup_name] = $backup_city;
+        }
+    }
+
+    $used_backup = false;
+
+    foreach ($payload['cities'] as $index => $city) {
+        if (!is_array($city) || 'error' !== ($city['status'] ?? '')) {
+            continue;
+        }
+
+        $lookup_index = isset($city['index']) ? (string) $city['index'] : '';
+        $lookup_name = sanitize_title((string) ($city['name'] ?? ''));
+        $backup_city = array();
+
+        if ('' !== $lookup_index && isset($backup_by_index[$lookup_index])) {
+            $backup_city = $backup_by_index[$lookup_index];
+        } elseif ('' !== $lookup_name && isset($backup_by_name[$lookup_name])) {
+            $backup_city = $backup_by_name[$lookup_name];
+        }
+
+        if (empty($backup_city)) {
+            continue;
+        }
+
+        $backup_city['index'] = $city['index'] ?? ($backup_city['index'] ?? $index);
+
+        if (!empty($city['name'])) {
+            $backup_city['name'] = $city['name'];
+        }
+
+        $backup_city['stale'] = true;
+
+        if ('' !== $message) {
+            $backup_city['message'] = $message;
+        }
+
+        $payload['cities'][$index] = $backup_city;
+        $used_backup = true;
+    }
+
+    if ($used_backup) {
+        $payload['snapshotStale'] = true;
+
+        if ('' !== $message) {
+            $payload['snapshotMessage'] = $message;
+        }
+    }
+
+    return $payload;
 }
 
 function brave_qweather_mark_home_snapshot_stale($payload, $message = '') {
@@ -89,7 +193,7 @@ function brave_qweather_mark_home_snapshot_stale($payload, $message = '') {
     return $payload;
 }
 
-function brave_qweather_build_home_weather_payload() {
+function brave_qweather_build_home_weather_payload($include_details = false) {
     if (!function_exists('brave_is_weather_enabled') || !brave_is_weather_enabled()) {
         return array(
             'enabled' => false,
@@ -113,7 +217,7 @@ function brave_qweather_build_home_weather_payload() {
     $payloads = array();
 
     foreach ($cities as $index => $city) {
-        $payloads[] = brave_qweather_normalize_city_weather($city, $index);
+        $payloads[] = brave_qweather_normalize_city_weather($city, $index, $include_details);
     }
 
     return array(

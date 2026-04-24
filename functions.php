@@ -9,6 +9,8 @@
 define('BRAVE_VERSION', '1.2.1');
 define('BRAVE_BOOTSTRAP_VERSION', '5.3.2');
 define('BRAVE_PHOTOSWIPE_VERSION', '5.4.2');
+define('BRAVE_REWRITE_VERSION', 'travel-plan-v1');
+define('BRAVE_WEATHER_REFRESH_MS', 5 * MINUTE_IN_SECONDS * 1000);
 define('BRAVE_DIR', get_template_directory());
 define('BRAVE_URI', get_template_directory_uri());
 
@@ -46,6 +48,35 @@ function brave_setup() {
 add_action('after_setup_theme', 'brave_setup');
 
 /**
+ * 标记主题 rewrite 规则需要在下一次请求时刷新。
+ */
+function brave_schedule_rewrite_refresh() {
+    delete_option('brave_rewrite_version');
+}
+add_action('after_switch_theme', 'brave_schedule_rewrite_refresh');
+
+/**
+ * 在主题路由版本变化后仅刷新一次 rewrite 规则。
+ */
+function brave_maybe_flush_rewrite_rules() {
+    static $did_flush = false;
+
+    if ($did_flush || wp_installing()) {
+        return;
+    }
+
+    $stored_version = (string) get_option('brave_rewrite_version', '');
+    if (BRAVE_REWRITE_VERSION === $stored_version) {
+        return;
+    }
+
+    flush_rewrite_rules(false);
+    update_option('brave_rewrite_version', BRAVE_REWRITE_VERSION, false);
+    $did_flush = true;
+}
+add_action('init', 'brave_maybe_flush_rewrite_rules', 99);
+
+/**
  * 加载样式和脚本
  */
 function brave_scripts() {
@@ -71,7 +102,8 @@ function brave_scripts() {
         'love_start_datetime' => brave_get_love_start_datetime(),
         'next_anniversary_datetime' => get_theme_mod('brave_next_anniversary_datetime', ''),
         'weather_api_url' => rest_url('brave-love/v1/weather'),
-        'weather_refresh_ms' => 30 * MINUTE_IN_SECONDS * 1000,
+        'weather_detail_api_base' => trailingslashit(rest_url('brave-love/v1/weather')),
+        'weather_refresh_ms' => BRAVE_WEATHER_REFRESH_MS,
     );
     wp_localize_script('brave-script', 'braveData', $theme_options);
 

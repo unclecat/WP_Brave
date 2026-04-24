@@ -201,60 +201,113 @@ function brave_qweather_group_indices($daily_indices) {
     return $grouped;
 }
 
-function brave_qweather_normalize_city_weather($city, $index) {
-    $location = brave_qweather_get_location_string($city);
-    $lang = 'zh-hans';
+function brave_qweather_get_response_data($response) {
+    if (!is_array($response)) {
+        return array();
+    }
 
-    $now = brave_qweather_get_cached_response('now', $city, '/v7/weather/now', array(
-        'location' => $location,
-        'lang' => $lang,
-    ), 20 * MINUTE_IN_SECONDS);
-    $hourly = brave_qweather_get_cached_response('hourly24', $city, '/v7/weather/24h', array(
-        'location' => $location,
-        'lang' => $lang,
-    ), 45 * MINUTE_IN_SECONDS);
-    $daily = brave_qweather_get_cached_response('daily3', $city, '/v7/weather/3d', array(
-        'location' => $location,
-        'lang' => $lang,
-    ), 6 * HOUR_IN_SECONDS);
+    return isset($response['data']) && is_array($response['data']) ? $response['data'] : array();
+}
 
-    foreach (array($now, $hourly, $daily) as $required_result) {
-        if (is_wp_error($required_result)) {
-            return array(
-                'index' => $index,
-                'name' => $city['name'],
-                'status' => 'error',
-                'message' => $required_result->get_error_message(),
-            );
+function brave_qweather_response_is_stale($response) {
+    return is_array($response) && !empty($response['stale']);
+}
+
+function brave_qweather_get_required_city_weather_responses($city, $location, $lang) {
+    return array(
+        'now' => brave_qweather_get_cached_response('now', $city, '/v7/weather/now', array(
+            'location' => $location,
+            'lang' => $lang,
+        ), 20 * MINUTE_IN_SECONDS),
+        'hourly' => brave_qweather_get_cached_response('hourly24', $city, '/v7/weather/24h', array(
+            'location' => $location,
+            'lang' => $lang,
+        ), 45 * MINUTE_IN_SECONDS),
+        'daily' => brave_qweather_get_cached_response('daily3', $city, '/v7/weather/3d', array(
+            'location' => $location,
+            'lang' => $lang,
+        ), 6 * HOUR_IN_SECONDS),
+    );
+}
+
+function brave_qweather_get_required_city_weather_error($responses) {
+    foreach ($responses as $response) {
+        if (is_wp_error($response)) {
+            return $response;
         }
     }
 
-    $indices = brave_qweather_get_cached_response('indices_v2', $city, '/v7/indices/1d', array(
-        'location' => $location,
-        'lang' => $lang,
-        'type' => '1,3,5,7,8,9,10',
-    ), 8 * HOUR_IN_SECONDS, true);
-    $air = brave_qweather_get_cached_response('air', $city, '/airquality/v1/current/' . brave_qweather_get_air_location_path($city), array(
-        'lang' => $lang,
-    ), 45 * MINUTE_IN_SECONDS, true);
-    $air_daily = brave_qweather_get_cached_response('air_daily', $city, '/airquality/v1/daily/' . brave_qweather_get_air_location_path($city), array(
-        'lang' => $lang,
-        'localTime' => 'true',
-    ), 6 * HOUR_IN_SECONDS, true);
-    $warning = brave_qweather_get_cached_response('warning', $city, '/v7/warning/now', array(
+    return null;
+}
+
+function brave_qweather_get_city_warning_response($city, $location, $lang) {
+    return brave_qweather_get_cached_response('warning', $city, '/v7/warning/now', array(
         'location' => $location,
         'lang' => $lang,
     ), 10 * MINUTE_IN_SECONDS, true);
+}
 
-    $now_data = $now['data']['now'] ?? array();
-    $hourly_items = $hourly['data']['hourly'] ?? array();
-    $daily_today = $daily['data']['daily'][0] ?? array();
+function brave_qweather_build_warning_payload($warning_response) {
+    $warning_data = brave_qweather_get_response_data($warning_response);
+    $warning_items = is_array($warning_data['warning'] ?? null) ? $warning_data['warning'] : array();
+    $main_warning = brave_qweather_pick_main_alert($warning_items);
+
+    if (empty($main_warning)) {
+        return null;
+    }
+
+    $warning_badge = '';
+    $badge_parts = array();
+
+    if (!empty($main_warning['severityColor'])) {
+        $color_map = array(
+            'blue' => '蓝色',
+            'yellow' => '黄色',
+            'orange' => '橙色',
+            'red' => '红色',
+            'black' => '黑色',
+            'green' => '绿色',
+        );
+        $badge_parts[] = $color_map[strtolower((string) $main_warning['severityColor'])] ?? $main_warning['severityColor'];
+    }
+
+    if (!empty($main_warning['typeName'])) {
+        $badge_parts[] = $main_warning['typeName'];
+    }
+
+    if (!empty($badge_parts)) {
+        $warning_badge = implode('', $badge_parts);
+    }
+
+    return array(
+        'badge' => $warning_badge,
+        'headline' => $main_warning['headline'] ?? ($main_warning['text'] ?? ''),
+        'severityColor' => strtolower((string) ($main_warning['severityColor'] ?? '')),
+        'tone' => brave_qweather_get_warning_tone($main_warning['severityColor'] ?? ($main_warning['severity'] ?? '')),
+        'typeName' => $main_warning['typeName'] ?? '',
+        'pubTime' => brave_qweather_format_time_value($main_warning['pubTime'] ?? ''),
+        'effectiveTime' => brave_qweather_format_time_value($main_warning['effectiveTime'] ?? ''),
+        'expireTime' => brave_qweather_format_time_value($main_warning['expireTime'] ?? ($main_warning['expiredTime'] ?? '')),
+        'text' => $main_warning['text'] ?? '',
+    );
+}
+
+function brave_qweather_build_base_city_weather_payload($city, $index, $required_responses, $warning_response) {
+    $now_data = brave_qweather_get_response_data($required_responses['now']);
+    $hourly_data = brave_qweather_get_response_data($required_responses['hourly']);
+    $daily_data = brave_qweather_get_response_data($required_responses['daily']);
+
+    $now_item = is_array($now_data['now'] ?? null) ? $now_data['now'] : array();
+    $hourly_items = is_array($hourly_data['hourly'] ?? null) ? $hourly_data['hourly'] : array();
+    $daily_items = is_array($daily_data['daily'] ?? null) ? $daily_data['daily'] : array();
+    $daily_today = is_array($daily_items[0] ?? null) ? $daily_items[0] : array();
+
     $sunrise = $daily_today['sunrise'] ?? '';
     $sunset = $daily_today['sunset'] ?? '';
-    $updated_at = $now_data['obsTime'] ?? '';
-    $icon_code = (string) ($now_data['icon'] ?? '');
+    $updated_at = $now_item['obsTime'] ?? '';
+    $icon_code = (string) ($now_item['icon'] ?? '');
     $is_day = brave_qweather_is_daytime($updated_at, $sunrise, $sunset, $icon_code);
-    $visual = brave_qweather_match_weather_visual($now_data['text'] ?? '', $is_day);
+    $visual = brave_qweather_match_weather_visual($now_item['text'] ?? '', $is_day);
 
     $hourly_trend = array();
     $precipitation_max = 0;
@@ -270,37 +323,39 @@ function brave_qweather_normalize_city_weather($city, $index) {
         }
     }
 
-    if (is_array($hourly_items)) {
-        foreach ($hourly_items as $hourly_index => $hourly_item) {
-            $hour_precip = brave_qweather_to_int($hourly_item['pop'] ?? null);
-            $hour_precip_value = (int) $hour_precip;
+    foreach ($hourly_items as $hourly_index => $hourly_item) {
+        if (!is_array($hourly_item)) {
+            continue;
+        }
 
-            if ($hourly_index < 6) {
-                $trend_precipitation_max = max($trend_precipitation_max, $hour_precip_value);
-                $hour_visual = brave_qweather_match_weather_visual($hourly_item['text'] ?? '', true);
-                $hourly_trend[] = array(
-                    'time' => brave_qweather_format_clock($hourly_item['fxTime'] ?? ''),
-                    'icon' => $hour_visual['icon'],
-                    'desc' => $hourly_item['text'] ?? '',
-                    'temp' => brave_qweather_to_int($hourly_item['temp'] ?? null),
-                    'precip' => $hour_precip,
-                );
-            }
+        $hour_precip = brave_qweather_to_int($hourly_item['pop'] ?? null);
+        $hour_precip_value = (int) $hour_precip;
 
-            if ('' === $reference_day || empty($hourly_item['fxTime'])) {
-                continue;
-            }
+        if ($hourly_index < 6) {
+            $trend_precipitation_max = max($trend_precipitation_max, $hour_precip_value);
+            $hour_visual = brave_qweather_match_weather_visual($hourly_item['text'] ?? '', true);
+            $hourly_trend[] = array(
+                'time' => brave_qweather_format_clock($hourly_item['fxTime'] ?? ''),
+                'icon' => $hour_visual['icon'],
+                'desc' => $hourly_item['text'] ?? '',
+                'temp' => brave_qweather_to_int($hourly_item['temp'] ?? null),
+                'precip' => $hour_precip,
+            );
+        }
 
-            try {
-                $hour_day = (new DateTime($hourly_item['fxTime']))->format('Y-m-d');
-            } catch (Exception $exception) {
-                $hour_day = '';
-            }
+        if ('' === $reference_day || empty($hourly_item['fxTime'])) {
+            continue;
+        }
 
-            if ($hour_day === $reference_day) {
-                $matched_reference_day = true;
-                $precipitation_max = max($precipitation_max, $hour_precip_value);
-            }
+        try {
+            $hour_day = (new DateTime($hourly_item['fxTime']))->format('Y-m-d');
+        } catch (Exception $exception) {
+            $hour_day = '';
+        }
+
+        if ($hour_day === $reference_day) {
+            $matched_reference_day = true;
+            $precipitation_max = max($precipitation_max, $hour_precip_value);
         }
     }
 
@@ -308,56 +363,24 @@ function brave_qweather_normalize_city_weather($city, $index) {
         $precipitation_max = $trend_precipitation_max;
     }
 
-    $indices_grouped = brave_qweather_group_indices($indices['data']['daily'] ?? array());
-    $uv_index = brave_qweather_to_float($daily_today['uvIndex'] ?? ($indices_grouped['5']['level'] ?? null));
-    $uv_label = $indices_grouped['5']['category'] ?? '暂无';
-    $uv_text = $indices_grouped['5']['text'] ?? '';
-
-    $warning_items = $warning['data']['warning'] ?? array();
-    $main_warning = brave_qweather_pick_main_alert(is_array($warning_items) ? $warning_items : array());
-    $warning_badge = '';
-
-    if (!empty($main_warning)) {
-        $badge_parts = array();
-        if (!empty($main_warning['severityColor'])) {
-            $color_map = array(
-                'blue' => '蓝色',
-                'yellow' => '黄色',
-                'orange' => '橙色',
-                'red' => '红色',
-                'black' => '黑色',
-                'green' => '绿色',
-            );
-            $badge_parts[] = $color_map[strtolower((string) $main_warning['severityColor'])] ?? $main_warning['severityColor'];
-        }
-        if (!empty($main_warning['typeName'])) {
-            $badge_parts[] = $main_warning['typeName'];
-        }
-        $warning_badge = implode('', $badge_parts);
-    }
-
-    $aqi_index = brave_qweather_find_primary_aqi_index($air['data']['indexes'] ?? array());
-    $aqi_value = brave_qweather_to_int($aqi_index['aqi'] ?? null);
-    $primary_pollutant = brave_qweather_find_primary_pollutant_data(
-        $air['data']['pollutants'] ?? array(),
-        $aqi_index['primaryPollutant']['code'] ?? ''
-    );
-    $air_daily_forecast = brave_qweather_pick_air_daily_forecast($air_daily['data']['days'] ?? array(), $updated_at);
-
-    $payload = array(
+    return array(
         'index' => $index,
         'name' => $city['name'],
         'status' => 'ok',
-        'stale' => !empty($now['stale']) || !empty($hourly['stale']) || !empty($daily['stale']) || !empty($indices['stale']) || !empty($air['stale']) || !empty($warning['stale']),
-        'temp' => brave_qweather_to_int($now_data['temp'] ?? null),
-        'feels' => brave_qweather_to_int($now_data['feelsLike'] ?? null),
-        'humidity' => brave_qweather_to_int($now_data['humidity'] ?? null),
-        'wind' => brave_qweather_to_int($now_data['windSpeed'] ?? null),
-        'windDir' => $now_data['windDir'] ?? '',
-        'windScale' => $now_data['windScale'] ?? '',
+        'detailLoaded' => false,
+        'stale' => brave_qweather_response_is_stale($required_responses['now'])
+            || brave_qweather_response_is_stale($required_responses['hourly'])
+            || brave_qweather_response_is_stale($required_responses['daily'])
+            || brave_qweather_response_is_stale($warning_response),
+        'temp' => brave_qweather_to_int($now_item['temp'] ?? null),
+        'feels' => brave_qweather_to_int($now_item['feelsLike'] ?? null),
+        'humidity' => brave_qweather_to_int($now_item['humidity'] ?? null),
+        'wind' => brave_qweather_to_int($now_item['windSpeed'] ?? null),
+        'windDir' => $now_item['windDir'] ?? '',
+        'windScale' => $now_item['windScale'] ?? '',
         'code' => $icon_code,
         'icon' => $visual['icon'],
-        'desc' => $now_data['text'] ?? '天气暂不可用',
+        'desc' => $now_item['text'] ?? '天气暂不可用',
         'weatherType' => $visual['type'],
         'isDay' => $is_day,
         'updatedAt' => brave_qweather_format_time_value($updated_at),
@@ -367,34 +390,109 @@ function brave_qweather_normalize_city_weather($city, $index) {
         'sunrise' => brave_qweather_format_time_value($sunrise),
         'sunset' => brave_qweather_format_time_value($sunset),
         'hourlyTrend' => $hourly_trend,
-        'aqi' => $aqi_value,
-        'aqiDisplay' => null !== $aqi_value ? (string) $aqi_value : '--',
-        'aqiTone' => brave_qweather_get_tone_from_aqi($aqi_value),
-        'aqiLabel' => $aqi_index['category'] ?? '暂无',
-        'primaryPollutant' => $aqi_index['primaryPollutant']['name'] ?? ($primary_pollutant['name'] ?? '暂无'),
-        'primaryPollutantValue' => $primary_pollutant['concentration']['value'] ?? '',
-        'primaryPollutantUnit' => $primary_pollutant['concentration']['unit'] ?? '',
-        'airDailyForecast' => $air_daily_forecast,
-        'uvValue' => $uv_index,
-        'uvMax' => is_numeric($uv_index) ? (string) (intval($uv_index) == $uv_index ? intval($uv_index) : round($uv_index, 1)) : '--',
-        'uvLabel' => $uv_label,
-        'uvTone' => brave_qweather_get_uv_tone($uv_index),
-        'uvText' => $uv_text,
-        'warning' => !empty($main_warning) ? array(
-            'badge' => $warning_badge,
-            'headline' => $main_warning['headline'] ?? ($main_warning['text'] ?? ''),
-            'severityColor' => strtolower((string) ($main_warning['severityColor'] ?? '')),
-            'tone' => brave_qweather_get_warning_tone($main_warning['severityColor'] ?? ($main_warning['severity'] ?? '')),
-            'typeName' => $main_warning['typeName'] ?? '',
-            'pubTime' => brave_qweather_format_time_value($main_warning['pubTime'] ?? ''),
-            'effectiveTime' => brave_qweather_format_time_value($main_warning['effectiveTime'] ?? ''),
-            'expireTime' => brave_qweather_format_time_value($main_warning['expireTime'] ?? ($main_warning['expiredTime'] ?? '')),
-            'text' => $main_warning['text'] ?? '',
-        ) : null,
-        'indices' => $indices_grouped,
+        'warning' => brave_qweather_build_warning_payload($warning_response),
     );
+}
 
+function brave_qweather_add_city_weather_details($payload, $city, $location, $lang) {
+    $indices = brave_qweather_get_cached_response('indices_v2', $city, '/v7/indices/1d', array(
+        'location' => $location,
+        'lang' => $lang,
+        'type' => '1,3,5,7,8,9,10',
+    ), 8 * HOUR_IN_SECONDS, true);
+    $air = brave_qweather_get_cached_response('air', $city, '/airquality/v1/current/' . brave_qweather_get_air_location_path($city), array(
+        'lang' => $lang,
+    ), 45 * MINUTE_IN_SECONDS, true);
+    $air_daily = brave_qweather_get_cached_response('air_daily', $city, '/airquality/v1/daily/' . brave_qweather_get_air_location_path($city), array(
+        'lang' => $lang,
+        'localTime' => 'true',
+    ), 6 * HOUR_IN_SECONDS, true);
+
+    $indices_data = brave_qweather_get_response_data($indices);
+    $air_data = brave_qweather_get_response_data($air);
+    $air_daily_data = brave_qweather_get_response_data($air_daily);
+
+    $indices_daily = is_array($indices_data['daily'] ?? null) ? $indices_data['daily'] : array();
+    $air_indexes = is_array($air_data['indexes'] ?? null) ? $air_data['indexes'] : array();
+    $air_pollutants = is_array($air_data['pollutants'] ?? null) ? $air_data['pollutants'] : array();
+    $air_days = is_array($air_daily_data['days'] ?? null) ? $air_daily_data['days'] : array();
+
+    $detail_available = !empty($indices_daily) || !empty($air_indexes) || !empty($air_pollutants) || !empty($air_days);
+
+    if (!$detail_available) {
+        $detail_errors = array_values(array_filter(array(
+            $indices['error'] ?? '',
+            $air['error'] ?? '',
+            $air_daily['error'] ?? '',
+        )));
+
+        if (!empty($detail_errors)) {
+            $payload['detailMessage'] = $detail_errors[0];
+        }
+
+        return $payload;
+    }
+
+    $indices_grouped = brave_qweather_group_indices($indices_daily);
+    $uv_index = brave_qweather_to_float($indices_grouped['5']['level'] ?? null);
+    $uv_label = $indices_grouped['5']['category'] ?? '暂无';
+    $uv_text = $indices_grouped['5']['text'] ?? '';
+
+    $aqi_index = brave_qweather_find_primary_aqi_index($air_indexes);
+    $aqi_value = brave_qweather_to_int($aqi_index['aqi'] ?? null);
+    $primary_pollutant = brave_qweather_find_primary_pollutant_data(
+        $air_pollutants,
+        $aqi_index['primaryPollutant']['code'] ?? ''
+    );
+    $air_daily_forecast = brave_qweather_pick_air_daily_forecast($air_days, $payload['updatedAt'] ?? '');
+
+    $payload['stale'] = !empty($payload['stale'])
+        || brave_qweather_response_is_stale($indices)
+        || brave_qweather_response_is_stale($air)
+        || brave_qweather_response_is_stale($air_daily);
+
+    $payload['aqi'] = $aqi_value;
+    $payload['aqiDisplay'] = null !== $aqi_value ? (string) $aqi_value : '--';
+    $payload['aqiTone'] = brave_qweather_get_tone_from_aqi($aqi_value);
+    $payload['aqiLabel'] = $aqi_index['category'] ?? '暂无';
+    $payload['primaryPollutant'] = $aqi_index['primaryPollutant']['name'] ?? ($primary_pollutant['name'] ?? '暂无');
+    $payload['primaryPollutantValue'] = $primary_pollutant['concentration']['value'] ?? '';
+    $payload['primaryPollutantUnit'] = $primary_pollutant['concentration']['unit'] ?? '';
+    $payload['airDailyForecast'] = $air_daily_forecast;
+    $payload['uvValue'] = $uv_index;
+    $payload['uvMax'] = is_numeric($uv_index) ? (string) (intval($uv_index) == $uv_index ? intval($uv_index) : round($uv_index, 1)) : '--';
+    $payload['uvLabel'] = $uv_label;
+    $payload['uvTone'] = brave_qweather_get_uv_tone($uv_index);
+    $payload['uvText'] = $uv_text;
+    $payload['indices'] = $indices_grouped;
     $payload['clothing'] = brave_qweather_build_clothing_data($indices_grouped, $payload);
+    $payload['detailLoaded'] = true;
 
     return $payload;
+}
+
+function brave_qweather_normalize_city_weather($city, $index, $include_details = true) {
+    $location = brave_qweather_get_location_string($city);
+    $lang = 'zh-hans';
+    $required_responses = brave_qweather_get_required_city_weather_responses($city, $location, $lang);
+    $required_error = brave_qweather_get_required_city_weather_error($required_responses);
+
+    if (is_wp_error($required_error)) {
+        return array(
+            'index' => $index,
+            'name' => $city['name'],
+            'status' => 'error',
+            'detailLoaded' => false,
+            'message' => $required_error->get_error_message(),
+        );
+    }
+
+    $warning_response = brave_qweather_get_city_warning_response($city, $location, $lang);
+    $payload = brave_qweather_build_base_city_weather_payload($city, $index, $required_responses, $warning_response);
+
+    if (!$include_details) {
+        return $payload;
+    }
+
+    return brave_qweather_add_city_weather_details($payload, $city, $location, $lang);
 }

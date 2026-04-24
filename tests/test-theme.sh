@@ -16,13 +16,22 @@ if ! command -v docker &> /dev/null; then
     exit 1
 fi
 
-if ! command -v docker-compose &> /dev/null; then
+COMPOSE_CMD=()
+COMPOSE_LABEL=""
+
+if docker compose version > /dev/null 2>&1; then
+    COMPOSE_CMD=(docker compose)
+    COMPOSE_LABEL="docker compose"
+elif command -v docker-compose > /dev/null 2>&1; then
+    COMPOSE_CMD=(docker-compose)
+    COMPOSE_LABEL="docker-compose"
+else
     echo "❌ Docker Compose 未安装"
-    echo "请访问 https://docs.docker.com/compose/install/ 安装"
+    echo "请安装 Docker Compose v2（docker compose）或旧版 docker-compose"
     exit 1
 fi
 
-echo "✅ Docker 和 Docker Compose 已安装"
+echo "✅ Docker 和 Docker Compose 已安装（$COMPOSE_LABEL）"
 echo ""
 
 # 检查主题文件
@@ -67,8 +76,8 @@ echo ""
 
 # 启动环境
 echo "🚀 启动 WordPress 环境..."
-docker-compose -f "$COMPOSE_FILE" down -v 2>/dev/null || true
-docker-compose -f "$COMPOSE_FILE" up -d
+"${COMPOSE_CMD[@]}" -f "$COMPOSE_FILE" down -v 2>/dev/null || true
+"${COMPOSE_CMD[@]}" -f "$COMPOSE_FILE" up -d
 
 if [ $? -ne 0 ]; then
     echo "❌ Docker 启动失败"
@@ -80,15 +89,23 @@ echo ""
 
 # 等待 WordPress 就绪
 echo "⏳ 等待 WordPress 初始化..."
+ready=0
 for i in {1..30}; do
-    if curl -s http://localhost:8080/wp-admin/install.php > /dev/null 2>&1; then
+    if curl -fsS http://localhost:8080/wp-admin/install.php > /dev/null 2>&1; then
         echo "✅ WordPress 已就绪"
+        ready=1
         break
     fi
     echo -n "."
     sleep 2
 done
 echo ""
+
+if [ "$ready" -ne 1 ]; then
+    echo "❌ WordPress 在预期时间内未就绪，请检查容器日志"
+    "${COMPOSE_CMD[@]}" -f "$COMPOSE_FILE" logs --tail=80 wordpress
+    exit 1
+fi
 
 # 显示访问信息
 echo ""
@@ -115,13 +132,13 @@ echo "📂 主题位置:"
 echo "   wp-content/themes/brave-love/"
 echo ""
 echo "💡 常用命令："
-echo "   停止环境: docker-compose -f tests/docker-compose.yml down"
-echo "   查看日志: docker-compose -f tests/docker-compose.yml logs -f wordpress"
-echo "   重启环境: docker-compose -f tests/docker-compose.yml restart"
-echo "   重置数据: docker-compose -f tests/docker-compose.yml down -v"
+echo "   停止环境: $COMPOSE_LABEL -f tests/docker-compose.yml down"
+echo "   查看日志: $COMPOSE_LABEL -f tests/docker-compose.yml logs -f wordpress"
+echo "   重启环境: $COMPOSE_LABEL -f tests/docker-compose.yml restart"
+echo "   重置数据: $COMPOSE_LABEL -f tests/docker-compose.yml down -v"
 echo ""
 echo "⚠️  注意："
 echo "   - 首次访问可能需要 30-60 秒初始化"
 echo "   - 数据保存在 Docker Volume 中，重启不会丢失"
-echo "   - 重置数据请运行: docker-compose -f tests/docker-compose.yml down -v"
+echo "   - 重置数据请运行: $COMPOSE_LABEL -f tests/docker-compose.yml down -v"
 echo ""

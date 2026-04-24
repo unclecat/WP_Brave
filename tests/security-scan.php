@@ -2,7 +2,7 @@
 /**
  * Brave Love 主题安全扫描工具
  * 
- * 使用方法: php tests/security-scan.php
+ * 使用方法: php tests/security-scan.php [--write-report[=路径]]
  */
 
 $results = [
@@ -252,5 +252,34 @@ foreach ($results['errors'] as $msg) {
 $report .= "\n" . str_repeat("=", 60) . "\n";
 $report .= "安全评分: " . ($errors > 0 ? "需要修复" : ($warnings > 0 ? "良好" : "优秀")) . "\n";
 
-file_put_contents(dirname(__DIR__) . '/SECURITY-REPORT.md', $report);
-echo "\n📄 详细报告已保存到 SECURITY-REPORT.md\n";
+$report_output = '';
+foreach (array_slice($argv, 1) as $arg) {
+    if ('--write-report' === $arg) {
+        $report_output = dirname(__DIR__) . '/SECURITY-REPORT.md';
+        break;
+    }
+
+    if (0 === strpos($arg, '--write-report=')) {
+        $candidate = trim((string) substr($arg, 15));
+        if ('' !== $candidate) {
+            $is_absolute_path = '/' === substr($candidate, 0, 1)
+                || 1 === preg_match('/^[A-Za-z]:[\/\\]/', $candidate);
+            $report_output = $is_absolute_path
+                ? $candidate
+                : dirname(__DIR__) . '/' . ltrim($candidate, '/');
+        }
+        break;
+    }
+}
+
+if ('' !== $report_output) {
+    $written = @file_put_contents($report_output, $report);
+
+    if (false === $written) {
+        echo "\n⚠️ 详细报告未能写入 {$report_output}\n";
+    } else {
+        echo "\n📄 详细报告已保存到 {$report_output}\n";
+    }
+} else {
+    echo "\nℹ️ 如需保存详细报告，请追加 --write-report 参数。\n";
+}

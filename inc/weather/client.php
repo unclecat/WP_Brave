@@ -21,6 +21,29 @@ function brave_qweather_backup_option_key($cache_key) {
     return 'brv_qw_backup_' . $cache_key;
 }
 
+function brave_qweather_backup_max_age() {
+    return max(0, (int) apply_filters('brave_qweather_backup_max_age', 6 * HOUR_IN_SECONDS));
+}
+
+function brave_qweather_is_backup_record_usable($record, $max_age = null) {
+    if (!is_array($record) || !array_key_exists('data', $record)) {
+        return false;
+    }
+
+    $cached_at = (int) ($record['cached_at'] ?? 0);
+    if ($cached_at <= 0) {
+        return false;
+    }
+
+    $max_age = null === $max_age ? brave_qweather_backup_max_age() : max(0, (int) $max_age);
+
+    if ($max_age <= 0) {
+        return true;
+    }
+
+    return (time() - $cached_at) <= $max_age;
+}
+
 function brave_qweather_get_location_string($city) {
     return number_format((float) $city['lon'], 4, '.', '') . ',' . number_format((float) $city['lat'], 4, '.', '');
 }
@@ -109,7 +132,7 @@ function brave_qweather_get_cached_response($type, $city, $path, $query_args, $t
     }
 
     $backup = get_option(brave_qweather_backup_option_key($cache_key), array());
-    if (is_array($backup) && isset($backup['data'])) {
+    if (brave_qweather_is_backup_record_usable($backup)) {
         return array(
             'data' => $backup['data'],
             'stale' => true,

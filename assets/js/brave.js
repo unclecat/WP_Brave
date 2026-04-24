@@ -117,9 +117,11 @@
         var $modalContent = $('.weather-modal-content');
         var $modalClose = $('#weather-modal-close');
         var weatherCache = {};
+        var detailRequests = {};
         var activeIndex = null;
         var refreshDelay = Number(themeData.weather_refresh_ms) || (30 * 60 * 1000);
         var weatherApiUrl = themeData.weather_api_url ? themeData.weather_api_url : '';
+        var weatherDetailApiBase = themeData.weather_detail_api_base ? themeData.weather_detail_api_base : '';
 
         function escapeHtml(value) {
             return String(value == null ? '' : value)
@@ -277,6 +279,24 @@
             return parts.length ? parts.join(' · ') : 'AQI 整理中';
         }
 
+        function mergeWeatherCacheItem(key, item) {
+            var existing = weatherCache[key] || {};
+            var merged = $.extend(true, {}, existing, item);
+
+            if (existing.detailLoaded && !item.detailLoaded) {
+                merged.detailLoaded = true;
+            }
+
+            if (merged.detailLoaded) {
+                delete merged.detailError;
+            } else if (typeof item.detailError === 'undefined') {
+                delete merged.detailError;
+            }
+
+            weatherCache[key] = merged;
+            return merged;
+        }
+
         function setCardError($card, message) {
             $card
                 .removeClass('is-loading')
@@ -361,6 +381,62 @@
             }
         }
 
+        function renderDetailLoading() {
+            $('#modal-aqi')
+                .attr('data-tone', 'unknown')
+                .find('.weather-modal-aside-text')
+                .text('加载中 · AQI --');
+            $('#modal-uv')
+                .attr('data-tone', 'unknown')
+                .find('.weather-modal-aside-text')
+                .text('加载中 · UV --');
+            $('#modal-primary-pollutant .weather-modal-aside-text').text('加载中');
+            $('#modal-air-forecast-item').attr('data-tone', 'unknown');
+            $('#modal-air-forecast')
+                .attr('data-tone', 'unknown')
+                .text('--');
+            $('#modal-air-forecast-note').text('正在整理空气数据');
+            $('#modal-clothing').html('<span class="weather-modal-tag is-muted">加载中</span>');
+            $('#modal-clothing-copy').text('正在整理更完整的提醒……');
+        }
+
+        function renderDetailUnavailable(message) {
+            $('#modal-aqi')
+                .attr('data-tone', 'unknown')
+                .find('.weather-modal-aside-text')
+                .text('暂缺 · AQI --');
+            $('#modal-uv')
+                .attr('data-tone', 'unknown')
+                .find('.weather-modal-aside-text')
+                .text('暂缺 · UV --');
+            $('#modal-primary-pollutant .weather-modal-aside-text').text('暂缺');
+            $('#modal-air-forecast-item').attr('data-tone', 'unknown');
+            $('#modal-air-forecast')
+                .attr('data-tone', 'unknown')
+                .text('--');
+            $('#modal-air-forecast-note').text('稍后再试');
+            $('#modal-clothing').html('<span class="weather-modal-tag is-muted">稍后再试</span>');
+            $('#modal-clothing-copy').text(message || '更完整的天气提醒暂时还没同步好。');
+        }
+
+        function renderDetailContent(data) {
+            $('#modal-aqi')
+                .attr('data-tone', data.aqiTone || 'unknown')
+                .find('.weather-modal-aside-text')
+                .text((data.aqiLabel || '暂无') + ' · AQI ' + formatAqiValue(data.aqi));
+            $('#modal-uv')
+                .attr('data-tone', data.uvTone || 'unknown')
+                .find('.weather-modal-aside-text')
+                .text((data.uvLabel || '暂无') + ' · UV ' + (data.uvMax || '--'));
+            $('#modal-primary-pollutant .weather-modal-aside-text').text(formatPrimaryPollutant(data));
+            $('#modal-air-forecast-item').attr('data-tone', (data.airDailyForecast && data.airDailyForecast.tone) || 'unknown');
+            $('#modal-air-forecast')
+                .attr('data-tone', (data.airDailyForecast && data.airDailyForecast.tone) || 'unknown')
+                .text(formatAirForecastValue(data));
+            $('#modal-air-forecast-note').text(formatAirForecastNote(data));
+            renderClothing(data);
+        }
+
         function renderTodayPrecip(data) {
             var $value = $('#modal-precip');
 
@@ -404,14 +480,61 @@
             $meta.text(metaParts.join(' · '));
         }
 
+        function fetchWeatherDetail(index) {
+            var key = String(index);
+
+            if (!weatherDetailApiBase || detailRequests[key]) {
+                return;
+            }
+
+            detailRequests[key] = true;
+
+            $.ajax({
+                url: weatherDetailApiBase + encodeURIComponent(key),
+                method: 'GET',
+                dataType: 'json',
+                timeout: 15000,
+                success: function(response) {
+                    delete detailRequests[key];
+
+                    if (!response || response.status === 'error' || !response.detailLoaded) {
+                        weatherCache[key] = $.extend(true, {}, weatherCache[key] || {}, {
+                            detailLoaded: false,
+                            detailError: (response && (response.detailMessage || response.message)) || '更完整的天气提醒暂时还没同步好。'
+                        });
+                    } else {
+                        var merged = mergeWeatherCacheItem(key, response);
+                        merged.detailLoaded = true;
+                        delete merged.detailError;
+                    }
+
+                    if (activeIndex === key) {
+                        openModal(key);
+                    }
+                },
+                error: function() {
+                    delete detailRequests[key];
+                    weatherCache[key] = $.extend(true, {}, weatherCache[key] || {}, {
+                        detailLoaded: false,
+                        detailError: '更完整的天气提醒暂时还没同步好。'
+                    });
+
+                    if (activeIndex === key) {
+                        openModal(key);
+                    }
+                }
+            });
+        }
+
         function openModal(index) {
-            var data = weatherCache[String(index)];
+            var key = String(index);
+            var data = weatherCache[key];
 
             if (!data || typeof data.temp === 'undefined' || typeof data.tempMin === 'undefined') {
                 return;
             }
 
-            activeIndex = String(index);
+            activeIndex = key;
 
             $('#modal-city').text(data.name || '城市');
             $('#modal-time').text(formatUpdateText(data.updatedAt, data.stale));
@@ -421,31 +544,25 @@
             $('#modal-range').text('今日 ' + (typeof data.tempMin === 'number' ? data.tempMin : '--') + '° ~ ' + (typeof data.tempMax === 'number' ? data.tempMax : '--') + '°');
             $('#modal-sunrise').text(formatClock(data.sunrise));
             $('#modal-sunset').text(formatClock(data.sunset));
-            $('#modal-aqi')
-                .attr('data-tone', data.aqiTone || 'unknown')
-                .find('.weather-modal-aside-text')
-                .text((data.aqiLabel || '暂无') + ' · AQI ' + formatAqiValue(data.aqi));
-            $('#modal-uv')
-                .attr('data-tone', data.uvTone || 'unknown')
-                .find('.weather-modal-aside-text')
-                .text((data.uvLabel || '暂无') + ' · UV ' + (data.uvMax || '--'));
-            $('#modal-primary-pollutant .weather-modal-aside-text').text(formatPrimaryPollutant(data));
             $('#modal-feels').text((typeof data.feels === 'number' ? data.feels : '--') + '°');
             $('#modal-feels-note').text(formatFeelsNote(data));
             $('#modal-humidity').text((typeof data.humidity === 'number' ? data.humidity : '--') + '%');
             $('#modal-humidity-note').text(formatHumidityNote(data));
             $('#modal-wind').text(formatWindSpeed(data));
             $('#modal-wind-note').text(formatWindNote(data));
-            $('#modal-air-forecast-item').attr('data-tone', (data.airDailyForecast && data.airDailyForecast.tone) || 'unknown');
-            $('#modal-air-forecast')
-                .attr('data-tone', (data.airDailyForecast && data.airDailyForecast.tone) || 'unknown')
-                .text(formatAirForecastValue(data));
-            $('#modal-air-forecast-note').text(formatAirForecastNote(data));
 
             renderAlert(data);
-            renderClothing(data);
             renderTodayPrecip(data);
             renderHourlyTrend(data.hourlyTrend || []);
+
+            if (data.detailLoaded) {
+                renderDetailContent(data);
+            } else if (data.detailError) {
+                renderDetailUnavailable(data.detailError);
+            } else {
+                renderDetailLoading();
+                fetchWeatherDetail(key);
+            }
 
             $modalContent.attr('data-weather', data.weatherType || 'sunny');
             $modal.addClass('active').attr('aria-hidden', 'false');
@@ -490,8 +607,8 @@
                     return;
                 }
 
-                weatherCache[key] = item;
-                updateCard($card, item);
+                var merged = mergeWeatherCacheItem(key, item);
+                updateCard($card, merged);
 
                 if (activeIndex === key) {
                     openModal(key);
